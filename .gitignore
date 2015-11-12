@@ -1,0 +1,17 @@
+.vs/config/applicationhost.config
+*.suo
+TypeSpec/app.js
+*.map
+TypeSpec/bin/TypeSpec.dll
+*.pdb
+TypeSpec/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
+*.cs
+TypeSpec/obj/Debug/TypeSpec.csproj.FileListAbsolute.txt
+*.cache
+TypeSpec/obj/Debug/TypeSpec.dll
+TypeSpec/Scripts/tsUnit/tsUnit.js
+TypeSpec/Scripts/TypeSpec/TypeSpec.js
+*.user
+TypeSpec/web.config
+TypeSpec/web.Debug.config
+TypeSpec/web.Release.config
