@@ -26,6 +26,7 @@
     <Content Include="index.html" />
     <Content Include="Scripts\r.js" />
     <Content Include="Scripts\require.js" />
+    <Content Include="Specifications\MissingStep.html" />
     <Content Include="Specifications\Failing.html" />
   </ItemGroup>
   <ItemGroup>

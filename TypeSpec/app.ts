@@ -31,16 +31,18 @@ steps.add(/the result should be (\d+) on the screen/i, /\d+/, (numberForTotal: s
     // TODO: use tsUnit / other library assertions
     var num = parseFloat(numberForTotal);
     var total = calculator.getTotal();
-    if (total !== num) {
-        throw Error('Total should have been ' + num + ', was ' + total);
-    }
 
     // TODO: test state to remove need to clean up
     calculator = new Calculator();
+
+    if (total !== num) {
+        throw Error('Total should have been ' + num + ', was ' + total);
+    }
 });
 
 var runner = new TypeSpec.SpecRunner(steps);
 runner.run(
     '/Specifications/Basic.html',
-    '/Specifications/Failing.html'
+    '/Specifications/Failing.html',
+    '/Specifications/MissingStep.html'
 );

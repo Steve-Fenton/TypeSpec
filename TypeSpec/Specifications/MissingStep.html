@@ -1,0 +1,11 @@
+﻿Feature: Missing Step Example
+       In order to know a step is missing
+       As a BDD enthusiast
+       I want to be told when a condition doesn't have a corresponding step definition
+
+@failing
+Scenario: Missing Step Example
+       Given I have entered 15 into the calculator
+       And I have entered 18 into the calculator
+       When I press a button that isn't yet defined
+       Then the result should be 33 on the screen

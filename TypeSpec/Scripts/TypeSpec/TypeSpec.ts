@@ -131,6 +131,7 @@ class ScenarioState {
 
         console.log('--------------------------------------');
         console.log(Keyword.Feature);
+        console.log(this.featureTitle);
         for (i = 0; i < this.featureDescription.length; i++) {
             console.log('\t' + this.featureDescription[i]);
         }
@@ -138,19 +139,34 @@ class ScenarioState {
         console.log(Keyword.Given);
         for (i = 0; i < this.givens.length; i++) {
             console.log('\t' + this.givens[i]);
-            this.runCondition(this.givens[i]);
+            try {
+                this.runCondition(this.givens[i]);
+            } catch (ex) {
+                // TODO: collect errors for later display
+                console.error('\t ERROR: "' + this.featureTitle + '". ' + this.givens[i] + ' - ' + ex);
+            }
         }
 
         console.log(Keyword.When);
         for (i = 0; i < this.whens.length; i++) {
             console.log('\t' + this.whens[i]);
-            this.runCondition(this.whens[i]);
+            try {
+                this.runCondition(this.whens[i]);
+            } catch (ex) {
+                // TODO: collect errors for later display
+                console.error('\t ERROR: "' + this.featureTitle + '". ' + this.whens[i] + ' - ' + ex);
+            }
         }
 
         console.log(Keyword.Then);
         for (i = 0; i < this.thens.length; i++) {
             console.log('\t' + this.thens[i]);
-            this.runCondition(this.thens[i]);
+            try {
+                this.runCondition(this.thens[i]);
+            } catch (ex) {
+                // TODO: collect errors for later display
+                console.error('\t ERROR: "' + this.featureTitle + '". ' + this.thens[i] + ' - ' + ex);
+            }
         }
     }
 }
