@@ -1,11 +1,11 @@
-﻿Feature: Calculator
-       In order to avoid silly mistakes
-       As a math idiot
-       I want to be told the sum of two numbers
+﻿Feature: Failing Test
+       In order to know something isn't right
+       As a BDD enthusiast
+       I want to be told when a condition fails
 
 @mytag
-Scenario: Add two numbers
-       Given I have entered 50 into the calculator
-       And I have also entered 70 into the calculator
+Scenario: Failing Test Example
+       Given I have entered 15 into the calculator
+       And I have entered 18 into the calculator
        When I press add
-       Then the result should be 121 on the screen
+       Then the result should be 31 on the screen

@@ -113,11 +113,16 @@ class ScenarioState {
     }
 
     private runCondition(condition: string) {
-        var stepDefinition = this.steps.find(condition);
-        if (stepDefinition === null) {
+        var stepExecution = this.steps.find(condition);
+        if (stepExecution === null) {
             throw new Error('No step definition defined.');
         }
-        stepDefinition.step();
+
+        if (stepExecution.parameters) {
+            stepExecution.method.apply(null, stepExecution.parameters);
+        } else {
+            stepExecution.method();
+        }
     }
 
     run() {
@@ -204,32 +209,44 @@ class Keyword {
 }
 
 class StepDefinition {
-    constructor(public expression: string, public step: Function) { }
+    constructor(public expression: RegExp, public parameter: RegExp, public step: Function) { }
+}
+
+class StepExecution {
+    constructor(public method: Function, public parameters: any[]) { }
 }
 
 export class StepDefinitions {
     private steps: StepDefinition[] = [];
 
-    add(expression: string, step: Function) {
-        this.steps.push(new StepDefinition(expression, step));
+    add(expression: RegExp, parameter: RegExp, step: Function) {
+        this.steps.push(new StepDefinition(expression, parameter, step));
     }
 
     find(text: string) {
         for (var i = 0; i < this.steps.length; i++) {
             var step = this.steps[i];
-            if (step.expression === text) {
-                return step;
+            if (text.match(step.expression)) {
+                var params = this.getParams(text, step.parameter);
+                return new StepExecution(step.step, params);
             }
         }
         return null;
-        // TODO: regex match the text to a step, not just string match
+    }
+
+    getParams(text: string, parameterExpression: RegExp): any[] {
+        if (parameterExpression) {
+            return parameterExpression.exec(text);
+        }
+
+        return [];
     }
 }
 
-export class SpecReader {
+export class SpecRunner {
     constructor(private steps: StepDefinitions) { }
 
-    read(...url: string[]) {
+    run(...url: string[]) {
         this.readFile(0, url);
     }
 
