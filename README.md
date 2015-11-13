@@ -1,11 +1,16 @@
 # TypeSpec
 An experimental TypeScript BDD framework.
 
-The aim is to properly separate the business specifications from the code, but rather than code-generate (like Java or C# BDD tools), the tests will be loaded in and executed on the fly without converting the text into an intermediate language. This should allow tests to be written in any unit testing framework - or even without one.
+The aim is to properly separate the business specifications from the code, 
+but rather than code-generate (like Java or C# BDD tools), the tests will be 
+loaded and executed on the fly without converting the text into an 
+intermediate language or framework. This should allow tests to be written using any 
+unit testing framework - or even without one.
 
 ## Specifications
 
-Specifications are plain text files, just like those used in other BDD frameworks. For example:
+Specifications are plain text files, just like those used in other BDD frameworks. 
+For example:
 
     Feature: Basic Working Example
            In order to avoid silly mistakes
@@ -21,9 +26,9 @@ Specifications are plain text files, just like those used in other BDD framework
 
 The files are specified in the `runner.run` method call:
 
-    import * as TypeSpec from './Scripts/TypeSpec/TypeSpec';
+    import {SpecRunner} as TypeSpec from './Scripts/TypeSpec/TypeSpec';
 
-    var runner = new TypeSpec.SpecRunner();
+    var runner = new SpecRunner();
 
     runner.addStep(/I have entered "(\d+)" into the calculator/i, (context: any, numberToAdd: string) => {
         var num = parseFloat(numberToAdd);
@@ -54,7 +59,8 @@ All arguments are passed to the step as strings, and should be parsed before use
 
 ## TypeScript / C# Comparison
 
-If you are familiar with BDD in C# or Java, this comparison may be useful when considering the difference between TypeSpec and tools such as SpecFlow or Cucumber.
+If you are familiar with BDD in C# or Java, this comparison may be useful when 
+considering the difference between TypeSpec and tools such as SpecFlow or Cucumber.
 
 TypeScript:
 
@@ -83,6 +89,8 @@ Similarities:
  - The first argument to `addStep` is essentially the same as the C# attribute
  - The second argument to `addStep` is essentially the same as the C# method
 
-In place of the C# attribute, we pass the Regular Expression into the `addStep` method. 
+In place of the C# attribute, we pass the Regular Expression into 
+the `addStep` method. 
 
-Within the step, we must parse each argument if we want to deal with something other than a string.
+Within the step, we must parse each argument if we want to deal with 
+something other than a string.
