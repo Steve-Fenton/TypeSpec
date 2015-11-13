@@ -1,9 +1,13 @@
-﻿import {ScenarioState} from './ScenarioState';
-import {Keyword} from './Keyword';
+﻿import {Keyword} from './Keyword';
+import {ScenarioState} from './ScenarioState';
 import {StepDefinition, StepExecution, StepDefinitions} from './Steps';
 
 export class SpecRunner {
-    constructor(private steps: StepDefinitions) { }
+    private steps: StepDefinitions = new StepDefinitions();
+
+    addStep(expression: RegExp, parameter: RegExp, step: Function) {
+        this.steps.add(expression, parameter, step);
+    }
 
     run(...url: string[]) {
         this.readFile(0, url);

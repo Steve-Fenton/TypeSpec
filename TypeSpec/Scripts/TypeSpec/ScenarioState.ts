@@ -142,34 +142,28 @@ export class ScenarioState {
         console.log(Keyword.Given);
         for (i = 0; i < this.givens.length; i++) {
             console.log('\t' + this.givens[i]);
-            try {
-                this.runCondition(this.givens[i]);
-            } catch (ex) {
-                // TODO: collect errors for later display
-                console.error('\t ERROR: "' + this.featureTitle + '". ' + this.givens[i] + ' - ' + ex);
-            }
+            this.executeWithErrorHandling(this.givens[i]);
         }
 
         console.log(Keyword.When);
         for (i = 0; i < this.whens.length; i++) {
             console.log('\t' + this.whens[i]);
-            try {
-                this.runCondition(this.whens[i]);
-            } catch (ex) {
-                // TODO: collect errors for later display
-                console.error('\t ERROR: "' + this.featureTitle + '". ' + this.whens[i] + ' - ' + ex);
-            }
+            this.executeWithErrorHandling(this.whens[i]);
         }
 
         console.log(Keyword.Then);
         for (i = 0; i < this.thens.length; i++) {
             console.log('\t' + this.thens[i]);
-            try {
-                this.runCondition(this.thens[i]);
-            } catch (ex) {
-                // TODO: collect errors for later display
-                console.error('\t ERROR: "' + this.featureTitle + '". ' + this.thens[i] + ' - ' + ex);
-            }
+            this.executeWithErrorHandling(this.thens[i]);
+        }
+    }
+
+    private executeWithErrorHandling(condition: string) {
+        try {
+            this.runCondition(condition);
+        } catch (ex) {
+            // TODO: collect errors for later display
+            console.error('\t ERROR: "' + this.featureTitle + '". ' + condition + ' - ' + ex);
         }
     }
 }
