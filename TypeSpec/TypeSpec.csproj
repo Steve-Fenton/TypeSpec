@@ -32,6 +32,9 @@
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
     <TypeScriptCompile Include="Scripts\tsUnit\tsUnit.ts" />
+    <TypeScriptCompile Include="Scripts\TypeSpec\ScenarioState.ts" />
+    <TypeScriptCompile Include="Scripts\TypeSpec\Keyword.ts" />
+    <TypeScriptCompile Include="Scripts\TypeSpec\Steps.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\TypeSpec.ts" />
   </ItemGroup>
   <ItemGroup>
