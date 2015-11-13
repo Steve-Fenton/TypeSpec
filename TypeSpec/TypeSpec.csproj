@@ -31,6 +31,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
+    <TypeScriptCompile Include="Scripts\Calculator.ts" />
     <TypeScriptCompile Include="Scripts\tsUnit\tsUnit.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\ScenarioState.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\Keyword.ts" />

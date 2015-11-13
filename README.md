@@ -3,11 +3,29 @@ An experimental TypeScript BDD framework.
 
 The aim is to properly separate the business specifications from the code, but rather than code-generate (like Java or C# BDD tools), the tests will be loaded in and executed on the fly without converting the text into an intermediate language. This should allow tests to be written in any unit testing framework - or even without one.
 
+## Specifications
+
+Specifications are plain text files, just like those used in other BDD frameworks. For example:
+
+    Feature: Basic Working Example
+           In order to avoid silly mistakes
+           As a math idiot
+           I want to be told the sum of two numbers
+
+    @passing
+    Scenario: Basic Example with Calculator
+           Given I have entered "50" into the calculator
+           And I have entered "70" into the calculator
+           When I press add
+           Then the result should be "120" on the screen
+
+The files are specified in the `runner.run` method call:
+
     import * as TypeSpec from './Scripts/TypeSpec/TypeSpec';
 
     var runner = new TypeSpec.SpecRunner();
 
-    runner.addStep(/I have entered "(\d+)" into the calculator/i, (numberToAdd: string) => {
+    runner.addStep(/I have entered "(\d+)" into the calculator/i, (context: any, numberToAdd: string) => {
         var num = parseFloat(numberToAdd);
         calculator.add(num);
     });
@@ -27,8 +45,7 @@ Steps are defined with two arguments:
 
 Note that all arguments, and *only* arguments, should be double-quoted in your specification.
 
-
-    runner.addStep(/I have entered "(\d+)" into the calculator/i, (numberToAdd: string) => {
+    runner.addStep(/I have entered "(\d+)" into the calculator/i, (context: any, numberToAdd: string) => {
         var num = parseFloat(numberToAdd);
         calculator.add(num);
     });
@@ -42,7 +59,7 @@ If you are familiar with BDD in C# or Java, this comparison may be useful when c
 TypeScript:
 
     runner.addStep(/I have entered "(\d+)" into the calculator/i,
-    (numberToAdd: string) => {
+    (context: any, numberToAdd: string) => {
         var num = parseFloat(numberToAdd);
         calculator.add(num);
     });
@@ -59,6 +76,7 @@ Key differences:
  - All arguments must be "quoted" (including numebrs), ie. "(\d+)", not just (\d+)
  - All arguments arrive as strings and must be parsed if necessary
  - You can choose whether the step matcher is case sensitive (pass the `i` flag to ignore case)
+ - The first argument passed to a step is always the test context
 
 Similarities:
 

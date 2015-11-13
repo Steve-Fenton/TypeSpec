@@ -195,7 +195,7 @@ export class ClassToBeStarved {
         return text.substring(keyword.length).trim()
     }
 
-    private runCondition(condition: string) {
+    private runCondition(dynamicStateContainer: any, condition: string) {
         var stepExecution = this.steps.find(condition);
         if (stepExecution === null) {
 
@@ -207,14 +207,16 @@ export class ClassToBeStarved {
         }
 
         if (stepExecution.parameters) {
+            stepExecution.parameters.unshift(dynamicStateContainer);
             stepExecution.method.apply(null, stepExecution.parameters);
         } else {
-            stepExecution.method();
+            stepExecution.method(dynamicStateContainer);
         }
     }
 
     run() {
         var i: number;
+        var dynamicStateContainer: any = {};
         var stepDefinition: StepDefinition;
 
         console.log('--------------------------------------');
@@ -227,25 +229,25 @@ export class ClassToBeStarved {
         console.log(Keyword.Given);
         for (i = 0; i < this.state.givens.length; i++) {
             console.log('\t' + this.state.givens[i]);
-            this.executeWithErrorHandling(this.state.givens[i]);
+            this.executeWithErrorHandling(dynamicStateContainer, this.state.givens[i]);
         }
 
         console.log(Keyword.When);
         for (i = 0; i < this.state.whens.length; i++) {
             console.log('\t' + this.state.whens[i]);
-            this.executeWithErrorHandling(this.state.whens[i]);
+            this.executeWithErrorHandling(dynamicStateContainer, this.state.whens[i]);
         }
 
         console.log(Keyword.Then);
         for (i = 0; i < this.state.thens.length; i++) {
             console.log('\t' + this.state.thens[i]);
-            this.executeWithErrorHandling(this.state.thens[i]);
+            this.executeWithErrorHandling(dynamicStateContainer, this.state.thens[i]);
         }
     }
 
-    private executeWithErrorHandling(condition: string) {
+    private executeWithErrorHandling(dynamicStateContainer: any, condition: string) {
         try {
-            this.runCondition(condition);
+            this.runCondition(dynamicStateContainer, condition);
         } catch (ex) {
             // TODO: collect errors for later display
             console.error('\t ERROR: "' + this.state.featureTitle + '". ' + condition + ' - ' + ex);

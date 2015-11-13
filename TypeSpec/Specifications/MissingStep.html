@@ -5,7 +5,8 @@
 
 @failing
 Scenario: Missing Step Example
-       Given I have entered "15" into the calculator
+       Given I am using a calculator
+       And I have entered "15" into the calculator
        And I have entered "18" into the calculator
        When I press a button that isn't yet defined
        Then the result should be "33" on the screen

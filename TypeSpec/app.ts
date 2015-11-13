@@ -1,40 +1,31 @@
 ﻿import * as TsUnit from './Scripts/tsUnit/tsUnit';
-import * as TypeSpec from './Scripts/TypeSpec/TypeSpec';
+import {SpecRunner} from './Scripts/TypeSpec/TypeSpec';
+import {Calculator} from './Scripts/Calculator';
 
-class Calculator {
-    private total = 0;
 
-    add(n: number) {
-        this.total += n;
-    }
+var runner = new SpecRunner();
 
-    getTotal() {
-        return this.total;
-    }
+interface CalculatorTestContext {
+    calculator: Calculator;
 }
 
-// TODO: per-test state - if calculator wasn't initialized in the first step, there would be indeterminate tests
-var calculator: Calculator = new Calculator();;
-
-
-var runner = new TypeSpec.SpecRunner();
-
-runner.addStep(/I have entered "(\d+)" into the calculator/i, (numberToAdd: string) => {
-    var num = parseFloat(numberToAdd);
-    calculator.add(num);
+runner.addStep(/I am using a calculator/i, (context: CalculatorTestContext) => {
+    context.calculator = new Calculator();
 });
 
-runner.addStep(/I press add/gi, () => {
+runner.addStep(/I have entered "(\d+)" into the calculator/i, (context: CalculatorTestContext, numberToAdd: string) => {
+    var num = parseFloat(numberToAdd);
+    context.calculator.add(num);
+});
+
+runner.addStep(/I press add/gi, (context: CalculatorTestContext) => {
     // No action needed
 });
 
-runner.addStep(/the result should be "(\d+)" on the screen/i, (numberForTotal: string) => {
+runner.addStep(/the result should be "(\d+)" on the screen/i, (context: CalculatorTestContext, numberForTotal: string) => {
     // TODO: use tsUnit / other library assertions
     var num = parseFloat(numberForTotal);
-    var total = calculator.getTotal();
-
-    // TODO: test state to remove need to clean up
-    calculator = new Calculator();
+    var total = context.calculator.getTotal();
 
     if (total !== num) {
         throw Error('Total should have been ' + num + ', was ' + total);
