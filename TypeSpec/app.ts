@@ -20,7 +20,6 @@ var calculator: Calculator = new Calculator();;
 var runner = new TypeSpec.SpecRunner();
 
 runner.addStep(/I have entered "(\d+)" into the calculator/i, (numberToAdd: string) => {
-    console.log('Number: ' + numberToAdd);
     var num = parseFloat(numberToAdd);
     calculator.add(num);
 });

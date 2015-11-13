@@ -2,80 +2,148 @@
 import {StepDefinition, StepDefinitions} from './Steps';
 
 abstract class ScenarioStateBase {
-    constructor() { }
-
-    abstract given(line: string): ScenarioStateBase;
-
-    abstract when(line: string): ScenarioStateBase;
-
-    abstract then(line: string): ScenarioStateBase;
-
-    abstract and(line: string): ScenarioStateBase;
-}
-
-class ScenarioState extends ScenarioStateBase {
     public givens: string[] = [];
     public whens: string[] = [];
     public thens: string[] = [];
+
+    public featureTitle: string;
+    public featureDescription: string[] = [];
+    public scenarioTitle: string
 
     public isGivenSection = false;
     public isWhenSection = false;
     public isThenSection = false;
 
-    constructor(priorState: ScenarioState) {
-        super();
+    constructor(priorState: ScenarioStateBase) {
         if (priorState !== null) {
+            this.featureTitle = priorState.featureTitle;
+            this.featureDescription = priorState.featureDescription;
+            this.scenarioTitle = priorState.scenarioTitle;
             this.givens = priorState.givens;
             this.whens = priorState.whens;
             this.thens = priorState.thens;
         }
     }
 
+    process(line: string) {
+        if (Keyword.isFeatureDeclaration(line)) {
+            return this.feature(line);
+        }
+
+        if (Keyword.isScenarioDeclaration(line)) {
+            return this.scenario(line);
+        }
+
+        if (Keyword.isGivenDeclaration(line)) {
+            return this.given(line);
+        }
+
+        if (Keyword.isWhenDeclaration(line)) {
+            return this.when(line);
+        }
+
+        if (Keyword.isThenDeclaration(line)) {
+            return this.then(line);
+        }
+
+        if (Keyword.isAndDeclaration(line)) {
+            return this.and(line);
+        }
+
+        if (Keyword.isExamplesDeclaration(line)) {
+            return this.examples(line);
+        }
+
+        return this.unknown(line);
+    }
+
+    unknown(line: string): ScenarioStateBase{
+        throw new Error('Unknown line ' + line);
+    }
+
+    feature(line: string): ScenarioStateBase {
+        throw new Error('Did not expect line: ' + line);
+    }
+
+    scenario(line: string): ScenarioStateBase {
+        throw new Error('Did not expect line: ' + line);
+    }
+
+    outline(line: string): ScenarioStateBase {
+        throw new Error('Did not expect line: ' + line);
+    }
+
+    given(line: string): ScenarioStateBase {
+        throw new Error('Did not expect line: ' + line);
+    }
+
+    when(line: string): ScenarioStateBase {
+        throw new Error('Did not expect line: ' + line);
+    }
+
+    then(line: string): ScenarioStateBase {
+        throw new Error('Did not expect line: ' + line);
+    }
+
+    and(line: string): ScenarioStateBase {
+        throw new Error('Did not expect line: ' + line);
+    }
+
+    examples(line: string): ScenarioStateBase {
+        throw new Error('Did not expect line: ' + line);
+    }
+
     protected trimLine(text: string, keyword: string) {
         return text.substring(keyword.length).trim()
     }
+}
 
-    given(line: string) {
-        this.givens.push(this.trimLine(line, Keyword.Given));
-        return this;
-    }
-
-    when(line: string) {
-        throw new Error('"When" is not valid in Scenario State.');
-        return this;
-    }
-
-    then(line: string) {
-        throw new Error('"Then" is not valid in Scenario State.');
-        return this;
-    }
-
-    and(line: string) {
-        throw new Error('"And" is not valid in Scenario State.');
-        return this;
+class InitializedState extends ScenarioStateBase {
+    feature(line: string): ScenarioStateBase {
+        this.featureTitle = this.trimLine(line, Keyword.Feature);
+        return new FeatureState(this);
     }
 }
 
-class GivenState extends ScenarioState {
+class FeatureState extends ScenarioStateBase {
+    unknown(line: string) {
+        this.featureDescription.push(line);
+        return this;
+    }
+
+    scenario(line: string): ScenarioStateBase {
+        this.scenarioTitle = this.trimLine(line, Keyword.Scenario);
+        return new ScenarioState(this);
+    }
+}
+
+class ScenarioState extends ScenarioStateBase {
+
+    constructor(priorState: ScenarioState) {
+        super(priorState);
+    }
+
+    given(line: string): ScenarioStateBase {
+        this.givens.push(this.trimLine(line, Keyword.Given));
+        return new GivenState(this);
+    }
+}
+
+class GivenState extends ScenarioStateBase {
     public isGivenSection = true;
 
     constructor(priorState: ScenarioState) {
         super(priorState);
     }
 
-    given() {
-        throw new Error('"Given" is not valid in Given State.');
-        return this;
-    }
-
-    when(line: string) {
+    when(line: string): ScenarioStateBase{
         this.whens.push(this.trimLine(line, Keyword.When));
-        return this;
+        return new WhenState(this);
     }
 
-    then(line: string) {
+    then(line: string): ScenarioStateBase{
         this.thens.push(this.trimLine(line, Keyword.Then));
-        return this;
+        return new ThenState(this);
     }
 
     and(line: string) {
@@ -84,26 +152,16 @@ class GivenState extends ScenarioState {
     }
 }
 
-class WhenState extends ScenarioState {
+class WhenState extends ScenarioStateBase {
     public isWhenSection = true;
 
     constructor(priorState: ScenarioState) {
         super(priorState);
     }
 
-    given() {
-        throw new Error('"Given" is not valid in When State.');
-        return this;
-    }
-
-    when() {
-        throw new Error('"When" is not valid in When State.');
-        return this;
-    }
-
-    then(line: string) {
+    then(line: string): ScenarioStateBase {
         this.thens.push(this.trimLine(line, Keyword.Then));
-        return this;
+        return new ThenState(this);
     }
 
     and(line: string) {
@@ -112,26 +170,11 @@ class WhenState extends ScenarioState {
     }
 }
 
-class ThenState extends ScenarioState {
+class ThenState extends ScenarioStateBase {
     public isThenSection = true;
 
     constructor(priorState: ScenarioState) {
         super(priorState);
-    }
-
-    given() {
-        throw new Error('"Given" is not valid in Then State.');
-        return this;
-    }
-
-    when() {
-        throw new Error('"When" is not valid in Them State.');
-        return this;
-    }
-
-    then() {
-        throw new Error('"Then" is not valid in Then State.');
-        return this;
     }
 
     and(line: string) {
@@ -145,66 +188,11 @@ export class ClassToBeStarved {
     constructor(private steps: StepDefinitions) { }
 
     public tags: string[] = [];
-    public featureTitle: string;
-    public featureDescription: string[] = [];
-    public scenarioTitle: string
 
-    public givens: string[] = [];
-    public whens: string[] = [];
-    public thens: string[] = [];
-
-    public isFeatureSection = false;
-    public isOutlineSection = false;
-    public isExampleSection = false;
-
-    public state = new ScenarioState(null);
-
-    private reset() {
-        // TODO: replace this class with proper state pattern
-        this.isFeatureSection = false;
-        this.isOutlineSection = false;
-        this.isExampleSection = false;
-    }
+    public state = new InitializedState(null);
 
     private trimLine(text: string, keyword: string) {
         return text.substring(keyword.length).trim()
-    }
-
-    public startFeature(line: string) {
-        this.reset();
-        this.featureTitle = this.trimLine(line, Keyword.Feature);
-        this.isFeatureSection = true;
-    }
-
-    public startScenario(line: string) {
-        this.scenarioTitle = this.trimLine(line, Keyword.Scenario);
-    }
-
-    public startOutline(line: string) {
-        this.reset();
-        this.scenarioTitle = this.trimLine(line, Keyword.Outline);
-        this.isOutlineSection = true;
-    }
-
-    public startExamples() {
-        this.reset();
-        this.isExampleSection = true;
-    }
-
-    public startGiven(line: string) {
-        this.state = this.state.given(line);
-    }
-
-    public startWhen(line: string) {
-        this.state = this.state.when(line);
-    }
-
-    public startThen(line: string) {
-        this.state = this.state.then(line);
-    }
-
-    public and(line: string) {
-        this.state = this.state.and(line);
     }
 
     private runCondition(condition: string) {
@@ -231,27 +219,27 @@ export class ClassToBeStarved {
 
         console.log('--------------------------------------');
         console.log(Keyword.Feature);
-        console.log(this.featureTitle);
-        for (i = 0; i < this.featureDescription.length; i++) {
-            console.log('\t' + this.featureDescription[i]);
+        console.log(this.state.featureTitle);
+        for (i = 0; i < this.state.featureDescription.length; i++) {
+            console.log('\t' + this.state.featureDescription[i]);
         }
 
         console.log(Keyword.Given);
-        for (i = 0; i < this.givens.length; i++) {
-            console.log('\t' + this.givens[i]);
-            this.executeWithErrorHandling(this.givens[i]);
+        for (i = 0; i < this.state.givens.length; i++) {
+            console.log('\t' + this.state.givens[i]);
+            this.executeWithErrorHandling(this.state.givens[i]);
         }
 
         console.log(Keyword.When);
-        for (i = 0; i < this.whens.length; i++) {
-            console.log('\t' + this.whens[i]);
-            this.executeWithErrorHandling(this.whens[i]);
+        for (i = 0; i < this.state.whens.length; i++) {
+            console.log('\t' + this.state.whens[i]);
+            this.executeWithErrorHandling(this.state.whens[i]);
         }
 
         console.log(Keyword.Then);
-        for (i = 0; i < this.thens.length; i++) {
-            console.log('\t' + this.thens[i]);
-            this.executeWithErrorHandling(this.thens[i]);
+        for (i = 0; i < this.state.thens.length; i++) {
+            console.log('\t' + this.state.thens[i]);
+            this.executeWithErrorHandling(this.state.thens[i]);
         }
     }
 
@@ -260,7 +248,7 @@ export class ClassToBeStarved {
             this.runCondition(condition);
         } catch (ex) {
             // TODO: collect errors for later display
-            console.error('\t ERROR: "' + this.featureTitle + '". ' + condition + ' - ' + ex);
+            console.error('\t ERROR: "' + this.state.featureTitle + '". ' + condition + ' - ' + ex);
         }
     }
 }
