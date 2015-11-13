@@ -1,8 +1,147 @@
 ﻿import {Keyword} from './Keyword';
 import {StepDefinition, StepDefinitions} from './Steps';
 
+abstract class ScenarioStateBase {
+    constructor() { }
+
+    abstract given(line: string): ScenarioStateBase;
+
+    abstract when(line: string): ScenarioStateBase;
+
+    abstract then(line: string): ScenarioStateBase;
+
+    abstract and(line: string): ScenarioStateBase;
+}
+
+class ScenarioState extends ScenarioStateBase {
+    public givens: string[] = [];
+    public whens: string[] = [];
+    public thens: string[] = [];
+
+    public isGivenSection = false;
+    public isWhenSection = false;
+    public isThenSection = false;
+
+    constructor(priorState: ScenarioState) {
+        super();
+        if (priorState !== null) {
+            this.givens = priorState.givens;
+            this.whens = priorState.whens;
+            this.thens = priorState.thens;
+        }
+    }
+
+    protected trimLine(text: string, keyword: string) {
+        return text.substring(keyword.length).trim()
+    }
+
+    given(line: string) {
+        this.givens.push(this.trimLine(line, Keyword.Given));
+        return this;
+    }
+
+    when(line: string) {
+        throw new Error('"When" is not valid in Scenario State.');
+        return this;
+    }
+
+    then(line: string) {
+        throw new Error('"Then" is not valid in Scenario State.');
+        return this;
+    }
+
+    and(line: string) {
+        throw new Error('"And" is not valid in Scenario State.');
+        return this;
+    }
+}
+
+class GivenState extends ScenarioState {
+    public isGivenSection = true;
+
+    constructor(priorState: ScenarioState) {
+        super(priorState);
+    }
+
+    given() {
+        throw new Error('"Given" is not valid in Given State.');
+        return this;
+    }
+
+    when(line: string) {
+        this.whens.push(this.trimLine(line, Keyword.When));
+        return this;
+    }
+
+    then(line: string) {
+        this.thens.push(this.trimLine(line, Keyword.Then));
+        return this;
+    }
+
+    and(line: string) {
+        this.givens.push(this.trimLine(line, Keyword.And));
+        return this;
+    }
+}
+
+class WhenState extends ScenarioState {
+    public isWhenSection = true;
+
+    constructor(priorState: ScenarioState) {
+        super(priorState);
+    }
+
+    given() {
+        throw new Error('"Given" is not valid in When State.');
+        return this;
+    }
+
+    when() {
+        throw new Error('"When" is not valid in When State.');
+        return this;
+    }
+
+    then(line: string) {
+        this.thens.push(this.trimLine(line, Keyword.Then));
+        return this;
+    }
+
+    and(line: string) {
+        this.whens.push(this.trimLine(line, Keyword.And));
+        return this;
+    }
+}
+
+class ThenState extends ScenarioState {
+    public isThenSection = true;
+
+    constructor(priorState: ScenarioState) {
+        super(priorState);
+    }
+
+    given() {
+        throw new Error('"Given" is not valid in Then State.');
+        return this;
+    }
+
+    when() {
+        throw new Error('"When" is not valid in Them State.');
+        return this;
+    }
+
+    then() {
+        throw new Error('"Then" is not valid in Then State.');
+        return this;
+    }
+
+    and(line: string) {
+        this.thens.push(this.trimLine(line, Keyword.And));
+        return this;
+    }
+}
+
 //TODO: break this up
-export class ScenarioState {
+export class ClassToBeStarved {
     constructor(private steps: StepDefinitions) { }
 
     public tags: string[] = [];
@@ -15,33 +154,16 @@ export class ScenarioState {
     public thens: string[] = [];
 
     public isFeatureSection = false;
-    public isScenarioSection = false;
     public isOutlineSection = false;
     public isExampleSection = false;
 
-    public isGivenSection = false;
-    public isWhenSection = false;
-    public isThenSection = false;
-
-    public hasFeatureSection = false;
-    public hasScenarioSection = false;
-    public hasOutlineSection = false;
-    public hasExampleSection = false;
-
-    public hasGivenSection = false;
-    public hasWhenSection = false;
-    public hasThenSection = false;
+    public state = new ScenarioState(null);
 
     private reset() {
         // TODO: replace this class with proper state pattern
         this.isFeatureSection = false;
-        this.isScenarioSection = false;
         this.isOutlineSection = false;
         this.isExampleSection = false;
-
-        this.isGivenSection = false;
-        this.isWhenSection = false;
-        this.isThenSection = false;
     }
 
     private trimLine(text: string, keyword: string) {
@@ -52,73 +174,48 @@ export class ScenarioState {
         this.reset();
         this.featureTitle = this.trimLine(line, Keyword.Feature);
         this.isFeatureSection = true;
-        this.hasFeatureSection = true;
     }
 
     public startScenario(line: string) {
-        this.reset();
         this.scenarioTitle = this.trimLine(line, Keyword.Scenario);
-        this.isScenarioSection = true;
-        this.hasScenarioSection = true;
     }
 
     public startOutline(line: string) {
         this.reset();
         this.scenarioTitle = this.trimLine(line, Keyword.Outline);
         this.isOutlineSection = true;
-        this.hasOutlineSection = true;
     }
 
     public startExamples() {
         this.reset();
         this.isExampleSection = true;
-        this.hasExampleSection = true;
     }
 
     public startGiven(line: string) {
-        this.reset();
-        this.isGivenSection = true;
-        this.hasGivenSection = true;
-        this.givens.push(this.trimLine(line, Keyword.Given));
+        this.state = this.state.given(line);
     }
 
     public startWhen(line: string) {
-        this.reset();
-        this.isWhenSection = true;
-        this.hasWhenSection = true;
-        this.whens.push(this.trimLine(line, Keyword.When));
+        this.state = this.state.when(line);
     }
 
     public startThen(line: string) {
-        this.reset();
-        this.isThenSection = true;
-        this.hasThenSection = true;
-        this.thens.push(this.trimLine(line, Keyword.Then));
+        this.state = this.state.then(line);
     }
 
     public and(line: string) {
-        if (this.isGivenSection) {
-            this.givens.push(this.trimLine(line, Keyword.And));
-            return;
-        }
-
-        if (this.isWhenSection) {
-            this.whens.push(this.trimLine(line, Keyword.And));
-            return;
-        }
-
-        if (this.isThenSection) {
-            this.thens.push(this.trimLine(line, Keyword.And));
-            return;
-        }
-
-        throw new Error('"' + Keyword.And + '" detected with no ' + Keyword.Given + ', ' + Keyword.When + ', or ' + Keyword.Then + '.');
+        this.state = this.state.and(line);
     }
 
     private runCondition(condition: string) {
         var stepExecution = this.steps.find(condition);
         if (stepExecution === null) {
-            throw new Error('No step definition defined.');
+
+            var suggestion = '\trunner.addStep(/' + condition + '/i, () => { \n' +
+                '\t\tthrow new Error(\'Not implemented.\');\n' +
+            '\t});';
+
+            throw new Error('No step definition defined.\n\n' + suggestion);
         }
 
         if (stepExecution.parameters) {

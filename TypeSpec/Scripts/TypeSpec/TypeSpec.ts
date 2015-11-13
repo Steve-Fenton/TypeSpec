@@ -1,5 +1,5 @@
 ﻿import {Keyword} from './Keyword';
-import {ScenarioState} from './ScenarioState';
+import {ClassToBeStarved} from './ScenarioState';
 import {StepDefinition, StepExecution, StepDefinitions} from './Steps';
 
 //TODO: handle multiple scenarios within the same file
@@ -38,7 +38,7 @@ export class SpecRunner {
 
     private processSpecification(spec: string) {
 
-        var state = new ScenarioState(this.steps);
+        var state = new ClassToBeStarved(this.steps);
         var lines = spec.replace('\r\n', '\n').split('\n');
 
         for (var i = 0; i < lines.length; i++) {
