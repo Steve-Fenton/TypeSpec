@@ -1,5 +1,7 @@
 ﻿export class StepDefinition {
-    constructor(public expression: RegExp, public parameter: RegExp, public step: Function) { }
+    public defaultRegExp = /"(?:[^"\\]|\\.)*"/ig;
+
+    constructor(public expression: RegExp, public step: Function) { }
 }
 
 export class StepExecution {
@@ -8,16 +10,17 @@ export class StepExecution {
 
 export class StepDefinitions {
     private steps: StepDefinition[] = [];
+   
 
-    add(expression: RegExp, parameter: RegExp, step: Function) {
-        this.steps.push(new StepDefinition(expression, parameter, step));
+    add(expression: RegExp, step: Function) {
+        this.steps.push(new StepDefinition(expression, step));
     }
 
     find(text: string) {
         for (var i = 0; i < this.steps.length; i++) {
             var step = this.steps[i];
             if (text.match(step.expression)) {
-                var params = this.getParams(text, step.parameter);
+                var params = this.getParams(text, step.defaultRegExp);
                 return new StepExecution(step.step, params);
             }
         }
@@ -26,7 +29,18 @@ export class StepDefinitions {
 
     getParams(text: string, parameterExpression: RegExp): any[] {
         if (parameterExpression) {
-            return parameterExpression.exec(text);
+            var params = text.match(parameterExpression);
+
+            if (!params) {
+                return [];
+            }
+
+            for (var i = 0; i < params.length; i++) {
+                // Remove quotes
+                params[i] = params[i].replace(/"/g, '');
+            }
+
+            return params;
         }
 
         return [];

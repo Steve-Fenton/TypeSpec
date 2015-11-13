@@ -19,16 +19,17 @@ var calculator: Calculator = new Calculator();;
 
 var runner = new TypeSpec.SpecRunner();
 
-runner.addStep(/I have entered (\d+) into the calculator/i, /\d+/, (numberToAdd: string) => {
+runner.addStep(/I have entered "(\d+)" into the calculator/i, (numberToAdd: string) => {
+    console.log('Number: ' + numberToAdd);
     var num = parseFloat(numberToAdd);
     calculator.add(num);
 });
 
-runner.addStep(/I press add/gi, null, () => {
+runner.addStep(/I press add/gi, () => {
     // No action needed
 });
 
-runner.addStep(/the result should be (\d+) on the screen/i, /\d+/, (numberForTotal: string) => {
+runner.addStep(/the result should be "(\d+)" on the screen/i, (numberForTotal: string) => {
     // TODO: use tsUnit / other library assertions
     var num = parseFloat(numberForTotal);
     var total = calculator.getTotal();

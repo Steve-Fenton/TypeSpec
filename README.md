@@ -7,7 +7,7 @@ The aim is to properly separate the business specifications from the code, but r
 
     var runner = new TypeSpec.SpecRunner();
 
-    runner.addStep(/I have entered (\d+) into the calculator/i, /\d+/, (numberToAdd: string) => {
+    runner.addStep(/I have entered "(\d+)" into the calculator/i, (numberToAdd: string) => {
         var num = parseFloat(numberToAdd);
         calculator.add(num);
     });
@@ -20,22 +20,15 @@ The aim is to properly separate the business specifications from the code, but r
 
 ## Steps
 
-Steps are defined with three arguments:
+Steps are defined with two arguments:
 
  - The Regular Expression that is used to match the text to a step
- - The Regular Expression for extracing arguments from the text
  - The function that will handle the step
 
-If you don't need to match arguments in the text, you can simply use the text itself (and pass null as the argument matcher):
+Note that all arguments, and *only* arguments, should be double-quoted in your specification.
 
-    runner.addStep(/I have entered something into the calculator/i, null, (numberToAdd: string) => {
-        var num = parseFloat(numberToAdd);
-        calculator.add(num);
-    });
 
-To find and extract a number from the text, you can use:
-
-    runner.addStep(/I have entered (\d+) into the calculator/i, /\d+/, (numberToAdd: string) => {
+    runner.addStep(/I have entered "(\d+)" into the calculator/i, (numberToAdd: string) => {
         var num = parseFloat(numberToAdd);
         calculator.add(num);
     });
@@ -48,7 +41,7 @@ If you are familiar with BDD in C# or Java, this comparison may be useful when c
 
 TypeScript:
 
-    runner.addStep(/I have entered (\d+) into the calculator/i, /\d+/,
+    runner.addStep(/I have entered "(\d+)" into the calculator/i,
     (numberToAdd: string) => {
         var num = parseFloat(numberToAdd);
         calculator.add(num);
@@ -61,6 +54,17 @@ C#
         calculator.Add(num);
     }
 
-In place of the C# attribute, we pass the Regular Expression into the `addStep` method. We also need to pass a Regaular Expression for argument matching.
+Key differences:
+
+ - All arguments must be "quoted" (including numebrs), ie. "(\d+)", not just (\d+)
+ - All arguments arrive as strings and must be parsed if necessary
+ - You can choose whether the step matcher is case sensitive (pass the `i` flag to ignore case)
+
+Similarities:
+
+ - The first argument to `addStep` is essentially the same as the C# attribute
+ - The second argument to `addStep` is essentially the same as the C# method
+
+In place of the C# attribute, we pass the Regular Expression into the `addStep` method. 
 
 Within the step, we must parse each argument if we want to deal with something other than a string.

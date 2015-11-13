@@ -1,7 +1,7 @@
 ﻿import {Keyword} from './Keyword';
 import {StepDefinition, StepDefinitions} from './Steps';
 
-// Need to find/load specs
+//TODO: break this up
 export class ScenarioState {
     constructor(private steps: StepDefinitions) { }
 

@@ -2,11 +2,13 @@
 import {ScenarioState} from './ScenarioState';
 import {StepDefinition, StepExecution, StepDefinitions} from './Steps';
 
+//TODO: handle multiple scenarios within the same file
+
 export class SpecRunner {
     private steps: StepDefinitions = new StepDefinitions();
 
-    addStep(expression: RegExp, parameter: RegExp, step: Function) {
-        this.steps.add(expression, parameter, step);
+    addStep(expression: RegExp, step: Function) {
+        this.steps.add(expression, step);
     }
 
     run(...url: string[]) {
@@ -46,6 +48,8 @@ export class SpecRunner {
                 // Skip empty lines
                 continue;
             }
+
+            //TODO: hopefully the state patterns will clean this all up!
 
             if (Keyword.isFeatureDeclaration(line)) {
                 state.startFeature(line);
