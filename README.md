@@ -1,4 +1,4 @@
-# TypeSpec
+﻿# TypeSpec
 An experimental TypeScript BDD framework.
 
 The aim is to properly separate the business specifications from the code, 
@@ -97,11 +97,23 @@ something other than a string.
 
 ## Custom Error Handler
 
-You can write your own custom error handler, which be notified of any 
-problems that occur, such as missing step definitions or failing conditions:
+You can write your own custom reporting for errors, test summar (pass / fail), and information.
 
-    runner.setErrorHandler((featureTitle: string, condition: string, error: Error) => {
-        var div = document.createElement('div');
-        div.innerHTML = '<h2>' + featureTitle + '</h2><blockquote>' + condition + '</blockquote><pre class="bad">' + error + '</pre>';
-        document.getElementById('result').appendChild(div);
-    });
+    class CustomTestReporter extends TestReporter {
+        summary(featureTitle: string, scenarioTitle: string, isSuccess: boolean) {
+            var div = document.createElement('li');
+            div.className = (isSuccess ? 'good' : 'bad');
+            div.innerHTML = (isSuccess ? '✔' : '✘') + ' ' + featureTitle + '. ' + scenarioTitle + '.';
+            document.getElementById('results').appendChild(div);
+        }
+
+        error(featureTitle: string, condition: string, error: Error) {
+            var div = document.createElement('div');
+            div.innerHTML = '<h2>' + featureTitle + '</h2><blockquote>' + condition + '</blockquote><pre class="bad">' + error + '</pre>';
+            document.getElementById('errors').appendChild(div);
+        }
+
+        information(message: string) {
+            console.log(message);
+        }
+    }
