@@ -69,6 +69,10 @@ abstract class ScenarioStateBase {
         return this.unknown(line);
     }
 
+    isNewScenario(line: string) {
+        return false;
+    }
+
     unknown(line: string): ScenarioStateBase {
         throw new Error('Unknown line ' + line);
     }
@@ -204,6 +208,10 @@ class ThenState extends ScenarioStateBase {
         super(priorState);
     }
 
+    isNewScenario(line: string) {
+        return (Keyword.isScenarioDeclaration(line) || Keyword.isTagDeclaration(line));
+    }
+
     and(line: string) {
         this.thens.push(this.trimLine(line, Keyword.And));
         return this;
@@ -220,6 +228,18 @@ export class ScenarioComposer {
     }
 
     process(line: string) {
+        if (this.state[this.scenarioIndex].isNewScenario(line)) {
+            // Detects another scenario in the same feature file
+            console.log('DETECTED ANOTHER SCENARIO... YAY');
+            var ft = this.state[this.scenarioIndex].featureTitle;
+            var fd = this.state[this.scenarioIndex].featureDescription;
+
+            this.scenarioIndex++;
+            this.state[this.scenarioIndex] = new FeatureState(null);
+            this.state[this.scenarioIndex].featureTitle = ft;
+            this.state[this.scenarioIndex].featureDescription = fd;
+        }
+
         this.state[this.scenarioIndex] = this.state[this.scenarioIndex].process(line);
     }
 

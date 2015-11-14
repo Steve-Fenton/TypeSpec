@@ -58,7 +58,7 @@ export class SpecRunner {
                 composer.process(line);
             } catch (ex) {
                 hasParsed = false;
-                var state = composer.state || { featureTitle: 'Unknown' };
+                var state = composer.state[0] || { featureTitle: 'Unknown' };
                 this.errorHandler(state.featureTitle, line, ex);
             }
         }
