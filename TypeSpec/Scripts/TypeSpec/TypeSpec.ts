@@ -1,14 +1,21 @@
 ﻿import {Keyword} from './Keyword';
-import {ClassToBeStarved} from './ScenarioState';
+import {ScenarioComposer} from './ScenarioState';
 import {StepDefinition, StepExecution, StepDefinitions} from './Steps';
 
 //TODO: handle multiple scenarios within the same file
 
 export class SpecRunner {
     private steps: StepDefinitions = new StepDefinitions();
+    private errorHandler = (featureTitle: string, condition: string, error: Error) => {
+        console.error('Default Error Handler (replace using... ):\n\n' + featureTitle + '\n\n' + condition + '\n\n' + error);
+    };
 
     addStep(expression: RegExp, step: Function) {
         this.steps.add(expression, step);
+    }
+
+    setErrorHandler(handler: (featureTitle: string, condition: string, error: Error) => any) {
+        this.errorHandler = handler;
     }
 
     run(...url: string[]) {
@@ -38,7 +45,7 @@ export class SpecRunner {
 
     private processSpecification(spec: string) {
 
-        var current = new ClassToBeStarved(this.steps);
+        var current = new ScenarioComposer(this.steps, this.errorHandler);
         var lines = spec.replace('\r\n', '\n').split('\n');
 
         for (var i = 0; i < lines.length; i++) {

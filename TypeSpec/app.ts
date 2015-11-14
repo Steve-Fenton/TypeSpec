@@ -6,6 +6,12 @@ import {Calculator} from './Scripts/Calculator';
 // we only need one no matter how many specifications we have
 var runner = new SpecRunner();
 
+runner.setErrorHandler((featureTitle: string, condition: string, error: Error) => {
+    var div = document.createElement('div');
+    div.innerHTML = '<h2>' + featureTitle + '</h2><blockquote>' + condition + '</blockquote><p class="bad">' + error + '</p>';
+    document.getElementById('result').appendChild(div);
+});
+
 // If you want, you can define an interface for the test context
 interface CalculatorTestContext {
     calculator: Calculator;

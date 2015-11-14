@@ -184,35 +184,11 @@ class ThenState extends ScenarioStateBase {
 }
 
 //TODO: break this up
-export class ClassToBeStarved {
-    constructor(private steps: StepDefinitions) { }
+export class ScenarioComposer {
+    constructor(private steps: StepDefinitions, private raiseError: (featureTitle: string, condition: string, error: Error) => any) { }
 
     public tags: string[] = [];
-
     public state = new InitializedState(null);
-
-    private trimLine(text: string, keyword: string) {
-        return text.substring(keyword.length).trim()
-    }
-
-    private runCondition(dynamicStateContainer: any, condition: string) {
-        var stepExecution = this.steps.find(condition);
-        if (stepExecution === null) {
-
-            var suggestion = '\trunner.addStep(/' + condition + '/i, () => { \n' +
-                '\t\tthrow new Error(\'Not implemented.\');\n' +
-            '\t});';
-
-            throw new Error('No step definition defined.\n\n' + suggestion);
-        }
-
-        if (stepExecution.parameters) {
-            stepExecution.parameters.unshift(dynamicStateContainer);
-            stepExecution.method.apply(null, stepExecution.parameters);
-        } else {
-            stepExecution.method(dynamicStateContainer);
-        }
-    }
 
     run() {
         var i: number;
@@ -249,8 +225,27 @@ export class ClassToBeStarved {
         try {
             this.runCondition(dynamicStateContainer, condition);
         } catch (ex) {
-            // TODO: collect errors for later display
+            this.raiseError(this.state.featureTitle, condition, ex);
             console.error('\t ERROR: "' + this.state.featureTitle + '". ' + condition + ' - ' + ex);
+        }
+    }
+
+    private runCondition(dynamicStateContainer: any, condition: string) {
+        var stepExecution = this.steps.find(condition);
+        if (stepExecution === null) {
+
+            var suggestion = '\trunner.addStep(/' + condition + '/i, () => { \n' +
+                '\t\tthrow new Error(\'Not implemented.\');\n' +
+                '\t});';
+
+            throw new Error('No step definition defined.\n\n' + suggestion);
+        }
+
+        if (stepExecution.parameters) {
+            stepExecution.parameters.unshift(dynamicStateContainer);
+            stepExecution.method.apply(null, stepExecution.parameters);
+        } else {
+            stepExecution.method(dynamicStateContainer);
         }
     }
 }
