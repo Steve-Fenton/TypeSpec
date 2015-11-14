@@ -94,3 +94,14 @@ the `addStep` method.
 
 Within the step, we must parse each argument if we want to deal with 
 something other than a string.
+
+## Custom Error Handler
+
+You can write your own custom error handler, which be notified of any 
+problems that occur, such as missing step definitions or failing conditions:
+
+    runner.setErrorHandler((featureTitle: string, condition: string, error: Error) => {
+        var div = document.createElement('div');
+        div.innerHTML = '<h2>' + featureTitle + '</h2><blockquote>' + condition + '</blockquote><pre class="bad">' + error + '</pre>';
+        document.getElementById('result').appendChild(div);
+    });

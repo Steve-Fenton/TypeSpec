@@ -1,14 +1,23 @@
-﻿import * as TsUnit from './Scripts/tsUnit/tsUnit';
+﻿
+// Import TypeSpec's main SpecRunner class
 import {SpecRunner} from './Scripts/TypeSpec/TypeSpec';
+
+// If you want to use it, there is also an Assert library
+import {Assert} from './Scripts/TypeSpec/Assert';
+
+// The module to test
 import {Calculator} from './Scripts/Calculator';
+
+// Using an external library for assertions
 
 // Grab an SpecRunner... 
 // we only need one no matter how many specifications we have
 var runner = new SpecRunner();
 
+// You can set an error handler to catch problems and do whatever you like with them
 runner.setErrorHandler((featureTitle: string, condition: string, error: Error) => {
     var div = document.createElement('div');
-    div.innerHTML = '<h2>' + featureTitle + '</h2><blockquote>' + condition + '</blockquote><p class="bad">' + error + '</p>';
+    div.innerHTML = '<h2>' + featureTitle + '</h2><blockquote>' + condition + '</blockquote><pre class="bad">' + error + '</pre>';
     document.getElementById('result').appendChild(div);
 });
 
@@ -36,10 +45,7 @@ runner.addStep(/the result should be "(\d+)" on the screen/i, (context: Calculat
     // TODO: use tsUnit / other library assertions
     var num = parseFloat(numberForTotal);
     var total = context.calculator.getTotal();
-
-    if (total !== num) {
-        throw Error('Total should have been ' + num + ', was ' + total);
-    }
+    Assert.areIdentical(num, total);
 });
 
 // Call the run method with the locations of your specification files
