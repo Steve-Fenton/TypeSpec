@@ -8,6 +8,7 @@ abstract class ScenarioStateBase {
 
     public featureTitle: string;
     public featureDescription: string[] = [];
+    public tags: string[] = [];
     public scenarioTitle: string
 
     public isGivenSection = false;
@@ -26,6 +27,13 @@ abstract class ScenarioStateBase {
     }
 
     process(line: string) {
+        line = line.trim();
+
+        if (!line) {
+            // Skip empty lines
+            return this;
+        }
+
         if (Keyword.isFeatureDeclaration(line)) {
             return this.feature(line);
         }
@@ -54,14 +62,22 @@ abstract class ScenarioStateBase {
             return this.examples(line);
         }
 
+        if (Keyword.isTagDeclaration(line)) {
+            return this.tag(line);
+        }
+
         return this.unknown(line);
     }
 
-    unknown(line: string): ScenarioStateBase{
+    unknown(line: string): ScenarioStateBase {
         throw new Error('Unknown line ' + line);
     }
 
     feature(line: string): ScenarioStateBase {
+        throw new Error('Did not expect line: ' + line);
+    }
+
+    tag(line: string): ScenarioStateBase {
         throw new Error('Did not expect line: ' + line);
     }
 
@@ -111,6 +127,17 @@ class FeatureState extends ScenarioStateBase {
         return this;
     }
 
+    tag(line: string): ScenarioStateBase {
+        var rawTags = line.split('@');
+        for (var tagIndex = 0; tagIndex < rawTags.length; tagIndex++) {
+            var trimmedTag = rawTags[tagIndex].trim().toLowerCase();
+            if (trimmedTag) {
+                this.tags.push(trimmedTag);
+            }
+        }
+        return this;
+    }
+
     scenario(line: string): ScenarioStateBase {
         this.scenarioTitle = this.trimLine(line, Keyword.Scenario);
         return new ScenarioState(this);
@@ -136,12 +163,12 @@ class GivenState extends ScenarioStateBase {
         super(priorState);
     }
 
-    when(line: string): ScenarioStateBase{
+    when(line: string): ScenarioStateBase {
         this.whens.push(this.trimLine(line, Keyword.When));
         return new WhenState(this);
     }
 
-    then(line: string): ScenarioStateBase{
+    then(line: string): ScenarioStateBase {
         this.thens.push(this.trimLine(line, Keyword.Then));
         return new ThenState(this);
     }
@@ -183,12 +210,13 @@ class ThenState extends ScenarioStateBase {
     }
 }
 
-//TODO: break this up
 export class ScenarioComposer {
-    constructor(private steps: StepDefinitions, private raiseError: (featureTitle: string, condition: string, error: Error) => any) { }
-
     public tags: string[] = [];
-    public state = new InitializedState(null);
+    public state: ScenarioStateBase;
+
+    constructor(private steps: StepDefinitions, private raiseError: (featureTitle: string, condition: string, error: Error) => any) {
+        this.state = new InitializedState(null);
+    }
 
     run() {
         var i: number;
@@ -225,7 +253,8 @@ export class ScenarioComposer {
         try {
             this.runCondition(dynamicStateContainer, condition);
         } catch (ex) {
-            this.raiseError(this.state.featureTitle, condition, ex);
+            var state = this.state || { featureTitle: 'Unknown' };
+            this.raiseError(state.featureTitle, condition, ex);
             console.error('\t ERROR: "' + this.state.featureTitle + '". ' + condition + ' - ' + ex);
         }
     }

@@ -45,34 +45,24 @@ export class SpecRunner {
 
     private processSpecification(spec: string) {
 
-        var current = new ScenarioComposer(this.steps, this.errorHandler);
+        var hasParsed = true;
+        var composer = new ScenarioComposer(this.steps, this.errorHandler);
         var lines = spec.replace('\r\n', '\n').split('\n');
 
         for (var i = 0; i < lines.length; i++) {
-            var line = lines[i].trim();
+            var line = lines[i];
 
-            if (!line) {
-                // Skip empty lines
-                continue;
+            try {
+                composer.state = composer.state.process(line);
+            } catch (ex) {
+                hasParsed = false;
+                var state = composer.state || { featureTitle: 'Unknown' };
+                this.errorHandler(state.featureTitle, line, ex);
             }
-
-            //TODO: hopefully the state patterns will clean this all up!
-
-            if (Keyword.isTagDeclaration(line)) {
-                var rawTags = line.split('@');
-                for (var tagIndex = 0; tagIndex < rawTags.length; tagIndex++) {
-                    var trimmedTag = rawTags[tagIndex].trim().toLowerCase();
-                    if (trimmedTag) {
-                        current.tags.push(trimmedTag);
-                    }
-                }
-
-                continue;
-            }
-
-            current.state = current.state.process(line);
         }
 
-        current.run();
+        if (hasParsed) {
+            composer.run();
+        }
     }
 }
