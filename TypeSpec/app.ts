@@ -51,7 +51,7 @@ runner.addStep(/the result should be "(\d+)" on the screen/i, (context: Calculat
 // Call the run method with the locations of your specification files
 runner.run(
     '/Specifications/Basic.html',
-    //'/Specifications/MultipleScenarios.html',
+    '/Specifications/MultipleScenarios.html',
     // Deliberarely failing features
     '/Specifications/Failing.html',
     '/Specifications/MissingStep.html'

@@ -23,6 +23,8 @@ export class SpecRunner {
     }
 
     private readFile(index: number, url: string[]) {
+        // TODO: detect local file path and use node js to read file
+        // This is the default for browser-based tests...
         if (index < url.length) {
             var nextIndex = index + 1;
             this.getFile(url[index], () => { this.readFile(nextIndex, url); });
@@ -53,7 +55,7 @@ export class SpecRunner {
             var line = lines[i];
 
             try {
-                composer.state = composer.state.process(line);
+                composer.process(line);
             } catch (ex) {
                 hasParsed = false;
                 var state = composer.state || { featureTitle: 'Unknown' };

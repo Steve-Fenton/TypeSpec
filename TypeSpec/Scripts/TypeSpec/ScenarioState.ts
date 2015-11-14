@@ -212,50 +212,59 @@ class ThenState extends ScenarioStateBase {
 
 export class ScenarioComposer {
     public tags: string[] = [];
-    public state: ScenarioStateBase;
+    public state: ScenarioStateBase[] = [];
+    public scenarioIndex = 0;
 
     constructor(private steps: StepDefinitions, private raiseError: (featureTitle: string, condition: string, error: Error) => any) {
-        this.state = new InitializedState(null);
+        this.state[this.scenarioIndex] = new InitializedState(null);
+    }
+
+    process(line: string) {
+        this.state[this.scenarioIndex] = this.state[this.scenarioIndex].process(line);
     }
 
     run() {
-        var i: number;
-        var dynamicStateContainer: any = {};
-        var stepDefinition: StepDefinition;
+        for (var idx = 0; idx < this.state.length; idx++) {
+            var scenario = this.state[idx];
+            var featureTitle = scenario.featureTitle;
 
-        console.log('--------------------------------------');
-        console.log(Keyword.Feature);
-        console.log(this.state.featureTitle);
-        for (i = 0; i < this.state.featureDescription.length; i++) {
-            console.log('\t' + this.state.featureDescription[i]);
-        }
+            var i: number;
+            var dynamicStateContainer: any = {};
+            var stepDefinition: StepDefinition;
 
-        console.log(Keyword.Given);
-        for (i = 0; i < this.state.givens.length; i++) {
-            console.log('\t' + this.state.givens[i]);
-            this.executeWithErrorHandling(dynamicStateContainer, this.state.givens[i]);
-        }
+            console.log('--------------------------------------');
+            console.log(Keyword.Feature);
+            console.log(scenario.featureTitle);
+            for (i = 0; i < scenario.featureDescription.length; i++) {
+                console.log('\t' + scenario.featureDescription[i]);
+            }
 
-        console.log(Keyword.When);
-        for (i = 0; i < this.state.whens.length; i++) {
-            console.log('\t' + this.state.whens[i]);
-            this.executeWithErrorHandling(dynamicStateContainer, this.state.whens[i]);
-        }
+            console.log(Keyword.Given);
+            for (i = 0; i < scenario.givens.length; i++) {
+                console.log('\t' + scenario.givens[i]);
+                this.executeWithErrorHandling(dynamicStateContainer, scenario.givens[i], featureTitle);
+            }
 
-        console.log(Keyword.Then);
-        for (i = 0; i < this.state.thens.length; i++) {
-            console.log('\t' + this.state.thens[i]);
-            this.executeWithErrorHandling(dynamicStateContainer, this.state.thens[i]);
+            console.log(Keyword.When);
+            for (i = 0; i < scenario.whens.length; i++) {
+                console.log('\t' + scenario.whens[i]);
+                this.executeWithErrorHandling(dynamicStateContainer, scenario.whens[i], featureTitle);
+            }
+
+            console.log(Keyword.Then);
+            for (i = 0; i < scenario.thens.length; i++) {
+                console.log('\t' + scenario.thens[i]);
+                this.executeWithErrorHandling(dynamicStateContainer, scenario.thens[i], featureTitle);
+            }
         }
     }
 
-    private executeWithErrorHandling(dynamicStateContainer: any, condition: string) {
+    private executeWithErrorHandling(dynamicStateContainer: any, condition: string, featureTitle: string) {
         try {
             this.runCondition(dynamicStateContainer, condition);
         } catch (ex) {
-            var state = this.state || { featureTitle: 'Unknown' };
-            this.raiseError(state.featureTitle, condition, ex);
-            console.error('\t ERROR: "' + this.state.featureTitle + '". ' + condition + ' - ' + ex);
+            this.raiseError(featureTitle, condition, ex);
+            console.error('\t ERROR: "' + featureTitle + '". ' + condition + ' - ' + ex);
         }
     }
 
