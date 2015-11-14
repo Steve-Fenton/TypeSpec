@@ -1,6 +1,6 @@
 ﻿
 // Import TypeSpec's main SpecRunner class
-import {SpecRunner} from './Scripts/TypeSpec/TypeSpec';
+import {SpecRunner, TestReporter} from './Scripts/TypeSpec/TypeSpec';
 
 // If you want to use it, there is also an Assert library
 import {Assert} from './Scripts/TypeSpec/Assert';
@@ -8,18 +8,29 @@ import {Assert} from './Scripts/TypeSpec/Assert';
 // The module to test
 import {Calculator} from './Scripts/Calculator';
 
-// Using an external library for assertions
+// You can define your own test reporter, the default one logs to console
+class CustomTestReporter extends TestReporter {
+    summary(featureTitle: string, scenarioTitle: string, isSuccess: boolean) {
+        var div = document.createElement('li');
+        div.className = (isSuccess ? 'good' : 'bad');
+        div.innerHTML = (isSuccess ? '✔' : '✘') + ' ' + featureTitle + '. ' + scenarioTitle + '.';
+        document.getElementById('results').appendChild(div);
+    }
 
-// Grab an SpecRunner... 
+    error(featureTitle: string, condition: string, error: Error) {
+        var div = document.createElement('div');
+        div.innerHTML = '<h2>' + featureTitle + '</h2><blockquote>' + condition + '</blockquote><pre class="bad">' + error + '</pre>';
+        document.getElementById('errors').appendChild(div);
+    }
+
+    information(message: string) {
+        console.log(message);
+    }
+}
+
+// Grab a SpecRunner... 
 // we only need one no matter how many specifications we have
-var runner = new SpecRunner();
-
-// You can set an error handler to catch problems and do whatever you like with them
-runner.setErrorHandler((featureTitle: string, condition: string, error: Error) => {
-    var div = document.createElement('div');
-    div.innerHTML = '<h2>' + featureTitle + '</h2><blockquote>' + condition + '</blockquote><pre class="bad">' + error + '</pre>';
-    document.getElementById('result').appendChild(div);
-});
+var runner = new SpecRunner(new CustomTestReporter());
 
 // If you want, you can define an interface for the test context
 interface CalculatorTestContext {

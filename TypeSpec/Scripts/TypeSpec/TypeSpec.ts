@@ -6,16 +6,13 @@ import {StepDefinition, StepExecution, StepDefinitions} from './Steps';
 
 export class SpecRunner {
     private steps: StepDefinitions = new StepDefinitions();
-    private errorHandler = (featureTitle: string, condition: string, error: Error) => {
-        console.error('Default Error Handler (replace using... ):\n\n' + featureTitle + '\n\n' + condition + '\n\n' + error);
-    };
+
+    constructor(private testReporter = new TestReporter()) {
+
+    }
 
     addStep(expression: RegExp, step: Function) {
         this.steps.add(expression, step);
-    }
-
-    setErrorHandler(handler: (featureTitle: string, condition: string, error: Error) => any) {
-        this.errorHandler = handler;
     }
 
     run(...url: string[]) {
@@ -48,7 +45,7 @@ export class SpecRunner {
     private processSpecification(spec: string) {
 
         var hasParsed = true;
-        var composer = new ScenarioComposer(this.steps, this.errorHandler);
+        var composer = new ScenarioComposer(this.steps, this.testReporter);
         var lines = spec.replace('\r\n', '\n').split('\n');
 
         for (var i = 0; i < lines.length; i++) {
@@ -59,12 +56,26 @@ export class SpecRunner {
             } catch (ex) {
                 hasParsed = false;
                 var state = composer.state[0] || { featureTitle: 'Unknown' };
-                this.errorHandler(state.featureTitle, line, ex);
+                this.testReporter.error(state.featureTitle, line, ex);
             }
         }
 
         if (hasParsed) {
             composer.run();
         }
+    }
+}
+
+export class TestReporter {
+    summary(featureTitle: string, scenarioTitle: string, isSuccess: boolean) {
+        console.info((isSuccess ? '✔' : '✘') + ' ' + featureTitle + ' : ' + scenarioTitle + '\n');
+    }
+
+    error(featureTitle: string, condition: string, error: Error) {
+        console.error(featureTitle + '\n\n' + condition + '\n\n' + error);
+    }
+
+    information(message: string) {
+        console.log(message);
     }
 }
