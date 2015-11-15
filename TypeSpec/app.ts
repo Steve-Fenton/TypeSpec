@@ -13,13 +13,13 @@ class CustomTestReporter extends TestReporter {
     summary(featureTitle: string, scenarioTitle: string, isSuccess: boolean) {
         var div = document.createElement('li');
         div.className = (isSuccess ? 'good' : 'bad');
-        div.innerHTML = (isSuccess ? '✔' : '✘') + ' ' + featureTitle + '. ' + scenarioTitle + '.';
+        div.innerHTML = this.escape((isSuccess ? '✔' : '✘') + ' ' + featureTitle + '. ' + scenarioTitle + '.');
         document.getElementById('results').appendChild(div);
     }
 
     error(featureTitle: string, condition: string, error: Error) {
         var div = document.createElement('div');
-        div.innerHTML = '<h2>' + featureTitle + '</h2><blockquote>' + condition + '</blockquote><pre class="bad">' + error + '</pre>';
+        div.innerHTML = '<h2>' + featureTitle + '</h2><blockquote>' + this.escape(condition) + '</blockquote><pre class="bad">' + this.escape(error.message) + '</pre>';
         document.getElementById('errors').appendChild(div);
     }
 
@@ -48,7 +48,7 @@ runner.addStep(/I have entered "(\d+)" into the calculator/i, (context: Calculat
     context.calculator.add(num);
 });
 
-runner.addStep(/I press add/gi, (context: CalculatorTestContext) => {
+runner.addStep(/I press the total button/gi, (context: CalculatorTestContext) => {
     // No action needed
 });
 
@@ -63,7 +63,8 @@ runner.addStep(/the result should be "(\d+)" on the screen/i, (context: Calculat
 runner.run(
     '/Specifications/Basic.html',
     '/Specifications/MultipleScenarios.html',
-    // Deliberarely failing features
+    '/Specifications/ScenarioOutlines.html',
+    //Deliberarely failing features
     '/Specifications/Failing.html',
     '/Specifications/MissingStep.html'
 );

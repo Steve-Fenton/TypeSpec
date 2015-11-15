@@ -4,6 +4,7 @@
     public static Outline = 'Scenario Outline:';
     public static Examples = 'Examples:';
     public static Tag = '@';
+    public static Table = '|';
 
     public static Given = 'Given ';
     public static And = 'And ';
@@ -11,7 +12,7 @@
     public static Then = 'Then ';
 
     private static isKeywordMatch(text: string, keyword: string) {
-        return (text.length > keyword.length && text.substring(0, keyword.length) === keyword);
+        return (text.length >= keyword.length && text.substring(0, keyword.length) === keyword);
     }
 
     public static isFeatureDeclaration(text: string) {
@@ -24,10 +25,6 @@
 
     public static isOutlineDeclaration(text: string) {
         return this.isKeywordMatch(text, this.Outline);
-    }
-
-    public static isExamplesDeclaration(text: string) {
-        return this.isKeywordMatch(text, this.Examples);
     }
 
     public static isTagDeclaration(text: string) {
@@ -48,5 +45,13 @@
 
     public static isAndDeclaration(text: string) {
         return this.isKeywordMatch(text, this.And);
+    }
+
+    public static isExamplesDeclaration(text: string) {
+        return this.isKeywordMatch(text, this.Examples);
+    }
+
+    public static isTableDeclaration(text: string) {
+        return this.isKeywordMatch(text, this.Table);
     }
 }

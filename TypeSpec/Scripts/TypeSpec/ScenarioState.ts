@@ -8,18 +8,22 @@ abstract class ScenarioStateBase {
 
     public featureTitle: string;
     public featureDescription: string[] = [];
-    public tags: string[] = [];
-    public scenarioTitle: string
+    public scenarioTitle: string;
 
-    public isGivenSection = false;
-    public isWhenSection = false;
-    public isThenSection = false;
+    public tags: string[] = [];
+
+    public tableHeaders: string[] = [];
+    public tableRows: {}[] = [];
 
     constructor(priorState: ScenarioStateBase) {
         if (priorState !== null) {
             this.featureTitle = priorState.featureTitle;
             this.featureDescription = priorState.featureDescription;
             this.scenarioTitle = priorState.scenarioTitle;
+
+            this.tableHeaders = priorState.tableHeaders;
+            this.tableRows = priorState.tableRows;
+
             this.givens = priorState.givens;
             this.whens = priorState.whens;
             this.thens = priorState.thens;
@@ -38,8 +42,16 @@ abstract class ScenarioStateBase {
             return this.feature(line);
         }
 
+        if (Keyword.isTagDeclaration(line)) {
+            return this.tag(line);
+        }
+
         if (Keyword.isScenarioDeclaration(line)) {
             return this.scenario(line);
+        }
+
+        if (Keyword.isOutlineDeclaration(line)) {
+            return this.outline(line);
         }
 
         if (Keyword.isGivenDeclaration(line)) {
@@ -62,8 +74,8 @@ abstract class ScenarioStateBase {
             return this.examples(line);
         }
 
-        if (Keyword.isTagDeclaration(line)) {
-            return this.tag(line);
+        if (Keyword.isTableDeclaration(line)) {
+            return this.table(line);
         }
 
         return this.unknown(line);
@@ -113,12 +125,21 @@ abstract class ScenarioStateBase {
         throw new Error('Did not expect line: ' + line);
     }
 
+    table(line: string): ScenarioStateBase {
+        throw new Error('Did not expect line: ' + line);
+    }
+
     protected trimLine(text: string, keyword: string) {
         return text.substring(keyword.length).trim()
     }
 }
 
 class InitializedState extends ScenarioStateBase {
+
+    constructor(priorState: ScenarioStateBase) {
+        super(priorState);
+    }
+
     feature(line: string): ScenarioStateBase {
         this.featureTitle = this.trimLine(line, Keyword.Feature);
         return new FeatureState(this);
@@ -126,15 +147,20 @@ class InitializedState extends ScenarioStateBase {
 }
 
 class FeatureState extends ScenarioStateBase {
+
+    constructor(priorState: ScenarioStateBase) {
+        super(priorState);
+    }
+
     unknown(line: string) {
         this.featureDescription.push(line);
         return this;
     }
 
     tag(line: string): ScenarioStateBase {
-        var rawTags = line.split('@');
-        for (var tagIndex = 0; tagIndex < rawTags.length; tagIndex++) {
-            var trimmedTag = rawTags[tagIndex].trim().toLowerCase();
+        var tags = line.split(Keyword.Tag);
+        for (var i = 0; i < tags.length; i++) {
+            var trimmedTag = tags[i].trim().toLowerCase();
             if (trimmedTag) {
                 this.tags.push(trimmedTag);
             }
@@ -146,11 +172,16 @@ class FeatureState extends ScenarioStateBase {
         this.scenarioTitle = this.trimLine(line, Keyword.Scenario);
         return new ScenarioState(this);
     }
+
+    outline(line: string): ScenarioStateBase {
+        this.scenarioTitle = this.trimLine(line, Keyword.Scenario);
+        return new ScenarioState(this);
+    }
 }
 
 class ScenarioState extends ScenarioStateBase {
 
-    constructor(priorState: ScenarioState) {
+    constructor(priorState: ScenarioStateBase) {
         super(priorState);
     }
 
@@ -161,9 +192,8 @@ class ScenarioState extends ScenarioStateBase {
 }
 
 class GivenState extends ScenarioStateBase {
-    public isGivenSection = true;
 
-    constructor(priorState: ScenarioState) {
+    constructor(priorState: ScenarioStateBase) {
         super(priorState);
     }
 
@@ -184,9 +214,8 @@ class GivenState extends ScenarioStateBase {
 }
 
 class WhenState extends ScenarioStateBase {
-    public isWhenSection = true;
 
-    constructor(priorState: ScenarioState) {
+    constructor(priorState: ScenarioStateBase) {
         super(priorState);
     }
 
@@ -202,9 +231,8 @@ class WhenState extends ScenarioStateBase {
 }
 
 class ThenState extends ScenarioStateBase {
-    public isThenSection = true;
 
-    constructor(priorState: ScenarioState) {
+    constructor(priorState: ScenarioStateBase) {
         super(priorState);
     }
 
@@ -214,6 +242,44 @@ class ThenState extends ScenarioStateBase {
 
     and(line: string) {
         this.thens.push(this.trimLine(line, Keyword.And));
+        return this;
+    }
+
+    examples(line: string): ScenarioStateBase {
+        return new ExampleState(this);
+    }
+}
+
+class ExampleState extends ScenarioStateBase {
+    constructor(priorState: ScenarioStateBase) {
+        super(priorState);
+    }
+
+    table(line: string): ScenarioStateBase {
+        var headings = line.split(Keyword.Table);
+        for (var i = 0; i < headings.length; i++) {
+            var trimmedHeading = headings[i].trim();
+            this.tableHeaders.push(trimmedHeading);
+        }
+        return new TableState(this);
+    }
+}
+
+class TableState extends ScenarioStateBase {
+    constructor(priorState: ScenarioStateBase) {
+        super(priorState);
+    }
+
+    table(line: string): ScenarioStateBase {
+        var data = line.split(Keyword.Table);
+        var row: any = {};
+        for (var i = 0; i < data.length; i++) {
+            var trimmedData = data[i].trim();
+            if (this.tableHeaders[i]) {
+                row[this.tableHeaders[i]] = trimmedData;
+            }
+        }
+        this.tableRows.push(row);
         return this;
     }
 }

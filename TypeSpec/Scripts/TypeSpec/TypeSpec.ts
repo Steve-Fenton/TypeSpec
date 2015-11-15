@@ -22,17 +22,18 @@ export class SpecRunner {
     private readFile(index: number, url: string[]) {
         // TODO: detect local file path and use node js to read file
         // This is the default for browser-based tests...
+        var cacheBust = '?cb=' + new Date().getTime();
         if (index < url.length) {
             var nextIndex = index + 1;
-            this.getFile(url[index], () => { this.readFile(nextIndex, url); });
+            this.getFile(url[index], cacheBust, () => { this.readFile(nextIndex, url); });
         }
 
     }
 
-    private getFile(url: string, callback: Function) {
+    private getFile(url: string, cacheBust: string, callback: Function) {
         var _this = this;
         var client = new XMLHttpRequest();
-        client.open('GET', url);
+        client.open('GET', url + cacheBust);
         client.onreadystatechange = function () {
             if (client.readyState === 4 && client.status === 200) {
                 _this.processSpecification(client.responseText);
@@ -77,5 +78,9 @@ export class TestReporter {
 
     information(message: string) {
         console.log(message);
+    }
+
+    protected escape(input: string) {
+        return input.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 }

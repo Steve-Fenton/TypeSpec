@@ -8,7 +8,7 @@ Scenario: Scenario Number One
        Given I am using a calculator
        And I have entered "50" into the calculator
        And I have entered "70" into the calculator
-       When I press add
+       When I press the total button
        Then the result should be "120" on the screen
 
 @passing
@@ -16,7 +16,7 @@ Scenario: Scenario Number Two
        Given I am using a calculator
        And I have entered "20" into the calculator
        And I have entered "32" into the calculator
-       When I press add
+       When I press the total button
        Then the result should be "52" on the screen
 
 @passing
@@ -24,5 +24,5 @@ Scenario: Scenario Number Three
        Given I am using a calculator
        And I have entered "12" into the calculator
        And I have entered "3" into the calculator
-       When I press add
+       When I press the total button
        Then the result should be "15" on the screen
