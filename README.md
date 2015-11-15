@@ -37,9 +37,9 @@ The files are specified in the `runner.run` method call:
     });
 
     runner.run(
-        '/Specifications/Basic.html',
-        '/Specifications/Failing.html',
-        '/Specifications/MissingStep.html'
+        '/Specifications/Basic.txt',
+        '/Specifications/Failing.txt',
+        '/Specifications/MissingStep.txt'
     );
 
 ## Scenario Outlines
