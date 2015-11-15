@@ -26,10 +26,10 @@
     <Content Include="index.html" />
     <Content Include="Scripts\r.js" />
     <Content Include="Scripts\require.js" />
-    <Content Include="Specifications\ScenarioOutlines.html" />
-    <Content Include="Specifications\MultipleScenarios.html" />
-    <Content Include="Specifications\MissingStep.html" />
-    <Content Include="Specifications\Failing.html" />
+    <Content Include="Specifications\ScenarioOutlines.txt" />
+    <Content Include="Specifications\MultipleScenarios.txt" />
+    <Content Include="Specifications\MissingStep.txt" />
+    <Content Include="Specifications\Failing.txt" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
@@ -42,7 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
-    <Content Include="Specifications\Basic.html" />
+    <Content Include="Specifications\Basic.txt" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="web.config" />

@@ -336,6 +336,7 @@ export class ScenarioComposer {
                 try {
                     var featureTitle = scenario.featureTitle;
                     var scenarioTitle = scenario.scenarioTitle;
+                    var passed = true;
 
                     var i: number;
                     var dynamicStateContainer: any = {};
@@ -350,20 +351,20 @@ export class ScenarioComposer {
 
                     this.testReporter.information(Keyword.Given);
                     for (i = 0; i < scenario.givens.length; i++) {
-                        this.executeWithErrorHandling(dynamicStateContainer, scenario, dataIndex, scenario.givens[i], featureTitle, scenarioTitle);
+                        passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, dataIndex, scenario.givens[i], featureTitle, scenarioTitle);
                     }
 
                     this.testReporter.information(Keyword.When);
                     for (i = 0; i < scenario.whens.length; i++) {
-                        this.executeWithErrorHandling(dynamicStateContainer, scenario, dataIndex, scenario.whens[i], featureTitle, scenarioTitle);
+                        passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, dataIndex, scenario.whens[i], featureTitle, scenarioTitle);
                     }
 
                     this.testReporter.information(Keyword.Then);
                     for (i = 0; i < scenario.thens.length; i++) {
-                        this.executeWithErrorHandling(dynamicStateContainer, scenario, dataIndex, scenario.thens[i], featureTitle, scenarioTitle);
+                        passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, dataIndex, scenario.thens[i], featureTitle, scenarioTitle);
                     }
 
-                    this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, true);
+                    this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passed);
                 } catch (ex) {
                     this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, false);
                 }
@@ -374,9 +375,10 @@ export class ScenarioComposer {
     private executeWithErrorHandling(dynamicStateContainer: any, scenario: ScenarioStateBase, dataIndex: number, condition: string, featureTitle: string, scenarioTitle: string) {
         try {
             this.runCondition(dynamicStateContainer, scenario, dataIndex, condition);
+            return true;
         } catch (ex) {
-            this.testReporter.summary(featureTitle, scenarioTitle, false);
             this.testReporter.error(featureTitle, condition, ex);
+            return false;
         }
     }
 
