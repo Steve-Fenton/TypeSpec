@@ -30,6 +30,17 @@ abstract class ScenarioStateBase {
         }
     }
 
+    prepareCondition(condition: string, index: number) {
+        if (this.tableRows.length > index) {
+            var data: any = this.tableRows[index];
+            for (var prop in data) {
+                var token = '<' + prop + '>';
+                condition = condition.replace(token, data[prop]);
+            }
+        }
+        return condition;
+    }
+
     process(line: string) {
         line = line.trim();
 
@@ -315,58 +326,66 @@ export class ScenarioComposer {
     }
 
     run() {
-        for (var idx = 0; idx < this.state.length; idx++) {
-            var scenario = this.state[idx];
-            try {
-                var featureTitle = scenario.featureTitle;
-                var scenarioTitle = scenario.scenarioTitle;
+        for (var scenarioIndex = 0; scenarioIndex < this.state.length; scenarioIndex++) {
 
-                var i: number;
-                var dynamicStateContainer: any = {};
-                var stepDefinition: StepDefinition;
+            var scenario = this.state[scenarioIndex];
 
-                this.testReporter.information('--------------------------------------');
-                this.testReporter.information(Keyword.Feature);
-                this.testReporter.information(scenario.featureTitle);
-                for (i = 0; i < scenario.featureDescription.length; i++) {
-                    this.testReporter.information('\t' + scenario.featureDescription[i]);
+            var tableRowCount = (scenario.tableRows.length > 0) ? scenario.tableRows.length : 1;
+
+            for (var dataIndex = 0; dataIndex < tableRowCount; dataIndex++) {
+                try {
+                    var featureTitle = scenario.featureTitle;
+                    var scenarioTitle = scenario.scenarioTitle;
+
+                    var i: number;
+                    var dynamicStateContainer: any = {};
+                    var stepDefinition: StepDefinition;
+
+                    this.testReporter.information('--------------------------------------');
+                    this.testReporter.information(Keyword.Feature);
+                    this.testReporter.information(scenario.featureTitle);
+                    for (i = 0; i < scenario.featureDescription.length; i++) {
+                        this.testReporter.information('\t' + scenario.featureDescription[i]);
+                    }
+
+                    this.testReporter.information(Keyword.Given);
+                    for (i = 0; i < scenario.givens.length; i++) {
+                        this.executeWithErrorHandling(dynamicStateContainer, scenario, dataIndex, scenario.givens[i], featureTitle, scenarioTitle);
+                    }
+
+                    this.testReporter.information(Keyword.When);
+                    for (i = 0; i < scenario.whens.length; i++) {
+                        this.executeWithErrorHandling(dynamicStateContainer, scenario, dataIndex, scenario.whens[i], featureTitle, scenarioTitle);
+                    }
+
+                    this.testReporter.information(Keyword.Then);
+                    for (i = 0; i < scenario.thens.length; i++) {
+                        this.executeWithErrorHandling(dynamicStateContainer, scenario, dataIndex, scenario.thens[i], featureTitle, scenarioTitle);
+                    }
+
+                    this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, true);
+                } catch (ex) {
+                    this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, false);
                 }
-
-                this.testReporter.information(Keyword.Given);
-                for (i = 0; i < scenario.givens.length; i++) {
-                    this.testReporter.information('\t' + scenario.givens[i]);
-                    this.executeWithErrorHandling(dynamicStateContainer, scenario.givens[i], featureTitle, scenarioTitle);
-                }
-
-                this.testReporter.information(Keyword.When);
-                for (i = 0; i < scenario.whens.length; i++) {
-                    this.testReporter.information('\t' + scenario.whens[i]);
-                    this.executeWithErrorHandling(dynamicStateContainer, scenario.whens[i], featureTitle, scenarioTitle);
-                }
-
-                this.testReporter.information(Keyword.Then);
-                for (i = 0; i < scenario.thens.length; i++) {
-                    this.testReporter.information('\t' + scenario.thens[i]);
-                    this.executeWithErrorHandling(dynamicStateContainer, scenario.thens[i], featureTitle, scenarioTitle);
-                }
-
-                this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, true);
-            } catch (ex) {
-                this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, false);
             }
         }
     }
 
-    private executeWithErrorHandling(dynamicStateContainer: any, condition: string, featureTitle: string, scenarioTitle: string) {
+    private executeWithErrorHandling(dynamicStateContainer: any, scenario: ScenarioStateBase, dataIndex: number, condition: string, featureTitle: string, scenarioTitle: string) {
         try {
-            this.runCondition(dynamicStateContainer, condition);
+            this.runCondition(dynamicStateContainer, scenario, dataIndex, condition);
         } catch (ex) {
             this.testReporter.summary(featureTitle, scenarioTitle, false);
             this.testReporter.error(featureTitle, condition, ex);
         }
     }
 
-    private runCondition(dynamicStateContainer: any, condition: string) {
+    private runCondition(dynamicStateContainer: any, scenario: ScenarioStateBase, dataIndex: number, condition: string) {
+
+        condition = scenario.prepareCondition(condition, dataIndex);
+
+        this.testReporter.information('\t' + condition);
+
         var stepExecution = this.steps.find(condition);
         if (stepExecution === null) {
 
