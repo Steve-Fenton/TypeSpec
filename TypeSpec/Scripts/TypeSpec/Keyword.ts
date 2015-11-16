@@ -5,6 +5,8 @@
     public static Examples = 'Examples:';
     public static Tag = '@';
     public static Table = '|';
+    public static TokenStart = '<';
+    public static TokenEnd = '>';
 
     public static Given = 'Given ';
     public static And = 'And ';

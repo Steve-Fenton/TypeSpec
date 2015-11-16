@@ -1,5 +1,5 @@
 ﻿import {Keyword} from './Keyword';
-import {StepDefinition, StepDefinitions} from './Steps';
+import {StepDefinition, StepCollection} from './Steps';
 
 abstract class ScenarioStateBase {
     public givens: string[] = [];
@@ -34,7 +34,7 @@ abstract class ScenarioStateBase {
         if (this.tableRows.length > index) {
             var data: any = this.tableRows[index];
             for (var prop in data) {
-                var token = '<' + prop + '>';
+                var token = Keyword.TokenStart + prop + Keyword.TokenEnd;
                 condition = condition.replace(token, data[prop]);
             }
         }
@@ -306,7 +306,7 @@ export class ScenarioComposer {
     public state: ScenarioStateBase[] = [];
     public scenarioIndex = 0;
 
-    constructor(private steps: StepDefinitions, private testReporter: ITestReporter) {
+    constructor(private steps: StepCollection, private testReporter: ITestReporter) {
         this.state[this.scenarioIndex] = new InitializedState(null);
     }
 

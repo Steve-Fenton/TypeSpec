@@ -25,7 +25,10 @@ For example:
            When I press the total button
            Then the result should be "120" on the screen
 
-The files are specified in the `runner.run` method call:
+## Quick Start
+
+The following code shows all the parts needed to run a test. It is best to organise code 
+better than this - but it shows how the parts fit together.
 
     import {SpecRunner} as TypeSpec from './Scripts/TypeSpec/TypeSpec';
 
@@ -37,10 +40,153 @@ The files are specified in the `runner.run` method call:
     });
 
     runner.run(
-        '/Specifications/Basic.txt',
-        '/Specifications/Failing.txt',
-        '/Specifications/MissingStep.txt'
+        '/Specifications/Basic.txt'
     );
+
+## Step Definitions
+
+Steps are defined using a regular expression, and a function to handle the step.
+For example, the step for the condition `Given I am using a calculator` is defined below:
+
+    runner.addStep(/I am using a calculator/i,
+        (context: CalculatorTestContext) => {
+        context.calculator = new Calculator();
+    });
+
+This is a basic example, where the regular expression is just the static text to be matched, along
+with the `i` flag to allow case-insensitive matches.
+
+If you include variables in your condition, you can use the regular expression to match the 
+step without the specific value. For example, the steps `And I have entered "50" into the calculator`
+and `And I have entered "70" into the calculator` both match the step defined below (but 
+`And I have entered "Bob" into the calculator` will not match, because `Bob` does not match `(\d+)`):
+
+    runner.addStep(/I have entered "(\d+)" into the calculator/i,
+        (context: CalculatorTestContext, numberToAdd: string) => {
+        var num = parseFloat(numberToAdd);
+        context.calculator.add(num);
+    });
+
+### Regular Expressions
+
+You can be as explicit as you like with the regular expressions. You don't have to allow case-insensitive
+matches (just remove the `i` in the examples above). You can use specific variable matching expressions such
+as the `(\d+)` matcher (decimal digits) in the examples - or you can use a very open matcher such as `(.*)` (any characters).
+
+Regular expressions aren't as bad as they may appear, the short version is...
+
+`(\d+)` - the `\d` matches digit characters, 0-9 and the `+` says there may be more than one, so keep going!
+
+*In Action:*
+
+ > This `17` word sentence shows that there are `2` matches to be found using this regular expression.
+
+The long version is available at [MDN Regular Expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions).
+
+### Grouping Steps
+
+You can use a class to wrap related step definitions. However, don't fall into the trap of 
+storing state on the class; se the `context` variable that is passed to the step by
+TypeSpec - as this will keep state between steps in different classes, and no matter 
+what the current scope of `this` is. Using the `static` keyword on your `register` method
+will keep you honest!
+
+The `context` variable is completely dynamic, but you can use an interface to give it more
+clarity in your step definitions.
+
+    import {SpecRunner, Assert} from './TypeSpec/TypeSpec';
+    import {Calculator} from './Calculator';
+
+    interface CalculatorTestContext {
+        calculator: Calculator;
+    }
+
+    export class CalculatorSteps {
+        static register(runner: SpecRunner) {
+            runner.addStep(/I am using a calculator/i,
+                (context: CalculatorTestContext) => {
+                context.calculator = new Calculator();
+            });
+
+            runner.addStep(/I have entered "(\d+)" into the calculator/i,
+                (context: CalculatorTestContext, numberToAdd: string) => {
+                var num = parseFloat(numberToAdd);
+                context.calculator.add(num);
+            });
+
+            runner.addStep(/I press the total button/gi,
+                (context: CalculatorTestContext) => {
+                // No action needed
+            });
+
+            runner.addStep(/the result should be "(\d+)" on the screen/i,
+                (context: CalculatorTestContext, numberForTotal: string) => {
+                var num = parseFloat(numberForTotal);
+                var total = context.calculator.getTotal();
+                Assert.areIdentical(num, total);
+            });
+        }
+    }
+
+## Composition
+
+The composition of the test is shown below.
+
+    import {SpecRunner} from './Scripts/TypeSpec/TypeSpec';
+    import {Calculator} from './Scripts/Calculator';
+    import {CalculatorSteps, MathSteps} from './Scripts/Steps';
+
+    var runner = new SpecRunner();
+    CalculatorSteps.register(runner);
+    MathSteps.register(runner);
+
+    runner.run(
+        '/Specifications/Basic.txt',
+        '/Specifications/MultipleScenarios.txt',
+        '/Specifications/ScenarioOutlines.txt'
+    );
+
+By creating an instance of the `SpecRunner` class and passing it into each `register` method,
+you create a master collection of steps that are available to all specifications.
+
+You pass the list of specifications into the `run` method. Each specification is loaded, parsed, 
+and executed.
+
+## Test Reporting
+
+By default, test output is sent to the `console`. You can override this behaviour by supplying 
+a custom test reporter. You can intercept:
+
+ - `summary` - test results
+ - `error` - errors and missing steps
+ - `information` - verbose information including parsed conditions
+
+An example custom test reporter is shown below:
+
+    import {TestReporter} from './TypeSpec/TypeSpec';
+
+    export class CustomTestReporter extends TestReporter {
+        summary(featureTitle: string, scenarioTitle: string, isSuccess: boolean) {
+            var div = document.createElement('li');
+            div.className = (isSuccess ? 'good' : 'bad');
+            div.innerHTML = this.escape((isSuccess ? '✔' : '✘') + ' ' + featureTitle + '. ' + scenarioTitle + '.');
+            document.getElementById('results').appendChild(div);
+        }
+
+        error(featureTitle: string, condition: string, error: Error) {
+            var div = document.createElement('div');
+            div.innerHTML = '<h2>' + featureTitle + '</h2><blockquote>' + this.escape(condition) + '</blockquote><pre class="bad">' + this.escape(error.message) + '</pre>';
+            document.getElementById('errors').appendChild(div);
+        }
+
+        information(message: string) {
+            console.log(message);
+        }
+    }
+
+You pass in your custom test reporter when creating the `SpecRunner`:
+
+    var runner = new SpecRunner(new CustomTestReporter());
 
 ## Scenario Outlines
 
@@ -66,22 +212,6 @@ Scenario outlines allow you to specify the example data in a table:
         | 2        | 3        | 5     |
         | 8        | 3        | 11    |
         | 9        | 8        | 17    |
-
-## Steps
-
-Steps are defined with two arguments:
-
- - The Regular Expression that is used to match the text to a step
- - The function that will handle the step
-
-Note that all arguments, and *only* arguments, should be double-quoted in your specification.
-
-    runner.addStep(/I have entered "(\d+)" into the calculator/i, (context: any, numberToAdd: string) => {
-        var num = parseFloat(numberToAdd);
-        calculator.add(num);
-    });
-
-All arguments are passed to the step as strings, and should be parsed before use.
 
 ## TypeScript / C# Comparison
 
@@ -120,26 +250,3 @@ the `addStep` method.
 
 Within the step, we must parse each argument if we want to deal with 
 something other than a string.
-
-## Custom Error Handler
-
-You can write your own custom reporting for errors, test summar (pass / fail), and information.
-
-    class CustomTestReporter extends TestReporter {
-        summary(featureTitle: string, scenarioTitle: string, isSuccess: boolean) {
-            var div = document.createElement('li');
-            div.className = (isSuccess ? 'good' : 'bad');
-            div.innerHTML = (isSuccess ? '✔' : '✘') + ' ' + featureTitle + '. ' + scenarioTitle + '.';
-            document.getElementById('results').appendChild(div);
-        }
-
-        error(featureTitle: string, condition: string, error: Error) {
-            var div = document.createElement('div');
-            div.innerHTML = '<h2>' + featureTitle + '</h2><blockquote>' + condition + '</blockquote><pre class="bad">' + error + '</pre>';
-            document.getElementById('errors').appendChild(div);
-        }
-
-        information(message: string) {
-            console.log(message);
-        }
-    }

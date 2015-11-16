@@ -8,7 +8,7 @@ export class StepExecution {
     constructor(public method: Function, public parameters: any[]) { }
 }
 
-export class StepDefinitions {
+export class StepCollection {
     private steps: StepDefinition[] = [];
    
 
