@@ -249,4 +249,4 @@ In place of the C# attribute, we pass the Regular Expression into
 the `addStep` method. 
 
 Within the step, we must parse each argument if we want to deal with 
-something other than a string.
+something other than a string (issue #1).
