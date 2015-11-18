@@ -34,8 +34,7 @@ better than this - but it shows how the parts fit together.
 
     var runner = new SpecRunner();
 
-    runner.addStep(/I have entered "(\d+)" into the calculator/i, (context: any, numberToAdd: string) => {
-        var num = parseFloat(numberToAdd);
+    runner.addStep(/I have entered "(\d+)" into the calculator/i, (context: any, num: number) => {
         calculator.add(num);
     });
 
@@ -62,8 +61,7 @@ and `And I have entered "70" into the calculator` both match the step defined be
 `And I have entered "Bob" into the calculator` will not match, because `Bob` does not match `(\d+)`):
 
     runner.addStep(/I have entered "(\d+)" into the calculator/i,
-        (context: CalculatorTestContext, numberToAdd: string) => {
-        var num = parseFloat(numberToAdd);
+        (context: CalculatorTestContext, num: number) => {
         context.calculator.add(num);
     });
 
@@ -109,8 +107,7 @@ clarity in your step definitions.
             });
 
             runner.addStep(/I have entered "(\d+)" into the calculator/i,
-                (context: CalculatorTestContext, numberToAdd: string) => {
-                var num = parseFloat(numberToAdd);
+                (context: CalculatorTestContext, num: number) => {
                 context.calculator.add(num);
             });
 
@@ -120,8 +117,7 @@ clarity in your step definitions.
             });
 
             runner.addStep(/the result should be "(\d+)" on the screen/i,
-                (context: CalculatorTestContext, numberForTotal: string) => {
-                var num = parseFloat(numberForTotal);
+                (context: CalculatorTestContext, num: number) => {
                 var total = context.calculator.getTotal();
                 Assert.areIdentical(num, total);
             });
@@ -221,8 +217,7 @@ considering the difference between TypeSpec and tools such as SpecFlow or Cucumb
 TypeScript:
 
     runner.addStep(/I have entered "(\d+)" into the calculator/i,
-    (context: any, numberToAdd: string) => {
-        var num = parseFloat(numberToAdd);
+    (context: any, num: number) => {
         calculator.add(num);
     });
 
@@ -236,7 +231,6 @@ C#
 Key differences:
 
  - All arguments must be "quoted" (including numebrs), ie. "(\d+)", not just (\d+)
- - All arguments arrive as strings and must be parsed if necessary
  - You can choose whether the step matcher is case sensitive (pass the `i` flag to ignore case)
  - The first argument passed to a step is always the test context
 
@@ -244,6 +238,7 @@ Similarities:
 
  - The first argument to `addStep` is essentially the same as the C# attribute
  - The second argument to `addStep` is essentially the same as the C# method
+ - The arguments extracted from the condition in the specification are parsed for you
 
 In place of the C# attribute, we pass the Regular Expression into 
 the `addStep` method. 

@@ -13,15 +13,12 @@ export class CalculatorSteps {
             });
 
         runner.addStep(/I have entered "(\d+)" into the calculator/i,
-            (context: CalculatorTestContext, numberToAdd: string) => {
-                var num = parseFloat(numberToAdd);
+            (context: CalculatorTestContext, num: number) => {
                 context.calculator.add(num);
             });
 
         runner.addStep(/I have entered "(\d+)" and "(\d+)" into the calculator/i,
-            (context: CalculatorTestContext, firstNumber: string, secondNumber: string) => {
-                var num1 = parseFloat(firstNumber);
-                var num2 = parseFloat(secondNumber);
+            (context: CalculatorTestContext, num1: number, num2: number) => {
                 context.calculator.add(num1);
                 context.calculator.add(num2);
             });
@@ -32,10 +29,9 @@ export class CalculatorSteps {
             });
 
         runner.addStep(/the result should be "(\d+)" on the screen/i,
-            (context: CalculatorTestContext, numberForTotal: string) => {
-                var num = parseFloat(numberForTotal);
-                var total = context.calculator.getTotal();
-                Assert.areIdentical(num, total);
+            (context: CalculatorTestContext, expected: number) => {
+                var actual = context.calculator.getTotal();
+                Assert.areIdentical(expected, actual);
             });
     }
 }
