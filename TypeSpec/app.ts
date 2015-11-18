@@ -19,6 +19,7 @@ CalculatorSteps.register(runner);
 // Run the specifications listed
 runner.run(
     '/Specifications/Basic.txt',
+    '/Specifications/MultipleArgumentsPerLine.txt',
     '/Specifications/MultipleScenarios.txt',
     '/Specifications/ScenarioOutlines.txt',
 
