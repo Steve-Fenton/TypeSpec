@@ -10,7 +10,7 @@ export class StepExecution {
 
 export class StepCollection {
     private steps: StepDefinition[] = [];
-   
+
 
     add(expression: RegExp, step: Function) {
         this.steps.push(new StepDefinition(expression, step));
@@ -20,15 +20,20 @@ export class StepCollection {
         for (var i = 0; i < this.steps.length; i++) {
             var step = this.steps[i];
             if (text.match(step.expression)) {
-                var params = this.getParams(text, step.defaultRegExp);
+                var params = this.getParams(text, step.defaultRegExp, step.expression);
                 return new StepExecution(step.step, params);
             }
         }
         return null;
     }
 
-    getParams(text: string, parameterExpression: RegExp): any[] {
+    getParams(text: string, parameterExpression: RegExp, findExpression: RegExp): any[] {
         if (parameterExpression) {
+
+            var regexFinder = /(\([\.\\]([*a-z])\+?\))/g;
+            var typeIndicators = findExpression.source.toString().match(regexFinder);
+            console.log(JSON.stringify(typeIndicators));
+
             var params = text.match(parameterExpression);
 
             if (!params) {
@@ -37,7 +42,18 @@ export class StepCollection {
 
             for (var i = 0; i < params.length; i++) {
                 // Remove quotes
-                params[i] = params[i].replace(/"/g, '');
+                var val: any = params[i].replace(/"/g, '');
+
+                if (typeIndicators[i]) {
+                    var indicator = typeIndicators[i];
+                    switch (indicator) {
+                        case "(\\d+)":
+                            val = parseFloat(val);
+                            break;
+                    }
+                }
+
+                params[i] = val;
             }
 
             return params;

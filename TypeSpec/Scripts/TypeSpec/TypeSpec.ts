@@ -200,6 +200,18 @@ export class Assert {
         }
     }
 
+    public static isString(actual: any, message = '') {
+        if (typeof actual !== 'string') {
+            throw this.getError('isString failed when given ' + this.printVariable(actual), message);
+        }
+    }
+
+    public static isNumber(actual: any, message = '') {
+        if (typeof actual !== 'number') {
+            throw this.getError('isNumber failed when given ' + this.printVariable(actual), message);
+        }
+    }
+
     public static throws(params: IThrowsParameters): void;
     public static throws(actual: () => void, message?: string): void;
     public static throws(a: any, message = '', errorString = '') {

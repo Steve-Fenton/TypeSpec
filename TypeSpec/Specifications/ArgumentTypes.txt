@@ -1,0 +1,10 @@
+﻿Feature: Argument Types
+       In order to improve step definitions
+       As a BDD enthusiast
+       I want the framework to supply arguments of the correct type
+
+@passing
+Scenario: Argument Types
+       Given I am passing arguments
+       When I pass "1" and "Z" as arguments
+       Then the arguments should be the correct type

@@ -26,6 +26,7 @@
     <Content Include="index.html" />
     <Content Include="Scripts\r.js" />
     <Content Include="Scripts\require.js" />
+    <Content Include="Specifications\ArgumentTypes.txt" />
     <Content Include="Specifications\MultipleArgumentsPerLine.txt" />
     <Content Include="Specifications\ScenarioOutlines.txt" />
     <Content Include="Specifications\MultipleScenarios.txt" />
@@ -35,6 +36,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
     <TypeScriptCompile Include="Scripts\Calculator.ts" />
+    <TypeScriptCompile Include="Scripts\ArgumentSteps.ts" />
     <TypeScriptCompile Include="Scripts\CustomTestReporter.ts" />
     <TypeScriptCompile Include="Scripts\CalculatorSteps.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\ScenarioState.ts" />
