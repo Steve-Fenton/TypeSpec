@@ -34,7 +34,7 @@ better than this - but it shows how the parts fit together.
 
     var runner = new SpecRunner();
 
-    runner.addStep(/I have entered "(\d+)" into the calculator/i, (context: any, num: number) => {
+    runner.addStep(/I have entered (\"\d+\") into the calculator/i, (context: any, num: number) => {
         calculator.add(num);
     });
 
@@ -60,7 +60,7 @@ step without the specific value. For example, the steps `And I have entered "50"
 and `And I have entered "70" into the calculator` both match the step defined below (but 
 `And I have entered "Bob" into the calculator` will not match, because `Bob` does not match `(\d+)`):
 
-    runner.addStep(/I have entered "(\d+)" into the calculator/i,
+    runner.addStep(/I have entered (\"\d+\") into the calculator/i,
         (context: CalculatorTestContext, num: number) => {
         context.calculator.add(num);
     });
@@ -80,6 +80,20 @@ Regular expressions aren't as bad as they may appear, the short version is...
  > This `17` word sentence shows that there are `2` matches to be found using this regular expression.
 
 The long version is available at [MDN Regular Expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions).
+
+#### Common TypeSpect Condition Strings
+
+To find **"1"** here.
+
+    To find (\"\d+\") here.
+
+To find **"a string"** here.
+
+    To find "(.*)" here.
+
+To find **"true"** here.
+
+    To find (\"true\"|\"false\") here.
 
 ### Grouping Steps
 
@@ -106,7 +120,7 @@ clarity in your step definitions.
                 context.calculator = new Calculator();
             });
 
-            runner.addStep(/I have entered "(\d+)" into the calculator/i,
+            runner.addStep(/I have entered (\"\d+\") into the calculator/i,
                 (context: CalculatorTestContext, num: number) => {
                 context.calculator.add(num);
             });
@@ -116,7 +130,7 @@ clarity in your step definitions.
                 // No action needed
             });
 
-            runner.addStep(/the result should be "(\d+)" on the screen/i,
+            runner.addStep(/the result should be (\"\d+\") on the screen/i,
                 (context: CalculatorTestContext, num: number) => {
                 var total = context.calculator.getTotal();
                 Assert.areIdentical(num, total);
@@ -216,7 +230,7 @@ considering the difference between TypeSpec and tools such as SpecFlow or Cucumb
 
 TypeScript:
 
-    runner.addStep(/I have entered "(\d+)" into the calculator/i,
+    runner.addStep(/I have entered (\"\d+\") into the calculator/i,
     (context: any, num: number) => {
         calculator.add(num);
     });
@@ -230,7 +244,7 @@ C#
 
 Key differences:
 
- - All arguments must be "quoted" (including numebrs), ie. "(\d+)", not just (\d+)
+ - All arguments must be "quoted" (including numebrs), ie. "1", not just 1 OR (\"\d+\"), not just (\d+)
  - You can choose whether the step matcher is case sensitive (pass the `i` flag to ignore case)
  - The first argument passed to a step is always the test context
 

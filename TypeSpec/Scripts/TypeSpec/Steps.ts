@@ -10,9 +10,9 @@ export class StepExecution {
 
 export class StepCollection {
     private steps: StepDefinition[] = [];
-    //private regexFinder = /([\.\\]([*a-z])\+?)/g;
+    // Part one finds things like "(.*)" and (\"\d+\") = /([\.\\]([*a-z])\+?)/g;
+    // Part two finds things like (\"true\"|\"false\") = \(\\\"true\\\"\|\\"false\\\"\)
     private regexFinder = /([\.\\]([*a-z])\+?)|\(\\\"true\\\"\|\\"false\\\"\)/g;
-
 
     add(expression: RegExp, step: Function) {
         this.steps.push(new StepDefinition(expression, step));

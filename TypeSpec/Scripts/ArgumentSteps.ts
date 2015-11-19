@@ -13,7 +13,7 @@ export class ArgumentSteps {
                 context.secondArg = null;
             });
 
-        runner.addStep(/I pass "(\d+)" and "(.*)" as arguments/i,
+        runner.addStep(/I pass (\"\d+\") and "(.*)" as arguments/i,
             (context: ArgumentTestContext, arg1: number, arg2: string) => {
                 context.firstArg = arg1;
                 context.secondArg = arg2;

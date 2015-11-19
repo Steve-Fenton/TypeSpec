@@ -391,9 +391,10 @@ export class ScenarioComposer {
         var stepExecution = this.steps.find(condition);
         if (stepExecution === null) {
 
-            var suggestion = '\trunner.addStep(/' + condition + '/i, () => { \n' +
-                '\t\tthrow new Error(\'Not implemented.\');\n' +
-                '\t});';
+            var suggestion = '    runner.addStep(/' + condition + '/i,\n' +
+                '        (context: any) => {\n' +
+                '            throw new Error(\'Not implemented.\');\n' +
+                '        });';
 
             throw new Error('No step definition defined.\n\n' + suggestion);
         }
