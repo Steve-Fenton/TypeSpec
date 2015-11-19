@@ -35,3 +35,20 @@ li {
     font-family: Arial, sans-serif;
     color: #8CBF26;
 }
+
+pre {
+    margin: 1.5em 10px;
+    padding: 0.5em 10px;
+}
+
+blockquote {
+    background: #f9f9f9;
+    border-left: 10px solid #E51400;
+    margin: 1.5em 10px;
+    padding: 0.5em 10px;
+    font-style: italic;
+}
+
+    blockquote p {
+        display: inline;
+    }
