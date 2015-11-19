@@ -42,6 +42,8 @@ export class SpecRunner {
 
         var hasParsed = true;
         var composer = new ScenarioComposer(this.steps, this.testReporter);
+
+        /* Normalise line endings before splitting */
         var lines = spec.replace('\r\n', '\n').split('\n');
 
         for (var i = 0; i < lines.length; i++) {

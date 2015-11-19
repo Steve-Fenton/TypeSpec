@@ -1,7 +1,7 @@
 ﻿import {Keyword} from './Keyword';
 import {StepDefinition, StepCollection} from './Steps';
 
-abstract class ScenarioStateBase {
+abstract class StateBase {
     public givens: string[] = [];
     public whens: string[] = [];
     public thens: string[] = [];
@@ -15,7 +15,7 @@ abstract class ScenarioStateBase {
     public tableHeaders: string[] = [];
     public tableRows: {}[] = [];
 
-    constructor(priorState: ScenarioStateBase) {
+    constructor(priorState: StateBase) {
         if (priorState !== null) {
             this.featureTitle = priorState.featureTitle;
             this.featureDescription = priorState.featureDescription;
@@ -96,47 +96,47 @@ abstract class ScenarioStateBase {
         return false;
     }
 
-    unknown(line: string): ScenarioStateBase {
+    unknown(line: string): StateBase {
         throw new Error('Unknown line ' + line);
     }
 
-    feature(line: string): ScenarioStateBase {
+    feature(line: string): StateBase {
         throw new Error('Did not expect line: ' + line);
     }
 
-    tag(line: string): ScenarioStateBase {
+    tag(line: string): StateBase {
         throw new Error('Did not expect line: ' + line);
     }
 
-    scenario(line: string): ScenarioStateBase {
+    scenario(line: string): StateBase {
         throw new Error('Did not expect line: ' + line);
     }
 
-    outline(line: string): ScenarioStateBase {
+    outline(line: string): StateBase {
         throw new Error('Did not expect line: ' + line);
     }
 
-    given(line: string): ScenarioStateBase {
+    given(line: string): StateBase {
         throw new Error('Did not expect line: ' + line);
     }
 
-    when(line: string): ScenarioStateBase {
+    when(line: string): StateBase {
         throw new Error('Did not expect line: ' + line);
     }
 
-    then(line: string): ScenarioStateBase {
+    then(line: string): StateBase {
         throw new Error('Did not expect line: ' + line);
     }
 
-    and(line: string): ScenarioStateBase {
+    and(line: string): StateBase {
         throw new Error('Did not expect line: ' + line);
     }
 
-    examples(line: string): ScenarioStateBase {
+    examples(line: string): StateBase {
         throw new Error('Did not expect line: ' + line);
     }
 
-    table(line: string): ScenarioStateBase {
+    table(line: string): StateBase {
         throw new Error('Did not expect line: ' + line);
     }
 
@@ -145,21 +145,27 @@ abstract class ScenarioStateBase {
     }
 }
 
-class InitializedState extends ScenarioStateBase {
+/*
+    Each state objects only has the methods it allows.
+    This makes it easy to see which methods are allowed in 
+    any given state
+*/
 
-    constructor(priorState: ScenarioStateBase) {
+class InitializedState extends StateBase {
+
+    constructor(priorState: StateBase) {
         super(priorState);
     }
 
-    feature(line: string): ScenarioStateBase {
+    feature(line: string): StateBase {
         this.featureTitle = this.trimLine(line, Keyword.Feature);
         return new FeatureState(this);
     }
 }
 
-class FeatureState extends ScenarioStateBase {
+class FeatureState extends StateBase {
 
-    constructor(priorState: ScenarioStateBase) {
+    constructor(priorState: StateBase) {
         super(priorState);
     }
 
@@ -168,7 +174,7 @@ class FeatureState extends ScenarioStateBase {
         return this;
     }
 
-    tag(line: string): ScenarioStateBase {
+    tag(line: string): StateBase {
         var tags = line.split(Keyword.Tag);
         for (var i = 0; i < tags.length; i++) {
             var trimmedTag = tags[i].trim().toLowerCase();
@@ -179,41 +185,41 @@ class FeatureState extends ScenarioStateBase {
         return this;
     }
 
-    scenario(line: string): ScenarioStateBase {
+    scenario(line: string): StateBase {
         this.scenarioTitle = this.trimLine(line, Keyword.Scenario);
         return new ScenarioState(this);
     }
 
-    outline(line: string): ScenarioStateBase {
+    outline(line: string): StateBase {
         this.scenarioTitle = this.trimLine(line, Keyword.Scenario);
         return new ScenarioState(this);
     }
 }
 
-class ScenarioState extends ScenarioStateBase {
+class ScenarioState extends StateBase {
 
-    constructor(priorState: ScenarioStateBase) {
+    constructor(priorState: StateBase) {
         super(priorState);
     }
 
-    given(line: string): ScenarioStateBase {
+    given(line: string): StateBase {
         this.givens.push(this.trimLine(line, Keyword.Given));
         return new GivenState(this);
     }
 }
 
-class GivenState extends ScenarioStateBase {
+class GivenState extends StateBase {
 
-    constructor(priorState: ScenarioStateBase) {
+    constructor(priorState: StateBase) {
         super(priorState);
     }
 
-    when(line: string): ScenarioStateBase {
+    when(line: string): StateBase {
         this.whens.push(this.trimLine(line, Keyword.When));
         return new WhenState(this);
     }
 
-    then(line: string): ScenarioStateBase {
+    then(line: string): StateBase {
         this.thens.push(this.trimLine(line, Keyword.Then));
         return new ThenState(this);
     }
@@ -224,13 +230,13 @@ class GivenState extends ScenarioStateBase {
     }
 }
 
-class WhenState extends ScenarioStateBase {
+class WhenState extends StateBase {
 
-    constructor(priorState: ScenarioStateBase) {
+    constructor(priorState: StateBase) {
         super(priorState);
     }
 
-    then(line: string): ScenarioStateBase {
+    then(line: string): StateBase {
         this.thens.push(this.trimLine(line, Keyword.Then));
         return new ThenState(this);
     }
@@ -241,9 +247,9 @@ class WhenState extends ScenarioStateBase {
     }
 }
 
-class ThenState extends ScenarioStateBase {
+class ThenState extends StateBase {
 
-    constructor(priorState: ScenarioStateBase) {
+    constructor(priorState: StateBase) {
         super(priorState);
     }
 
@@ -256,17 +262,17 @@ class ThenState extends ScenarioStateBase {
         return this;
     }
 
-    examples(line: string): ScenarioStateBase {
+    examples(line: string): StateBase {
         return new ExampleState(this);
     }
 }
 
-class ExampleState extends ScenarioStateBase {
-    constructor(priorState: ScenarioStateBase) {
+class ExampleState extends StateBase {
+    constructor(priorState: StateBase) {
         super(priorState);
     }
 
-    table(line: string): ScenarioStateBase {
+    table(line: string): StateBase {
         var headings = line.split(Keyword.Table);
         for (var i = 0; i < headings.length; i++) {
             var trimmedHeading = headings[i].trim();
@@ -276,12 +282,12 @@ class ExampleState extends ScenarioStateBase {
     }
 }
 
-class TableState extends ScenarioStateBase {
-    constructor(priorState: ScenarioStateBase) {
+class TableState extends StateBase {
+    constructor(priorState: StateBase) {
         super(priorState);
     }
 
-    table(line: string): ScenarioStateBase {
+    table(line: string): StateBase {
         var data = line.split(Keyword.Table);
         var row: any = {};
         for (var i = 0; i < data.length; i++) {
@@ -303,7 +309,7 @@ export interface ITestReporter {
 
 export class ScenarioComposer {
     public tags: string[] = [];
-    public state: ScenarioStateBase[] = [];
+    public state: StateBase[] = [];
     public scenarioIndex = 0;
 
     constructor(private steps: StepCollection, private testReporter: ITestReporter) {
@@ -372,7 +378,7 @@ export class ScenarioComposer {
         }
     }
 
-    private executeWithErrorHandling(dynamicStateContainer: any, scenario: ScenarioStateBase, dataIndex: number, condition: string, featureTitle: string, scenarioTitle: string) {
+    private executeWithErrorHandling(dynamicStateContainer: any, scenario: StateBase, dataIndex: number, condition: string, featureTitle: string, scenarioTitle: string) {
         try {
             this.runCondition(dynamicStateContainer, scenario, dataIndex, condition);
             return true;
@@ -382,7 +388,7 @@ export class ScenarioComposer {
         }
     }
 
-    private runCondition(dynamicStateContainer: any, scenario: ScenarioStateBase, dataIndex: number, condition: string) {
+    private runCondition(dynamicStateContainer: any, scenario: StateBase, dataIndex: number, condition: string) {
 
         condition = scenario.prepareCondition(condition, dataIndex);
 
@@ -391,6 +397,7 @@ export class ScenarioComposer {
         var stepExecution = this.steps.find(condition);
         if (stepExecution === null) {
 
+            /* Template for step method */
             var suggestion = '    runner.addStep(/' + condition + '/i,\n' +
                 '        (context: any) => {\n' +
                 '            throw new Error(\'Not implemented.\');\n' +
