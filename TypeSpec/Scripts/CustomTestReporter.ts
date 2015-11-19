@@ -15,6 +15,6 @@ export class CustomTestReporter extends TestReporter {
     }
 
     information(message: string) {
-        console.log(message);
+        //console.log(message);
     }
 }

@@ -212,6 +212,12 @@ export class Assert {
         }
     }
 
+    public static isBoolean(actual: any, message = '') {
+        if (typeof actual !== 'boolean') {
+            throw this.getError('isBoolean failed when given ' + this.printVariable(actual), message);
+        }
+    }
+
     public static throws(params: IThrowsParameters): void;
     public static throws(actual: () => void, message?: string): void;
     public static throws(a: any, message = '', errorString = '') {

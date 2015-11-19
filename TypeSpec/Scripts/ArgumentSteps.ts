@@ -1,8 +1,8 @@
 ﻿import {SpecRunner, Assert} from './TypeSpec/TypeSpec';
 
 interface ArgumentTestContext {
-    firstArg: string | number;
-    secondArg: string | number;
+    firstArg: string | number | boolean;
+    secondArg: string | number | boolean;
 }
 
 export class ArgumentSteps {
@@ -19,10 +19,22 @@ export class ArgumentSteps {
                 context.secondArg = arg2;
             });
 
-        runner.addStep(/the arguments should be the correct type/i,
+        runner.addStep(/I pass (\"true\"|\"false\") and (\"true\"|\"false\") as arguments/i,
+            (context: ArgumentTestContext, arg1: boolean, arg2: boolean) => {
+                context.firstArg = arg1;
+                context.secondArg = arg2;
+        });
+
+        runner.addStep(/the arguments should be number and string type/i,
             (context: ArgumentTestContext) => {
                 Assert.isNumber(context.firstArg);
                 Assert.isString(context.secondArg);
             });
+
+        runner.addStep(/the arguments should be boolean type/i,
+            (context: ArgumentTestContext) => {
+                Assert.isBoolean(context.firstArg);
+                Assert.isBoolean(context.secondArg);
+        });
     }
 }
