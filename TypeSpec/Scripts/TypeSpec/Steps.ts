@@ -10,6 +10,7 @@ export class StepExecution {
 
 export class StepCollection {
     private steps: StepDefinition[] = [];
+    private regexFinder = /([\.\\]([*a-z])\+?)/g;
 
 
     add(expression: RegExp, step: Function) {
@@ -30,10 +31,7 @@ export class StepCollection {
     getParams(text: string, parameterExpression: RegExp, findExpression: RegExp): any[] {
         if (parameterExpression) {
 
-            var regexFinder = /(\([\.\\]([*a-z])\+?\))/g;
-            var typeIndicators = findExpression.source.toString().match(regexFinder);
-            console.log(JSON.stringify(typeIndicators));
-
+            var typeIndicators = findExpression.source.toString().match(this.regexFinder);
             var params = text.match(parameterExpression);
 
             if (!params) {
@@ -46,8 +44,9 @@ export class StepCollection {
 
                 if (typeIndicators[i]) {
                     var indicator = typeIndicators[i];
+                    // Currently we are only interested in parsing `number` types.
                     switch (indicator) {
-                        case "(\\d+)":
+                        case "\\d+":
                             val = parseFloat(val);
                             break;
                     }
