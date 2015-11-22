@@ -17,7 +17,7 @@ export class SpecRunner {
 
     excludeTags(...tags: string[]) {
         for (var i = 0; i < tags.length; i++) {
-            this.excludedTags.push(tags[i]);
+            this.excludedTags.push(tags[i].replace(/@/g, ''));
         }
     }
 

@@ -174,6 +174,14 @@ you create a master collection of steps that are available to all specifications
 You pass the list of specifications into the `run` method. Each specification is loaded, parsed, 
 and executed.
 
+## Excluding Specifications
+
+You can exclude specifications by tag, by passing the tags to exclude to the SpecRunner before calling `runner.run(...`:
+
+    runner.excludeTags('@exclude', '@failing');
+
+The `@` is optional here, you could exclude using `failing` or `@failing` - both will work.
+
 ## Test Reporting
 
 By default, test output is sent to the `console`. You can override this behaviour by supplying 

@@ -14,8 +14,8 @@ import {ArgumentSteps} from './Scripts/ArgumentSteps';
 // Set up the tests
 var runner = new SpecRunner(new CustomTestReporter());
 
-// Optionally exclude tags
-runner.excludeTags('exclude');
+// Optionally exclude tags (the @ prefix is optional)
+runner.excludeTags('@exclude');
 
 // Or exclude many tags...
 //runner.excludeTags('exclude', 'failing');
