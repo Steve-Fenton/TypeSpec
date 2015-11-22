@@ -65,6 +65,18 @@ and `And I have entered "70" into the calculator` both match the step defined be
         context.calculator.add(num);
     });
 
+If you write a statement and no step definition can be found, TypeSpec will suggest a step method for you, 
+including expressions for any arguments it finds. For example:
+
+    I have a step with a number "5" and a boolean "true" and a string "text"
+
+Will result in the following suggested step definition:
+
+    runner.addStep(/I have a step with a number (\"\d+\") and a boolean (\"true\"|\"false\") and a string "(.*)"/i,
+        (context: any) => {
+            throw new Error('Not implemented.');
+        });
+
 ### Regular Expressions
 
 You can be as explicit as you like with the regular expressions. You don't have to allow case-insensitive

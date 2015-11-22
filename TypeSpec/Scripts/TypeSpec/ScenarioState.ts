@@ -391,26 +391,59 @@ export class ScenarioComposer {
     private runCondition(dynamicStateContainer: any, scenario: StateBase, dataIndex: number, condition: string) {
 
         condition = scenario.prepareCondition(condition, dataIndex);
-
         this.testReporter.information('\t' + condition);
-
         var stepExecution = this.steps.find(condition);
+
         if (stepExecution === null) {
-
-            /* Template for step method */
-            var suggestion = '    runner.addStep(/' + condition + '/i,\n' +
-                '        (context: any) => {\n' +
-                '            throw new Error(\'Not implemented.\');\n' +
-                '        });';
-
-            throw new Error('No step definition defined.\n\n' + suggestion);
+            throw new Error('No step definition defined.\n\n' + this.getSuggestedStepMethod(condition));
         }
 
         if (stepExecution.parameters) {
+            // Add the context container as the first argument
             stepExecution.parameters.unshift(dynamicStateContainer);
+            // Call the step method
             stepExecution.method.apply(null, stepExecution.parameters);
         } else {
+            // Call the step method
             stepExecution.method(dynamicStateContainer);
         }
+    }
+
+    private getSuggestedStepMethod(condition: string) {
+        var conditionExpression = this.convertQuotedValuesToRegExps(condition);
+
+        /* Template for step method */
+        var suggestion = '    runner.addStep(/' + conditionExpression + '/i,\n' +
+            '        (context: any) => {\n' +
+            '            throw new Error(\'Not implemented.\');\n' +
+            '        });';
+
+        return suggestion;
+    }
+
+    private convertQuotedValuesToRegExps(condition: string) {
+        var quotedRegExp = /"(?:[^"\\]|\\.)*"/ig;
+        var foundArguments = condition.match(quotedRegExp);
+
+
+        if (foundArguments && foundArguments.length > 0) {
+            for (var i = 0; i < foundArguments.length; i++) {
+                var quotedArgument = foundArguments[i];
+                var trimmedArgument = quotedArgument.replace(/"/g, '');
+                var argumentExpression: string = null;
+
+                if (trimmedArgument.toLowerCase() === 'true' || trimmedArgument.toLowerCase() === 'false') {
+                    argumentExpression = '(\\"true\\"|\\"false\\")';
+                } else if (parseFloat(trimmedArgument).toString() === trimmedArgument) {
+                    argumentExpression = '(\\"\\d+\\")'
+                } else {
+                    argumentExpression = '"(.*)"';
+                }
+
+                condition = condition.replace(quotedArgument, argumentExpression);
+            }
+        }
+
+        return condition;
     }
 }

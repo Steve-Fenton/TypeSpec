@@ -6,7 +6,13 @@
 @failing
 Scenario: Missing Step Example
        Given I am using a calculator
-       And I have entered "15" into the calculator
-       And I have entered "18" into the calculator
+       And I enter "15" into the calculator
+       And I enter "18" into the calculator
        When I press a button that isn't yet defined
        Then the result should be "33" on the screen
+
+@failing
+Scenario: Missing Step Suggestion Should Include RegExp
+	Given I am using a calculator
+	When I have a step with a number "5" and a boolean "true" and a string "text"
+	Then the suggestion should include RegExp suggestions

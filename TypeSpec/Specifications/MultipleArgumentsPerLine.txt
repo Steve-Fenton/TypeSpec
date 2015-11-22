@@ -6,6 +6,6 @@
 @passing
 Scenario: Multiple Arguments Per Line
        Given I am using a calculator
-       And I have entered "50" and "70" into the calculator
+       And I enter "50" and "70" into the calculator
        When I press the total button
        Then the result should be "120" on the screen
