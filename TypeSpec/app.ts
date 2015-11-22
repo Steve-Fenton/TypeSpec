@@ -35,7 +35,8 @@ runner.run(
     //Deliberately failing features
     '/Specifications/Failing.txt',
     '/Specifications/MissingStep.txt',
+    '/Specifications/404.txt',
 
-    //Excluded by tags
+    //Excluded by tag
     '/Specifications/ExcludedByTag.txt'
 );

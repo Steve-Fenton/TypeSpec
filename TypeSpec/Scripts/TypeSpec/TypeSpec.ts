@@ -36,9 +36,13 @@ export class SpecRunner {
         var client = new XMLHttpRequest();
         client.open('GET', url + cacheBust);
         client.onreadystatechange = function () {
-            if (client.readyState === 4 && client.status === 200) {
-                _this.processSpecification(client.responseText);
-                callback();
+            if (client.readyState === 4) {
+                if (client.status === 200) {
+                    _this.processSpecification(client.responseText);
+                    callback();
+                } else {
+                    _this.testReporter.error('getFile', url, new Error('Error loading specification: ' + client.statusText + ' (' + client.status + ').'));
+                }
             }
         }
         client.send();
