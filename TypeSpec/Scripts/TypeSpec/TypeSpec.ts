@@ -1,5 +1,5 @@
 ﻿import {Keyword} from './Keyword';
-import {ScenarioComposer} from './ScenarioState';
+import {ScenarioComposer} from './Composer';
 import {StepDefinition, StepExecution, StepCollection} from './Steps';
 
 export class SpecRunner {
