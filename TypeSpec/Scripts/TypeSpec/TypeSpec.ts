@@ -1,11 +1,11 @@
-﻿import {FeatureParser} from './Parser';
+﻿import {FeatureParser, ITestReporter} from './Parser';
 import {StepCollection} from './Steps';
 
 export class SpecRunner {
     private steps: StepCollection = new StepCollection();
     private excludedTags: string[] = [];
 
-    constructor(private testReporter = new TestReporter()) { }
+    constructor(private testReporter: ITestReporter = new TestReporter()) { }
 
     addStep(expression: RegExp, step: Function) {
         this.steps.add(expression, step);
@@ -27,21 +27,29 @@ export class SpecRunner {
         var cacheBust = '?cb=' + new Date().getTime();
         if (index < url.length) {
             var nextIndex = index + 1;
-            this.getFile(url[index], cacheBust, () => { this.readFile(nextIndex, url); });
+
+            var finalCallback = () => { };
+            if (nextIndex === url.length) {
+                finalCallback = () => { this.testReporter.complete(); };
+            }
+            this.getFile(url[index], cacheBust, () => { this.readFile(nextIndex, url); }, finalCallback);
         }
     }
 
-    private getFile(url: string, cacheBust: string, callback: Function) {
-        var _this = this;
+    private getFile(url: string, cacheBust: string, successCallback: Function, allCallback: Function) {
         var client = new XMLHttpRequest();
         client.open('GET', url + cacheBust);
-        client.onreadystatechange = function () {
+        client.onreadystatechange = () => {
             if (client.readyState === 4) {
-                if (client.status === 200) {
-                    _this.processSpecification(client.responseText);
-                    callback();
-                } else {
-                    _this.testReporter.error('getFile', url, new Error('Error loading specification: ' + client.statusText + ' (' + client.status + ').'));
+                try {
+                    if (client.status === 200) {
+                        this.processSpecification(client.responseText);
+                        successCallback();
+                    } else {
+                        this.testReporter.error('getFile', url, new Error('Error loading specification: ' + client.statusText + ' (' + client.status + ').'));
+                    }
+                } finally {
+                    allCallback();
                 }
             }
         }
@@ -74,7 +82,7 @@ export class SpecRunner {
     }
 }
 
-export class TestReporter {
+export class TestReporter implements ITestReporter {
     summary(featureTitle: string, scenarioTitle: string, isSuccess: boolean) {
         console.info((isSuccess ? '✔' : '✘') + ' ' + featureTitle + ' : ' + scenarioTitle + '\n');
     }
@@ -87,8 +95,43 @@ export class TestReporter {
         console.log(message);
     }
 
+    complete() {
+        console.log('Run has finished');
+    }
+
     protected escape(input: string) {
         return input.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+}
+
+class TapResult {
+    constructor(public hash: number, public isOk: boolean, public description: string) { }
+
+    output() {
+        return (this.isOk ? '' : 'not ') + 'ok #' + this.hash + ' ' + this.description
+    }
+}
+
+export class TapReporter implements ITestReporter {
+    private hash: number = 0;
+    private results: TapResult[] = [];
+
+    summary(featureTitle: string, scenarioTitle: string, isSuccess: boolean) {
+        this.hash++;
+        this.results.push(new TapResult(this.hash, isSuccess, featureTitle + ': ' + scenarioTitle));
+    }
+
+    error(featureTitle: string, condition: string, error: Error) {
+    }
+
+    information(message: string) {
+    }
+
+    complete() {
+        console.log('1..' + this.results.length);
+        for (var i = 0; i < this.results.length; i++) {
+            console.log(this.results[i].output());
+        }
     }
 }
 

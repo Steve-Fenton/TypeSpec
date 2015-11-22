@@ -231,7 +231,6 @@ class ExcludedScenarioState extends StateBase {
 
     tag(line: string): StateBase {
         // Discard
-        console.log('l: ' + line);
         return this;
     }
 

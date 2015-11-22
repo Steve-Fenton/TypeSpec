@@ -1,5 +1,5 @@
 ﻿// TypeSpec code
-import {SpecRunner} from './Scripts/TypeSpec/TypeSpec';
+import {SpecRunner, TapReporter} from './Scripts/TypeSpec/TypeSpec';
 
 // Your application code
 import {Calculator} from './Scripts/Calculator';
@@ -13,6 +13,9 @@ import {ArgumentSteps} from './Scripts/ArgumentSteps';
 
 // Set up the tests
 var runner = new SpecRunner(new CustomTestReporter());
+
+// You can use the built-in TAP reporter (http://testanything.org/)
+//var runner = new SpecRunner(new TapReporter());
 
 // Optionally exclude tags (the @ prefix is optional)
 runner.excludeTags('@exclude');
@@ -35,7 +38,7 @@ runner.run(
     //Deliberately failing features
     '/Specifications/Failing.txt',
     '/Specifications/MissingStep.txt',
-    '/Specifications/404.txt',
+    //'/Specifications/404.txt',
 
     //Excluded by tag
     '/Specifications/ExcludedByTag.txt'
