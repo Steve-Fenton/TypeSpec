@@ -190,6 +190,12 @@ a custom test reporter. You can intercept:
  - `summary` - test results
  - `error` - errors and missing steps
  - `information` - verbose information including parsed conditions
+ - `complete` - called at the end of the test
+
+There are two built-in test reporters available:
+
+ - TapReporter - produces TAP compliant output
+ - TestReporter - a basic test reporter class, outputs to HTML
 
 An example custom test reporter is shown below:
 
