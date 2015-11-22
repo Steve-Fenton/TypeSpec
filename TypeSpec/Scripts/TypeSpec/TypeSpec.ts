@@ -1,6 +1,5 @@
-﻿import {Keyword} from './Keyword';
-import {FeatureParser} from './Parser';
-import {StepDefinition, StepExecution, StepCollection} from './Steps';
+﻿import {FeatureParser} from './Parser';
+import {StepCollection} from './Steps';
 
 export class SpecRunner {
     private steps: StepCollection = new StepCollection();
