@@ -108,7 +108,7 @@ class TapResult {
     constructor(public hash: number, public isOk: boolean, public description: string) { }
 
     output() {
-        return (this.isOk ? '' : 'not ') + 'ok #' + this.hash + ' ' + this.description
+        return (this.isOk ? '' : 'not ') + 'ok ' + this.hash + ' ' + this.description
     }
 }
 
