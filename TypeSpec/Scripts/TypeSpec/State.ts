@@ -1,5 +1,4 @@
 ﻿import {Keyword} from './Keyword';
-import {StepDefinition, StepCollection} from './Steps';
 
 export class StateBase {
     public givens: string[] = [];

@@ -1,5 +1,5 @@
 ﻿import {Keyword} from './Keyword';
-import {ScenarioComposer} from './Composer';
+import {FeatureParser} from './Parser';
 import {StepDefinition, StepExecution, StepCollection} from './Steps';
 
 export class SpecRunner {
@@ -41,7 +41,7 @@ export class SpecRunner {
     private processSpecification(spec: string) {
 
         var hasParsed = true;
-        var composer = new ScenarioComposer(this.steps, this.testReporter);
+        var composer = new FeatureParser(this.steps, this.testReporter);
 
         /* Normalise line endings before splitting */
         var lines = spec.replace('\r\n', '\n').split('\n');

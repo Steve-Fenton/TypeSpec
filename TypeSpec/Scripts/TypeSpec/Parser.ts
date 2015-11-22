@@ -1,5 +1,6 @@
 ﻿import {Keyword} from './Keyword';
-import {StepDefinition, StepCollection} from './Steps';
+import {ExpressionLibrary} from './RegEx';
+import {StepCollection} from './Steps';
 import {StateBase, InitializedState, FeatureState} from './State';
 
 export interface ITestReporter {
@@ -8,7 +9,7 @@ export interface ITestReporter {
     information(message: string): void;
 }
 
-export class ScenarioComposer {
+export class FeatureParser {
     public tags: string[] = [];
     public state: StateBase[] = [];
     public scenarioIndex = 0;
@@ -100,7 +101,8 @@ export class ScenarioComposer {
         var stepExecution = this.steps.find(condition);
 
         if (stepExecution === null) {
-            throw new Error('No step definition defined.\n\n' + this.getSuggestedStepMethod(condition));
+            var stepMethodBuilder = new StepMethodBuilder(condition);
+            throw new Error('No step definition defined.\n\n' + stepMethodBuilder.getSuggestedStepMethod());
         }
 
         if (stepExecution.parameters) {
@@ -113,42 +115,70 @@ export class ScenarioComposer {
             stepExecution.method(dynamicStateContainer);
         }
     }
+}
 
-    private getSuggestedStepMethod(condition: string) {
-        var conditionExpression = this.convertQuotedValuesToRegExps(condition);
+class StepMethodBuilder {
+    constructor(private originalCondition: string) { }
+
+    getSuggestedStepMethod() {
+        var argumentParser = new ArgumentParser(this.originalCondition);
 
         /* Template for step method */
-        var suggestion = '    runner.addStep(/' + conditionExpression + '/i,\n' +
-            '        (context: any) => {\n' +
+        var suggestion = '    runner.addStep(/' + argumentParser.getCondition() + '/i,\n' +
+            '        (context: any, ' + argumentParser.getParameters() + ') => {\n' +
             '            throw new Error(\'Not implemented.\');\n' +
             '        });';
 
         return suggestion;
     }
+}
 
-    private convertQuotedValuesToRegExps(condition: string) {
-        var quotedRegExp = /"(?:[^"\\]|\\.)*"/ig;
-        var foundArguments = condition.match(quotedRegExp);
+class ArgumentParser {
+    private arguments: string[] = [];
+    private condition: string;
 
+    constructor(private originalCondition: string) {
+        this.condition = originalCondition;
+        this.parseArguments();
+    }
+
+    getCondition() {
+        return this.condition;
+    }
+
+    getParameters() {
+        return this.arguments.join(', ');
+    }
+
+    private parseArguments() {
+        var foundArguments = this.originalCondition.match(ExpressionLibrary.quotedArgumentsRegExp);
 
         if (foundArguments && foundArguments.length > 0) {
             for (var i = 0; i < foundArguments.length; i++) {
-                var quotedArgument = foundArguments[i];
-                var trimmedArgument = quotedArgument.replace(/"/g, '');
-                var argumentExpression: string = null;
-
-                if (trimmedArgument.toLowerCase() === 'true' || trimmedArgument.toLowerCase() === 'false') {
-                    argumentExpression = '(\\"true\\"|\\"false\\")';
-                } else if (parseFloat(trimmedArgument).toString() === trimmedArgument) {
-                    argumentExpression = '(\\"\\d+\\")'
-                } else {
-                    argumentExpression = '"(.*)"';
-                }
-
-                condition = condition.replace(quotedArgument, argumentExpression);
+                var foundArgument = foundArguments[i];
+                this.processFoundArgument(foundArgument, i);
             }
         }
+    }
 
-        return condition;
+    private processFoundArgument(quotedArgument: string, position: number) {
+        var trimmedArgument = quotedArgument.replace(/"/g, '');
+        var argumentExpression: string = null;
+
+        if (trimmedArgument.toLowerCase() === 'true' || trimmedArgument.toLowerCase() === 'false') {
+            // Argument is boolean
+            this.arguments.push('p' + position + ': boolean');
+            argumentExpression = ExpressionLibrary.trueFalseString;
+        } else if (parseFloat(trimmedArgument).toString() === trimmedArgument) {
+            // Argument is number
+            this.arguments.push('p' + position + ': number');
+            argumentExpression = ExpressionLibrary.numberString;
+        } else {
+            // Argument is string
+            this.arguments.push('p' + position + ': string');
+            argumentExpression = ExpressionLibrary.defaultString;
+        }
+
+        this.condition = this.condition.replace(quotedArgument, argumentExpression);
     }
 }

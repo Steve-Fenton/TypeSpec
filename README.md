@@ -72,8 +72,8 @@ including expressions for any arguments it finds. For example:
 
 Will result in the following suggested step definition:
 
-    runner.addStep(/I have a step with a number (\"\d+\") and a boolean (\"true\"|\"false\") and a string "(.*)"/i,
-        (context: any) => {
+    runner.addStep(/I have a step with a number "5" and a boolean "true" and a string "(.*)"/i,
+        (context: any, p0: number, p1: boolean, p2: string) => {
             throw new Error('Not implemented.');
         });
 

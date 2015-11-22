@@ -1,6 +1,6 @@
-﻿export class StepDefinition {
-    public defaultRegExp = /"(?:[^"\\]|\\.)*"/ig;
+﻿import {ExpressionLibrary} from './RegEx';
 
+export class StepDefinition {
     constructor(public expression: RegExp, public step: Function) { }
 }
 
@@ -10,9 +10,6 @@ export class StepExecution {
 
 export class StepCollection {
     private steps: StepDefinition[] = [];
-    // Part one finds things like "(.*)" and (\"\d+\") = /([\.\\]([*a-z])\+?)/g;
-    // Part two finds things like (\"true\"|\"false\") = \(\\\"true\\\"\|\\"false\\\"\)
-    private regexFinder = /([\.\\]([*a-z])\+?)|\(\\\"true\\\"\|\\"false\\\"\)/g;
 
     add(expression: RegExp, step: Function) {
         this.steps.push(new StepDefinition(expression, step));
@@ -22,7 +19,7 @@ export class StepCollection {
         for (var i = 0; i < this.steps.length; i++) {
             var step = this.steps[i];
             if (text.match(step.expression)) {
-                var params = this.getParams(text, step.defaultRegExp, step.expression);
+                var params = this.getParams(text, ExpressionLibrary.defaultStepRegExp, step.expression);
                 return new StepExecution(step.step, params);
             }
         }
@@ -32,9 +29,8 @@ export class StepCollection {
     getParams(text: string, parameterExpression: RegExp, findExpression: RegExp): any[] {
         if (parameterExpression) {
 
-            var typeIndicators = findExpression.source.toString().match(this.regexFinder);
+            var typeIndicators = findExpression.source.toString().match(ExpressionLibrary.regexFinderRegExp);
             var params = text.match(parameterExpression);
-            //console.log(JSON.stringify(typeIndicators));
 
             if (!params) {
                 return [];
