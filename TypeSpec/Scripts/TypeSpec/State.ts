@@ -10,6 +10,7 @@ export class StateBase {
     public scenarioTitle: string;
 
     public tags: string[] = [];
+    public tagsToExclude : string[] = [];
 
     public tableHeaders: string[] = [];
     public tableRows: {}[] = [];
@@ -19,6 +20,9 @@ export class StateBase {
             this.featureTitle = priorState.featureTitle;
             this.featureDescription = priorState.featureDescription;
             this.scenarioTitle = priorState.scenarioTitle;
+
+            this.tags = priorState.tags;
+            this.tagsToExclude = priorState.tagsToExclude;
 
             this.tableHeaders = priorState.tableHeaders;
             this.tableRows = priorState.tableRows;
@@ -91,6 +95,16 @@ export class StateBase {
         return this.unknown(line);
     }
 
+    isTagExcluded(tag: string) {
+        for (var i = 0; i < this.tagsToExclude.length; i++) {
+            if (this.tagsToExclude[i] === tag) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     isNewScenario(line: string) {
         return false;
     }
@@ -152,8 +166,9 @@ export class StateBase {
 
 export class InitializedState extends StateBase {
 
-    constructor(priorState: StateBase) {
-        super(priorState);
+    constructor(tagsToExclude: string[] = []) {
+        super(null);
+        this.tagsToExclude = tagsToExclude;
     }
 
     feature(line: string): StateBase {
@@ -175,12 +190,20 @@ export class FeatureState extends StateBase {
 
     tag(line: string): StateBase {
         var tags = line.split(Keyword.Tag);
+        var trimmedTags: string[] = [];
         for (var i = 0; i < tags.length; i++) {
             var trimmedTag = tags[i].trim().toLowerCase();
             if (trimmedTag) {
-                this.tags.push(trimmedTag);
+                if (this.isTagExcluded(trimmedTag)) {
+                    // Exclude this scenario...
+                    return new ExcludedScenarioState(this);
+                }
+                trimmedTags.push(trimmedTag);
             }
         }
+
+        this.tags.push.apply(this.tags, trimmedTags);
+
         return this;
     }
 
@@ -192,6 +215,66 @@ export class FeatureState extends StateBase {
     outline(line: string): StateBase {
         this.scenarioTitle = this.trimLine(line, Keyword.Scenario);
         return new ScenarioState(this);
+    }
+}
+
+class ExcludedScenarioState extends StateBase {
+    private hasScenario: boolean = false;
+
+    constructor(priorState: StateBase) {
+        super(priorState);
+    }
+
+    isNewScenario(line: string) {
+        return this.hasScenario && (Keyword.isScenarioDeclaration(line) || Keyword.isTagDeclaration(line));
+    }
+
+    tag(line: string): StateBase {
+        // Discard
+        console.log('l: ' + line);
+        return this;
+    }
+
+    scenario(line: string): StateBase {
+        // Discard
+        this.hasScenario = true;
+        return this;
+    }
+
+    outline(line: string): StateBase {
+        // Discard
+        this.hasScenario = true;
+        return this;
+    }
+
+    given(line: string): StateBase {
+        // Discard
+        return this;
+    }
+
+    when(line: string): StateBase {
+        // Discard
+        return this;
+    }
+
+    then(line: string): StateBase {
+        // Discard
+        return this;
+    }
+
+    and(line: string): StateBase {
+        // Discard
+        return this;
+    }
+
+    examples(line: string): StateBase {
+        // Discard
+        return this;
+    }
+
+    table(line: string): StateBase {
+        // Discard
+        return this;
     }
 }
 

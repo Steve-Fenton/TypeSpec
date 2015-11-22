@@ -14,8 +14,8 @@ export class FeatureParser {
     public state: StateBase[] = [];
     public scenarioIndex = 0;
 
-    constructor(private steps: StepCollection, private testReporter: ITestReporter) {
-        this.state[this.scenarioIndex] = new InitializedState(null);
+    constructor(private steps: StepCollection, private testReporter: ITestReporter, private tagsToExclude: string[]) {
+        this.state[this.scenarioIndex] = new InitializedState(this.tagsToExclude);
     }
 
     process(line: string) {
@@ -29,6 +29,7 @@ export class FeatureParser {
             this.state[this.scenarioIndex] = new FeatureState(null);
             this.state[this.scenarioIndex].featureTitle = existingFeatureTitle;
             this.state[this.scenarioIndex].featureDescription = existingFeatureDescription;
+            this.state[this.scenarioIndex].tagsToExclude = this.tagsToExclude;
         }
 
         // Process the new line
@@ -38,6 +39,12 @@ export class FeatureParser {
     run() {
         for (var scenarioIndex = 0; scenarioIndex < this.state.length; scenarioIndex++) {
             var scenario = this.state[scenarioIndex];
+
+            if (typeof scenario.scenarioTitle === 'undefined') {
+                this.testReporter.information(scenario.featureTitle + ' has an ignored scenario, or a scenario missing a title.');
+                continue;
+            }
+
             this.runScenario(scenario);
         }
     }

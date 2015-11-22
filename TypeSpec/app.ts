@@ -14,6 +14,12 @@ import {ArgumentSteps} from './Scripts/ArgumentSteps';
 // Set up the tests
 var runner = new SpecRunner(new CustomTestReporter());
 
+// Optionally exclude tags
+runner.excludeTags('exclude');
+
+// Or exclude many tags...
+//runner.excludeTags('exclude', 'failing');
+
 // You can use this technique to register many sets of steps
 CalculatorSteps.register(runner);
 ArgumentSteps.register(runner);
@@ -28,5 +34,8 @@ runner.run(
 
     //Deliberately failing features
     '/Specifications/Failing.txt',
-    '/Specifications/MissingStep.txt'
+    '/Specifications/MissingStep.txt',
+
+    //Excluded by tags
+    '/Specifications/ExcludedByTag.txt'
 );

@@ -3,6 +3,7 @@ import {StepCollection} from './Steps';
 
 export class SpecRunner {
     private steps: StepCollection = new StepCollection();
+    private excludedTags: string[] = [];
 
     constructor(private testReporter = new TestReporter()) { }
 
@@ -12,6 +13,12 @@ export class SpecRunner {
 
     run(...url: string[]) {
         this.readFile(0, url);
+    }
+
+    excludeTags(...tags: string[]) {
+        for (var i = 0; i < tags.length; i++) {
+            this.excludedTags.push(tags[i]);
+        }
     }
 
     private readFile(index: number, url: string[]) {
@@ -40,7 +47,7 @@ export class SpecRunner {
     private processSpecification(spec: string) {
 
         var hasParsed = true;
-        var composer = new FeatureParser(this.steps, this.testReporter);
+        var composer = new FeatureParser(this.steps, this.testReporter, this.excludedTags);
 
         /* Normalise line endings before splitting */
         var lines = spec.replace('\r\n', '\n').split('\n');
