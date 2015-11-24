@@ -26,6 +26,7 @@
     <Content Include="index.html" />
     <Content Include="Scripts\r.js" />
     <Content Include="Scripts\require.js" />
+    <Content Include="Specifications\Basic.txt" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
@@ -36,6 +37,9 @@
     <TypeScriptCompile Include="Scripts\TypeSpec\State.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\Steps.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\TypeSpec.ts" />
+    <TypeScriptCompile Include="Scripts\Calculator.ts" />
+    <TypeScriptCompile Include="Steps\CalculatorSteps.ts" />
+    <TypeScriptCompile Include="Steps\CustomTestReporter.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
@@ -75,6 +79,17 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
+    <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptNoImplicitAny>True</TypeScriptNoImplicitAny>
+    <TypeScriptModuleKind>UMD</TypeScriptModuleKind>
+    <TypeScriptOutFile />
+    <TypeScriptOutDir />
+    <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
+    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
+    <TypeScriptMapRoot />
+    <TypeScriptSourceRoot />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <TypeScriptRemoveComments>true</TypeScriptRemoveComments>

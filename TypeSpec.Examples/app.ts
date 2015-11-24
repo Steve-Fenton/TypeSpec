@@ -1,28 +1,11 @@
-﻿class Greeter {
-    element: HTMLElement;
-    span: HTMLElement;
-    timerToken: number;
+﻿import {SpecRunner, TapReporter} from './Scripts/TypeSpec/TypeSpec';
+import {Calculator} from './Scripts/Calculator';
+import {CustomTestReporter} from './Steps/CustomTestReporter';
+import {CalculatorSteps} from './Steps/CalculatorSteps';
 
-    constructor(element: HTMLElement) {
-        this.element = element;
-        this.element.innerHTML += "The time is: ";
-        this.span = document.createElement('span');
-        this.element.appendChild(this.span);
-        this.span.innerText = new Date().toUTCString();
-    }
+var runner = new SpecRunner(new CustomTestReporter());
+CalculatorSteps.register(runner);
 
-    start() {
-        this.timerToken = setInterval(() => this.span.innerHTML = new Date().toUTCString(), 500);
-    }
-
-    stop() {
-        clearTimeout(this.timerToken);
-    }
-
-}
-
-window.onload = () => {
-    var el = document.getElementById('content');
-    var greeter = new Greeter(el);
-    greeter.start();
-};
+runner.run(
+    '/Specifications/Basic.txt'
+);
