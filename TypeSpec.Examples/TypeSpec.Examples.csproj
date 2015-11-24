@@ -3,7 +3,7 @@
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <ProjectGuid>{C77505C3-90E6-4A14-BBAF-4AD0239ADBC0}</ProjectGuid>
+    <ProjectGuid>{CCCDDD3D-B762-452E-8791-E3A9E3C97E36}</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <OutputPath>bin</OutputPath>
@@ -26,33 +26,19 @@
     <Content Include="index.html" />
     <Content Include="Scripts\r.js" />
     <Content Include="Scripts\require.js" />
-    <Content Include="Specifications\ArgumentTypes.txt" />
-    <Content Include="Specifications\ExcludedByTag.txt" />
-    <Content Include="Specifications\MultipleArgumentsPerLine.txt" />
-    <Content Include="Specifications\ScenarioOutlines.txt" />
-    <Content Include="Specifications\MultipleScenarios.txt" />
-    <Content Include="Specifications\MissingStep.txt" />
-    <Content Include="Specifications\Failing.txt" />
+    <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
-    <TypeScriptCompile Include="Scripts\Calculator.ts" />
-    <TypeScriptCompile Include="Scripts\ArgumentSteps.ts" />
-    <TypeScriptCompile Include="Scripts\CustomTestReporter.ts" />
-    <TypeScriptCompile Include="Scripts\CalculatorSteps.ts" />
+    <TypeScriptCompile Include="Scripts\TypeSpec\Keyword.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\Parser.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\RegEx.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\State.ts" />
-    <TypeScriptCompile Include="Scripts\TypeSpec\Keyword.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\Steps.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\TypeSpec.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
-    <Content Include="Specifications\Basic.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="web.config" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -64,7 +50,7 @@
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <RootNamespace>TypeSpec</RootNamespace>
+    <RootNamespace>TypeSpec.Examples</RootNamespace>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\WebApplications\Microsoft.WebApplication.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\WebApplications\Microsoft.WebApplication.targets')" />
@@ -74,9 +60,9 @@
         <WebProjectProperties>
           <UseIIS>True</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>51049</DevelopmentServerPort>
+          <DevelopmentServerPort>55627</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:51049/</IISUrl>
+          <IISUrl>http://localhost:55627/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
@@ -89,26 +75,10 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
-    <TypeScriptTarget>ES5</TypeScriptTarget>
-    <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
-    <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
-    <TypeScriptNoImplicitAny>True</TypeScriptNoImplicitAny>
-    <TypeScriptModuleKind>UMD</TypeScriptModuleKind>
-    <TypeScriptOutFile />
-    <TypeScriptOutDir />
-    <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
-    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
-    <TypeScriptMapRoot />
-    <TypeScriptSourceRoot />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <TypeScriptRemoveComments>true</TypeScriptRemoveComments>
     <TypeScriptSourceMap>false</TypeScriptSourceMap>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />
-  <PropertyGroup>
-    <PostBuildEvent>XCOPY $(ProjectDir)Scripts\TypeSpec\*.ts $(SolutionDir)\TypeSpec.Packager\content\Scripts\TypeSpec\ /y
-
-</PostBuildEvent>
-  </PropertyGroup>
 </Project>

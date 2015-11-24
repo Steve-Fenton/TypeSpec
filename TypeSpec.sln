@@ -11,6 +11,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TypeSpec.Packager", "TypeSpec.Packager\TypeSpec.Packager.csproj", "{0451BAEF-DF2E-4B98-8644-94EE9415E389}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TypeSpec.Examples", "TypeSpec.Examples\TypeSpec.Examples.csproj", "{CCCDDD3D-B762-452E-8791-E3A9E3C97E36}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{C77505C3-90E6-4A14-BBAF-4AD0239ADBC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C77505C3-90E6-4A14-BBAF-4AD0239ADBC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C77505C3-90E6-4A14-BBAF-4AD0239ADBC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0451BAEF-DF2E-4B98-8644-94EE9415E389}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0451BAEF-DF2E-4B98-8644-94EE9415E389}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0451BAEF-DF2E-4B98-8644-94EE9415E389}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0451BAEF-DF2E-4B98-8644-94EE9415E389}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCCDDD3D-B762-452E-8791-E3A9E3C97E36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCCDDD3D-B762-452E-8791-E3A9E3C97E36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCCDDD3D-B762-452E-8791-E3A9E3C97E36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCCDDD3D-B762-452E-8791-E3A9E3C97E36}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
