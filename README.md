@@ -1,5 +1,7 @@
 ﻿# TypeSpec
-An experimental TypeScript BDD framework.
+A TypeScript BDD framework.
+
+    PM> Install-Package TypeSpec 
 
 The aim is to properly separate the business specifications from the code, 
 but rather than code-generate (like Java or C# BDD tools), the tests will be 
