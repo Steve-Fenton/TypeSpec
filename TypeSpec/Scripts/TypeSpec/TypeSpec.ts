@@ -81,7 +81,6 @@ export class SpecRunner {
     }
 
     private processSpecification(spec: string) {
-        console.log(typeof spec);
         var hasParsed = true;
         var composer = new FeatureParser(this.steps, this.testReporter, this.excludedTags);
 

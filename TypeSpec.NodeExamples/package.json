@@ -4,10 +4,10 @@
   "description": "TypeSpec.NodeExamples",
   "main": "app.js",
   "author": {
-    "name": "Sohnee",
+    "name": "Steve Fenton",
     "email": ""
   },
   "dependencies": {
-    "typespec-bdd": "^0.5.1"
+    "typespec-bdd": "^0.5.4"
   }
 }

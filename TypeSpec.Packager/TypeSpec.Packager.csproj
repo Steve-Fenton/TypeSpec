@@ -74,6 +74,14 @@
     <TypeScriptCompile Include="content\Scripts\TypeSpec\Steps.ts" />
     <TypeScriptCompile Include="content\Scripts\TypeSpec\TypeSpec.ts" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="content\Scripts\TypeSpec\Keyword.js" />
+    <Content Include="content\Scripts\TypeSpec\Parser.js" />
+    <Content Include="content\Scripts\TypeSpec\RegEx.js" />
+    <Content Include="content\Scripts\TypeSpec\State.js" />
+    <Content Include="content\Scripts\TypeSpec\Steps.js" />
+    <Content Include="content\Scripts\TypeSpec\TypeSpec.js" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
