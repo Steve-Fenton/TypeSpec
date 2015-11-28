@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TypeSpec.Packager", "TypeSp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TypeSpec.Examples", "TypeSpec.Examples\TypeSpec.Examples.csproj", "{CCCDDD3D-B762-452E-8791-E3A9E3C97E36}"
 EndProject
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "TypeSpec.NodeExamples", "TypeSpec.NodeExamples\TypeSpec.NodeExamples.njsproj", "{B35E5F54-FA19-4D13-B96F-C696873EB183}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{CCCDDD3D-B762-452E-8791-E3A9E3C97E36}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCCDDD3D-B762-452E-8791-E3A9E3C97E36}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CCCDDD3D-B762-452E-8791-E3A9E3C97E36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B35E5F54-FA19-4D13-B96F-C696873EB183}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B35E5F54-FA19-4D13-B96F-C696873EB183}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B35E5F54-FA19-4D13-B96F-C696873EB183}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B35E5F54-FA19-4D13-B96F-C696873EB183}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

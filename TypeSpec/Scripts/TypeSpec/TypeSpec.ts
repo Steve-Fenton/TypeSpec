@@ -1,9 +1,12 @@
 ﻿import {FeatureParser, ITestReporter} from './Parser';
 import {StepCollection} from './Steps';
 
+declare var require: any;
+
 export class SpecRunner {
     private steps: StepCollection = new StepCollection();
     private excludedTags: string[] = [];
+    private hasWindow = (typeof window !== 'undefined');
 
     constructor(private testReporter: ITestReporter = new TestReporter()) { }
 
@@ -22,8 +25,6 @@ export class SpecRunner {
     }
 
     private readFile(index: number, url: string[]) {
-        // TODO: detect local file path and use node js to read file
-        // This is the default for browser-based tests...
         var cacheBust = '?cb=' + new Date().getTime();
         if (index < url.length) {
             var nextIndex = index + 1;
@@ -32,7 +33,12 @@ export class SpecRunner {
             if (nextIndex === url.length) {
                 finalCallback = () => { this.testReporter.complete(); };
             }
-            this.getFile(url[index], cacheBust, () => { this.readFile(nextIndex, url); }, finalCallback);
+
+            if (this.hasWindow) {
+                this.getFile(url[index], cacheBust, () => { this.readFile(nextIndex, url); }, finalCallback);
+            } else {
+                this.getNodeFile(url[index], cacheBust, () => { this.readFile(nextIndex, url); }, finalCallback);
+            }
         }
     }
 
@@ -56,8 +62,26 @@ export class SpecRunner {
         client.send();
     }
 
-    private processSpecification(spec: string) {
+    private getNodeFile(url: string, cacheBust: string, successCallback: Function, allCallback: Function) {
+        var fs: any = require('fs');
+        var path: any = require('path');
 
+        // Make the path relative in Node's terms and resolve it
+        var resolvedUrl = path.resolve('.' + url);
+
+        fs.readFile(resolvedUrl, 'utf8', (err: any, data: string) => {
+            if (err) {
+                this.testReporter.error('getNodeFile', url, new Error('Error loading specification: ' + err + ').'));
+                allCallback();
+            }
+            this.processSpecification(data);
+            successCallback();
+            allCallback();
+        });
+    }
+
+    private processSpecification(spec: string) {
+        console.log(typeof spec);
         var hasParsed = true;
         var composer = new FeatureParser(this.steps, this.testReporter, this.excludedTags);
 

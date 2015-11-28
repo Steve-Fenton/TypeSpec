@@ -1,0 +1,13 @@
+{
+  "name": "TypeSpec.NodeExamples",
+  "version": "0.0.0",
+  "description": "TypeSpec.NodeExamples",
+  "main": "app.js",
+  "author": {
+    "name": "Sohnee",
+    "email": ""
+  },
+  "dependencies": {
+    "typespec-bdd": "^0.5.1"
+  }
+}
