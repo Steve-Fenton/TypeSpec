@@ -132,7 +132,7 @@ clarity in your step definitions.
 
     export class CalculatorSteps {
         static register(runner: SpecRunner) {
-            runner.addStep(/I am using a calculator/i,
+            runner.given(/I am using a calculator/i,
                 (context: CalculatorTestContext) => {
                 context.calculator = new Calculator();
             });
@@ -147,7 +147,7 @@ clarity in your step definitions.
                 // No action needed
             });
 
-            runner.addStep(/the result should be (\"\d+\") on the screen/i,
+            runner.then(/the result should be (\"\d+\") on the screen/i,
                 (context: CalculatorTestContext, num: number) => {
                 var total = context.calculator.getTotal();
                 Assert.areIdentical(num, total);
