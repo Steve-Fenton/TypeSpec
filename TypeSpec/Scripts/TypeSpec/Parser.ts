@@ -1,14 +1,7 @@
-﻿import {Keyword} from './Keyword';
+﻿import {Keyword, ITestReporter} from './Keyword';
 import {ExpressionLibrary} from './RegEx';
-import {StepCollection} from './Steps';
+import {StepCollection, StepType} from './Steps';
 import {StateBase, InitializedState, FeatureState} from './State';
-
-export interface ITestReporter {
-    summary(featureTitle: string, scenarioTitle: string, isSuccess: boolean): void;
-    error(featureTitle: string, condition: string, error: Error): void;
-    information(message: string): void;
-    complete(): void;
-}
 
 export class FeatureParser {
     public tags: string[] = [];
@@ -70,19 +63,19 @@ export class FeatureParser {
                 // Given
                 this.testReporter.information(Keyword.Given);
                 for (i = 0; i < scenario.givens.length; i++) {
-                    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.givens[i], scenario.featureTitle, scenario.scenarioTitle);
+                    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.givens[i], scenario.featureTitle, scenario.scenarioTitle, StepType.Given);
                 }
 
                 // When
                 this.testReporter.information(Keyword.When);
                 for (i = 0; i < scenario.whens.length; i++) {
-                    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.whens[i], scenario.featureTitle, scenario.scenarioTitle);
+                    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.whens[i], scenario.featureTitle, scenario.scenarioTitle, StepType.When);
                 }
 
                 // Then
                 this.testReporter.information(Keyword.Then);
                 for (i = 0; i < scenario.thens.length; i++) {
-                    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.thens[i], scenario.featureTitle, scenario.scenarioTitle);
+                    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.thens[i], scenario.featureTitle, scenario.scenarioTitle, StepType.Then);
                 }
             } catch (ex) {
                 passed = false;
@@ -92,9 +85,9 @@ export class FeatureParser {
         }
     }
 
-    private executeWithErrorHandling(dynamicStateContainer: any, scenario: StateBase, exampleIndex: number, condition: string, featureTitle: string, scenarioTitle: string) {
+    private executeWithErrorHandling(dynamicStateContainer: any, scenario: StateBase, exampleIndex: number, condition: string, featureTitle: string, scenarioTitle: string, type: StepType) {
         try {
-            this.runCondition(dynamicStateContainer, scenario, exampleIndex, condition);
+            this.runCondition(dynamicStateContainer, scenario, exampleIndex, condition, type);
             return true;
         } catch (ex) {
             this.testReporter.error(featureTitle, condition, ex);
@@ -102,11 +95,11 @@ export class FeatureParser {
         }
     }
 
-    private runCondition(dynamicStateContainer: any, scenario: StateBase, exampleIndex: number, condition: string) {
+    private runCondition(dynamicStateContainer: any, scenario: StateBase, exampleIndex: number, condition: string, type: StepType) {
 
         condition = scenario.prepareCondition(condition, exampleIndex);
         this.testReporter.information('\t' + condition);
-        var stepExecution = this.steps.find(condition);
+        var stepExecution = this.steps.find(condition, type);
 
         if (stepExecution === null) {
             var stepMethodBuilder = new StepMethodBuilder(condition);

@@ -1,12 +1,26 @@
-var ExpressionLibrary = (function () {
-    function ExpressionLibrary() {
+(function (deps, factory) {
+    if (typeof module === 'object' && typeof module.exports === 'object') {
+        var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
-    ExpressionLibrary.quotedArgumentsRegExp = /"(?:[^"\\]|\\.)*"/ig;
-    ExpressionLibrary.defaultStepRegExp = /"(?:[^"\\]|\\.)*"/ig;
-    ExpressionLibrary.regexFinderRegExp = /([\.\\]([*a-z])\+?)|\(\\\"true\\\"\|\\"false\\\"\)/g;
-    ExpressionLibrary.defaultString = '"(.*)"';
-    ExpressionLibrary.numberString = '(\\"\\d+\\")';
-    ExpressionLibrary.trueFalseString = '(\\"true\\"|\\"false\\")';
-    return ExpressionLibrary;
-})();
-exports.ExpressionLibrary = ExpressionLibrary;
+    else if (typeof define === 'function' && define.amd) {
+        define(deps, factory);
+    }
+})(["require", "exports"], function (require, exports) {
+    var ExpressionLibrary = (function () {
+        function ExpressionLibrary() {
+        }
+        // RegExp members
+        ExpressionLibrary.quotedArgumentsRegExp = /"(?:[^"\\]|\\.)*"/ig;
+        ExpressionLibrary.defaultStepRegExp = /"(?:[^"\\]|\\.)*"/ig;
+        // Part one finds things like "(.*)" and (\"\d+\") = /([\.\\]([*a-z])\+?)/g;
+        // Part two finds things like (\"true\"|\"false\") = \(\\\"true\\\"\|\\"false\\\"\)
+        ExpressionLibrary.regexFinderRegExp = /([\.\\]([*a-z])\+?)|\(\\\"true\\\"\|\\"false\\\"\)/g;
+        // String members
+        ExpressionLibrary.defaultString = '"(.*)"';
+        ExpressionLibrary.numberString = '(\\"\\d+\\")';
+        ExpressionLibrary.trueFalseString = '(\\"true\\"|\\"false\\")';
+        return ExpressionLibrary;
+    })();
+    exports.ExpressionLibrary = ExpressionLibrary;
+});
+//# sourceMappingURL=RegEx.js.map

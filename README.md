@@ -49,13 +49,16 @@ better than this - but it shows how the parts fit together.
 Steps are defined using a regular expression, and a function to handle the step.
 For example, the step for the condition `Given I am using a calculator` is defined below:
 
-    runner.addStep(/I am using a calculator/i,
+    runner.given(/I am using a calculator/i,
         (context: CalculatorTestContext) => {
         context.calculator = new Calculator();
     });
 
 This is a basic example, where the regular expression is just the static text to be matched, along
 with the `i` flag to allow case-insensitive matches.
+
+You can use the methods `given`, `when`, or `then` to add steps, which will limit where they are used, or
+you can use the `addStep` method to define a step that can be used in any case.
 
 If you include variables in your condition, you can use the regular expression to match the 
 step without the specific value. For example, the steps `And I have entered "50" into the calculator`

@@ -7,7 +7,8 @@ interface CalculatorTestContext {
 
 export class CalculatorSteps {
     static register(runner: SpecRunner) {
-        runner.addStep(/I am using a calculator/i,
+
+        runner.given(/I am using a calculator/i,
             (context: CalculatorTestContext) => {
                 context.calculator = new Calculator();
             });
@@ -23,12 +24,12 @@ export class CalculatorSteps {
                 context.calculator.add(num2);
             });
 
-        runner.addStep(/I press the total button/gi,
+        runner.when(/I press the total button/gi,
             (context: CalculatorTestContext) => {
                 // No action needed
             });
 
-        runner.addStep(/the result should be (\"\d+\") on the screen/i,
+        runner.then(/the result should be (\"\d+\") on the screen/i,
             (context: CalculatorTestContext, expected: number) => {
                 var actual = context.calculator.getTotal();
                 Assert.areIdentical(expected, actual);

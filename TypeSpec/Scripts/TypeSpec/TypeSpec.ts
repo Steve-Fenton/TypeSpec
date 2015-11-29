@@ -1,17 +1,32 @@
-﻿import {FeatureParser, ITestReporter} from './Parser';
-import {StepCollection} from './Steps';
+﻿import {FeatureParser} from './Parser';
+import {StepCollection, StepType} from './Steps';
+import {ITestReporter} from './Keyword';
 
 declare var require: any;
 
 export class SpecRunner {
-    private steps: StepCollection = new StepCollection();
+    private steps: StepCollection;
     private excludedTags: string[] = [];
     private hasWindow = (typeof window !== 'undefined');
 
-    constructor(private testReporter: ITestReporter = new TestReporter()) { }
+    constructor(private testReporter: ITestReporter = new TestReporter()) {
+        this.steps = new StepCollection(testReporter);
+    }
 
     addStep(expression: RegExp, step: Function) {
         this.steps.add(expression, step);
+    }
+
+    given(expression: RegExp, step: Function) {
+        this.steps.add(expression, step, StepType.Given);
+    }
+
+    when(expression: RegExp, step: Function) {
+        this.steps.add(expression, step, StepType.When);
+    }
+
+    then(expression: RegExp, step: Function) {
+        this.steps.add(expression, step, StepType.Then);
     }
 
     run(...url: string[]) {
