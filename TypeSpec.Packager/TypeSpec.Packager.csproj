@@ -46,9 +46,6 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="content\Scripts\TypeSpec\npm-publish.bat" />
     <None Include="content\Scripts\TypeSpec\package.json" />
     <None Include="NuGetPackage.ps1" />
@@ -64,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="lib\" />
+    <Folder Include="Properties\" />
     <Folder Include="src\" />
   </ItemGroup>
   <ItemGroup>

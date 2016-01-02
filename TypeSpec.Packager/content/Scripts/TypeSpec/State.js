@@ -195,7 +195,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             this.hasScenario = false;
         }
         ExcludedScenarioState.prototype.isNewScenario = function (line) {
-            return this.hasScenario && (Keyword_1.Keyword.isScenarioDeclaration(line) || Keyword_1.Keyword.isTagDeclaration(line));
+            return this.hasScenario && (Keyword_1.Keyword.isScenarioDeclaration(line) || Keyword_1.Keyword.isOutlineDeclaration(line) || Keyword_1.Keyword.isTagDeclaration(line));
         };
         ExcludedScenarioState.prototype.tag = function (line) {
             // Discard
@@ -288,7 +288,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             _super.call(this, priorState);
         }
         ThenState.prototype.isNewScenario = function (line) {
-            return (Keyword_1.Keyword.isScenarioDeclaration(line) || Keyword_1.Keyword.isTagDeclaration(line));
+            return (Keyword_1.Keyword.isScenarioDeclaration(line) || Keyword_1.Keyword.isOutlineDeclaration(line) || Keyword_1.Keyword.isTagDeclaration(line));
         };
         ThenState.prototype.and = function (line) {
             this.thens.push(this.trimLine(line, Keyword_1.Keyword.And));
