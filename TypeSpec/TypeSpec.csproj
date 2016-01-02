@@ -29,6 +29,7 @@
     <Content Include="Specifications\ArgumentTypes.txt" />
     <Content Include="Specifications\ExcludedByTag.txt" />
     <Content Include="Specifications\MultipleArgumentsPerLine.txt" />
+    <Content Include="Specifications\MixedSpecificationFiles.txt" />
     <Content Include="Specifications\ScenarioOutlines.txt" />
     <Content Include="Specifications\MultipleScenarios.txt" />
     <Content Include="Specifications\MissingStep.txt" />

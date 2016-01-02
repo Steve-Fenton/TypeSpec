@@ -226,7 +226,7 @@ class ExcludedScenarioState extends StateBase {
     }
 
     isNewScenario(line: string) {
-        return this.hasScenario && (Keyword.isScenarioDeclaration(line) || Keyword.isTagDeclaration(line));
+        return this.hasScenario && (Keyword.isScenarioDeclaration(line) || Keyword.isOutlineDeclaration(line) || Keyword.isTagDeclaration(line));
     }
 
     tag(line: string): StateBase {
@@ -335,7 +335,7 @@ class ThenState extends StateBase {
     }
 
     isNewScenario(line: string) {
-        return (Keyword.isScenarioDeclaration(line) || Keyword.isTagDeclaration(line));
+        return (Keyword.isScenarioDeclaration(line) || Keyword.isOutlineDeclaration(line) || Keyword.isTagDeclaration(line));
     }
 
     and(line: string) {
