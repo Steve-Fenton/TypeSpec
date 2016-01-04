@@ -35,6 +35,7 @@ runner.run(
     '/Specifications/MultipleScenarios.txt',
     '/Specifications/ScenarioOutlines.txt',
     '/Specifications/MixedSpecificationFiles.txt',
+    '/Specifications/QuotedStrings.txt',
 
     //Deliberately failing features
     '/Specifications/Failing.txt',

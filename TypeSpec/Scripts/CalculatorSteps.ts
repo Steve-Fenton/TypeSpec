@@ -24,6 +24,13 @@ export class CalculatorSteps {
                 context.calculator.add(num2);
             });
 
+        runner.addStep(/I speak "(.*)" into the calculator/i,
+            (context: CalculatorTestContext, sentence: string) => {
+                var matches = sentence.match(/(\+|-)?((\d+(\.\d+)?)|(\.\d+))/);
+                var num = parseFloat(matches[0]);
+                context.calculator.add(num);
+            });
+
         runner.when(/I press the total button/gi,
             (context: CalculatorTestContext) => {
                 // No action needed
