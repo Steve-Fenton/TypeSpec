@@ -72,8 +72,13 @@
                     return [];
                 }
                 for (var i = 0; i < params.length; i++) {
-                    // Remove quotes
-                    var val = params[i].replace(/"/g, '');
+                    var val = params[i];
+                    if (val.substr(0, 1) === '"') {
+                        val = val.substr(1);
+                    }
+                    if (val.substr(-1) === '"') {
+                        val = val.substr(0, val.length - 1);
+                    }
                     if (typeIndicators !== null && typeIndicators[i]) {
                         var indicator = typeIndicators[i];
                         switch (indicator) {
@@ -95,4 +100,3 @@
     })();
     exports.StepCollection = StepCollection;
 });
-//# sourceMappingURL=Steps.js.map
