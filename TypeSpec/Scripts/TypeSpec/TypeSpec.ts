@@ -29,12 +29,13 @@ export class SpecRunner {
         this.steps.add(expression, step, StepType.Then);
     }
 
-    runSpecList(specList: SpecificationList) {
-        this.readFile(0, specList.randomise());
-    }
-
     run(...url: string[]) {
         this.readFile(0, url);
+    }
+
+    runInRandomOrder(...url: string[]) {
+        var specList = new SpecificationList(url);
+        this.readFile(0, specList.randomise());
     }
 
     excludeTags(...tags: string[]) {
@@ -125,10 +126,7 @@ export class SpecRunner {
 }
 
 export class SpecificationList {
-    private specifications: string[];
-
-    constructor(...specifications: string[]) {
-        this.specifications = specifications;
+    constructor(private specifications: string[]) {
     }
 
     randomise() {

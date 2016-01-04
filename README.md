@@ -48,12 +48,9 @@ better than this - but it shows how the parts fit together.
 
 If you want to run the specification in a random order (to discourage coupling), you can use a SpecificationList.
 
-    var specList = new SpecificationList(
+    runner.runInRandomOrder(
         '/Specifications/Basic.txt'
     );
-
-    // Run the specifications listed
-    runner.runSpecList(specList);
 
 ## Step Definitions
 

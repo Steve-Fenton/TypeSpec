@@ -27,8 +27,8 @@ runner.excludeTags('@exclude');
 CalculatorSteps.register(runner);
 ArgumentSteps.register(runner);
 
-// If you want to randomise the specifications
-var specList = new SpecificationList(
+// Run the specifications listed
+runner.runInRandomOrder(
     '/Specifications/Basic.txt',
     '/Specifications/ArgumentTypes.txt',
     '/Specifications/MultipleArgumentsPerLine.txt',
@@ -45,6 +45,3 @@ var specList = new SpecificationList(
     //Excluded by tag
     '/Specifications/ExcludedByTag.txt'
 );
-
-// Run the specifications listed
-runner.runSpecList(specList);

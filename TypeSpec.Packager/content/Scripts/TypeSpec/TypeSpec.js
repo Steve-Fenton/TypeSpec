@@ -28,15 +28,20 @@
         SpecRunner.prototype.then = function (expression, step) {
             this.steps.add(expression, step, Steps_1.StepType.Then);
         };
-        SpecRunner.prototype.runSpecList = function (specList) {
-            this.readFile(0, specList.randomise());
-        };
         SpecRunner.prototype.run = function () {
             var url = [];
             for (var _i = 0; _i < arguments.length; _i++) {
                 url[_i - 0] = arguments[_i];
             }
             this.readFile(0, url);
+        };
+        SpecRunner.prototype.runInRandomOrder = function () {
+            var url = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                url[_i - 0] = arguments[_i];
+            }
+            var specList = new SpecificationList(url);
+            this.readFile(0, specList.randomise());
         };
         SpecRunner.prototype.excludeTags = function () {
             var tags = [];
@@ -126,11 +131,7 @@
     })();
     exports.SpecRunner = SpecRunner;
     var SpecificationList = (function () {
-        function SpecificationList() {
-            var specifications = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                specifications[_i - 0] = arguments[_i];
-            }
+        function SpecificationList(specifications) {
             this.specifications = specifications;
         }
         SpecificationList.prototype.randomise = function () {
