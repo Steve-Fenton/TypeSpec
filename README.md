@@ -44,6 +44,17 @@ better than this - but it shows how the parts fit together.
         '/Specifications/Basic.txt'
     );
 
+## Random Ordering
+
+If you want to run the specification in a random order (to discourage coupling), you can use a SpecificationList.
+
+    var specList = new SpecificationList(
+        '/Specifications/Basic.txt'
+    );
+
+    // Run the specifications listed
+    runner.runSpecList(specList);
+
 ## Step Definitions
 
 Steps are defined using a regular expression, and a function to handle the step.

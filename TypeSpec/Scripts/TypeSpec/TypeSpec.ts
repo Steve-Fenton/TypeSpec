@@ -29,6 +29,10 @@ export class SpecRunner {
         this.steps.add(expression, step, StepType.Then);
     }
 
+    runSpecList(specList: SpecificationList) {
+        this.readFile(0, specList.randomise());
+    }
+
     run(...url: string[]) {
         this.readFile(0, url);
     }
@@ -117,6 +121,30 @@ export class SpecRunner {
         if (hasParsed) {
             composer.run();
         }
+    }
+}
+
+export class SpecificationList {
+    private specifications: string[];
+
+    constructor(...specifications: string[]) {
+        this.specifications = specifications;
+    }
+
+    randomise() {
+        var orderedSpecs: string[] = [];
+
+        while (this.specifications.length > 0) {
+            var index = this.getRandomInt(0, this.specifications.length);
+            orderedSpecs.push(this.specifications[index]);
+            this.specifications.splice(index, 1);
+        }
+
+        return orderedSpecs;
+    }
+
+    private getRandomInt(min: number, max: number) {
+        return Math.floor(Math.random() * (max - min)) + min;
     }
 }
 

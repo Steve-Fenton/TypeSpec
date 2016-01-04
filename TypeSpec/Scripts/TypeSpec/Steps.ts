@@ -78,7 +78,7 @@ export class StepCollection {
                     val = val.substr(0, val.length - 1);
                 }
 
-                // Replace escaped quoted
+                // Replace escaped quotes
                 val = val.replace(/\\\"/g, '"');
 
                 if (typeIndicators !== null && typeIndicators[i]) {

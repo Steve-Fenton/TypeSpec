@@ -1,5 +1,5 @@
 ﻿// TypeSpec code
-import {SpecRunner, TapReporter} from './Scripts/TypeSpec/TypeSpec';
+import {SpecRunner, SpecificationList, TapReporter} from './Scripts/TypeSpec/TypeSpec';
 
 // Your application code
 import {Calculator} from './Scripts/Calculator';
@@ -27,8 +27,8 @@ runner.excludeTags('@exclude');
 CalculatorSteps.register(runner);
 ArgumentSteps.register(runner);
 
-// Run the specifications listed
-runner.run(
+// If you want to randomise the specifications
+var specList = new SpecificationList(
     '/Specifications/Basic.txt',
     '/Specifications/ArgumentTypes.txt',
     '/Specifications/MultipleArgumentsPerLine.txt',
@@ -45,3 +45,6 @@ runner.run(
     //Excluded by tag
     '/Specifications/ExcludedByTag.txt'
 );
+
+// Run the specifications listed
+runner.runSpecList(specList);
