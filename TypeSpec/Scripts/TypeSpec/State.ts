@@ -1,4 +1,5 @@
 ﻿import {Keyword} from './Keyword';
+import {StepType} from './Steps';
 
 export class StateBase {
     public givens: string[] = [];
@@ -15,6 +16,10 @@ export class StateBase {
     public tableHeaders: string[] = [];
     public tableRows: {}[] = [];
 
+    private givenIndex = -1;
+    private whenIndex = -1;
+    private thenIndex = -1;
+
     constructor(priorState: StateBase) {
         if (priorState !== null) {
             this.featureTitle = priorState.featureTitle;
@@ -30,6 +35,35 @@ export class StateBase {
             this.givens = priorState.givens;
             this.whens = priorState.whens;
             this.thens = priorState.thens;
+        }
+    }
+
+    getNextStep() {
+        if (this.givenIndex < this.givens.length - 1) {
+            this.givenIndex++;
+            // console.log(this.givens[this.givenIndex]);
+            return {
+                step: this.givens[this.givenIndex],
+                type: StepType.Given
+            };
+        }
+
+        if (this.whenIndex < this.whens.length - 1) {
+            this.whenIndex++;
+            // console.log(this.whens[this.whenIndex]);
+            return {
+                step: this.whens[this.whenIndex],
+                type: StepType.When
+            };
+        }
+
+        if (this.thenIndex < this.thens.length - 1) {
+            this.thenIndex++;
+            // console.log(this.thens[this.thenIndex]);
+            return {
+                step: this.thens[this.thenIndex],
+                type: StepType.Then
+            };
         }
     }
 

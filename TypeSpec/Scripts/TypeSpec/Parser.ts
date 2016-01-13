@@ -60,23 +60,13 @@ export class FeatureParser {
                     this.testReporter.information('\t' + scenario.featureDescription[i]);
                 }
 
-                // Given
-                this.testReporter.information(Keyword.Given);
-                for (i = 0; i < scenario.givens.length; i++) {
-                    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.givens[i], scenario.featureTitle, scenario.scenarioTitle, StepType.Given);
+                // Process the scenario steps
+                var next = scenario.getNextStep();
+                while (next) {
+                    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, next.step, scenario.featureTitle, scenario.scenarioTitle, next.type);
+                    next = scenario.getNextStep();
                 }
 
-                // When
-                this.testReporter.information(Keyword.When);
-                for (i = 0; i < scenario.whens.length; i++) {
-                    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.whens[i], scenario.featureTitle, scenario.scenarioTitle, StepType.When);
-                }
-
-                // Then
-                this.testReporter.information(Keyword.Then);
-                for (i = 0; i < scenario.thens.length; i++) {
-                    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.thens[i], scenario.featureTitle, scenario.scenarioTitle, StepType.Then);
-                }
             } catch (ex) {
                 passed = false;
             } finally {
@@ -113,7 +103,7 @@ export class FeatureParser {
             stepExecution.method.apply(null, stepExecution.parameters);
         } else {
             // Call the step method
-            stepExecution.method(dynamicStateContainer);
+            stepExecution.method.call(null, dynamicStateContainer);
         }
     }
 }

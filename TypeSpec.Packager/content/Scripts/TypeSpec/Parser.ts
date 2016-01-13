@@ -60,23 +60,27 @@ export class FeatureParser {
                     this.testReporter.information('\t' + scenario.featureDescription[i]);
                 }
 
+                var next = scenario.getNextStep();
+
+                passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, next.step, scenario.featureTitle, scenario.scenarioTitle, next.type);
+
                 // Given
-                this.testReporter.information(Keyword.Given);
-                for (i = 0; i < scenario.givens.length; i++) {
-                    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.givens[i], scenario.featureTitle, scenario.scenarioTitle, StepType.Given);
-                }
+                //this.testReporter.information(Keyword.Given);
+                //for (i = 0; i < scenario.givens.length; i++) {
+                //    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.givens[i], scenario.featureTitle, scenario.scenarioTitle, StepType.Given);
+                //}
 
                 // When
-                this.testReporter.information(Keyword.When);
-                for (i = 0; i < scenario.whens.length; i++) {
-                    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.whens[i], scenario.featureTitle, scenario.scenarioTitle, StepType.When);
-                }
+                //this.testReporter.information(Keyword.When);
+                //for (i = 0; i < scenario.whens.length; i++) {
+                //    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.whens[i], scenario.featureTitle, scenario.scenarioTitle, StepType.When);
+                //}
 
                 // Then
-                this.testReporter.information(Keyword.Then);
-                for (i = 0; i < scenario.thens.length; i++) {
-                    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.thens[i], scenario.featureTitle, scenario.scenarioTitle, StepType.Then);
-                }
+                //this.testReporter.information(Keyword.Then);
+                //for (i = 0; i < scenario.thens.length; i++) {
+                //    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.thens[i], scenario.featureTitle, scenario.scenarioTitle, StepType.Then);
+                //}
             } catch (ex) {
                 passed = false;
             } finally {
