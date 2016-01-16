@@ -61,11 +61,16 @@ export class FeatureParser {
                 }
 
                 // Process the scenario steps
-                var next = scenario.getNextStep();
-                while (next) {
-                    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, next.step, scenario.featureTitle, scenario.scenarioTitle, next.type);
-                    next = scenario.getNextStep();
+                var conditions = scenario.getAllConditions();
+
+                dynamicStateContainer.done = () => {
+                    console.log('TODO: done()');
+                };
+
+                for (var conditionIndex = 0; conditionIndex < conditions.length; conditionIndex++) {
+                    this.runNextCondition(conditions, conditionIndex, dynamicStateContainer, scenario, exampleIndex);
                 }
+                //
 
             } catch (ex) {
                 passed = false;
@@ -75,13 +80,13 @@ export class FeatureParser {
         }
     }
 
-    private executeWithErrorHandling(dynamicStateContainer: any, scenario: StateBase, exampleIndex: number, condition: string, featureTitle: string, scenarioTitle: string, type: StepType) {
+    private runNextCondition(conditions: { condition: string; type: StepType; }[], conditionIndex: number, dynamicStateContainer: any, scenario: StateBase, exampleIndex: number) {
+        var next = conditions[conditionIndex];
         try {
-            this.runCondition(dynamicStateContainer, scenario, exampleIndex, condition, type);
-            return true;
+            this.runCondition(dynamicStateContainer, scenario, exampleIndex, next.condition, next.type);
         } catch (ex) {
-            this.testReporter.error(featureTitle, condition, ex);
-            return false;
+            this.testReporter.error(scenario.featureTitle, next.condition, ex);
+            throw ex;
         }
     }
 

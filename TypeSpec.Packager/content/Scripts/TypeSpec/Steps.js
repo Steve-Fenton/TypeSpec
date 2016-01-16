@@ -8,9 +8,10 @@
 })(["require", "exports", './RegEx'], function (require, exports) {
     var RegEx_1 = require('./RegEx');
     var StepDefinition = (function () {
-        function StepDefinition(expression, step, type) {
+        function StepDefinition(expression, step, isAsync, type) {
             this.expression = expression;
             this.step = step;
+            this.isAsync = isAsync;
             this.type = type;
         }
         return StepDefinition;
@@ -36,9 +37,10 @@
             this.steps = [];
             this.anyStepType = StepType.Given | StepType.When | StepType.Then;
         }
-        StepCollection.prototype.add = function (expression, step, type) {
+        StepCollection.prototype.add = function (expression, step, isAsync, type) {
+            if (isAsync === void 0) { isAsync = false; }
             if (type === void 0) { type = this.anyStepType; }
-            this.steps.push(new StepDefinition(expression, step, type));
+            this.steps.push(new StepDefinition(expression, step, isAsync, type));
         };
         StepCollection.prototype.find = function (text, type) {
             var i;

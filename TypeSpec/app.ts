@@ -36,6 +36,7 @@ runner.runInRandomOrder(
     '/Specifications/ScenarioOutlines.txt',
     '/Specifications/MixedSpecificationFiles.txt',
     '/Specifications/QuotedStrings.txt',
+    '/Specifications/AsyncSteps.txt',
 
     //Deliberately failing features
     '/Specifications/Failing.txt',

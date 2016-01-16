@@ -11,14 +11,10 @@ export class StateBase {
     public scenarioTitle: string;
 
     public tags: string[] = [];
-    public tagsToExclude : string[] = [];
+    public tagsToExclude: string[] = [];
 
     public tableHeaders: string[] = [];
     public tableRows: {}[] = [];
-
-    private givenIndex = -1;
-    private whenIndex = -1;
-    private thenIndex = -1;
 
     constructor(priorState: StateBase) {
         if (priorState !== null) {
@@ -38,33 +34,31 @@ export class StateBase {
         }
     }
 
-    getNextStep() {
-        if (this.givenIndex < this.givens.length - 1) {
-            this.givenIndex++;
-            // console.log(this.givens[this.givenIndex]);
-            return {
-                step: this.givens[this.givenIndex],
+    getAllConditions() {
+        var conditions: { condition: string; type: StepType; }[] = [];
+
+        for (var i = 0; i < this.givens.length; i++) {
+            conditions.push({
+                condition: this.givens[i],
                 type: StepType.Given
-            };
+            });
         }
 
-        if (this.whenIndex < this.whens.length - 1) {
-            this.whenIndex++;
-            // console.log(this.whens[this.whenIndex]);
-            return {
-                step: this.whens[this.whenIndex],
+        for (var i = 0; i < this.whens.length; i++) {
+            conditions.push({
+                condition: this.whens[i],
                 type: StepType.When
-            };
+            });
         }
 
-        if (this.thenIndex < this.thens.length - 1) {
-            this.thenIndex++;
-            // console.log(this.thens[this.thenIndex]);
-            return {
-                step: this.thens[this.thenIndex],
+        for (var i = 0; i < this.thens.length; i++) {
+            conditions.push({
+                condition: this.thens[i],
                 type: StepType.Then
-            };
+            });
         }
+
+        return conditions;
     }
 
     prepareCondition(condition: string, index: number) {

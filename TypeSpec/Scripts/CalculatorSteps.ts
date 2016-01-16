@@ -2,6 +2,7 @@
 import {Calculator} from './Calculator';
 
 interface CalculatorTestContext {
+    done: () => void; // Standard TypeSpec aync done method.
     calculator: Calculator;
 }
 
@@ -29,6 +30,14 @@ export class CalculatorSteps {
                 var matches = sentence.match(/(\+|-)?((\d+(\.\d+)?)|(\.\d+))/);
                 var num = parseFloat(matches[0]);
                 context.calculator.add(num);
+            });
+
+        runner.addStepAsync(/I asynchronously enter (\"\d+\") into the calculator/i,
+            (context: CalculatorTestContext, num: number) => {
+                window.setTimeout(() => {
+                    context.calculator.add(num);
+                    context.done();
+                }, 200);
             });
 
         runner.when(/I press the total button/gi,

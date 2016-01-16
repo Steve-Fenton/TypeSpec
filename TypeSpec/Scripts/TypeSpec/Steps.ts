@@ -2,7 +2,7 @@
 import {ITestReporter} from './Keyword';
 
 export class StepDefinition {
-    constructor(public expression: RegExp, public step: Function, public type: StepType) { }
+    constructor(public expression: RegExp, public step: Function, public isAsync: boolean, public type: StepType) { }
 }
 
 export class StepExecution {
@@ -21,8 +21,8 @@ export class StepCollection {
 
     constructor(private testReporter: ITestReporter) { }
 
-    add(expression: RegExp, step: Function, type: StepType = this.anyStepType) {
-        this.steps.push(new StepDefinition(expression, step, type));
+    add(expression: RegExp, step: Function, isAsync = false, type: StepType = this.anyStepType) {
+        this.steps.push(new StepDefinition(expression, step, isAsync, type));
     }
 
     find(text: string, type: StepType) {

@@ -1,7 +1,7 @@
 ﻿Feature: Missing Step Example
-       In order to know a step is missing
-       As a BDD enthusiast
-       I want to be told when a condition doesn't have a corresponding step definition
+    In order to know a step is missing
+    As a BDD enthusiast
+    I want to be told when a condition doesn't have a corresponding step definition
 
 @failing
 Scenario: Missing Step Suggestion Should Include RegExp

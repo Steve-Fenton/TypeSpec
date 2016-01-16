@@ -14,19 +14,35 @@ export class SpecRunner {
     }
 
     addStep(expression: RegExp, step: Function) {
-        this.steps.add(expression, step);
+        this.steps.add(expression, step, false);
+    }
+
+    addStepAsync(expression: RegExp, step: Function) {
+        this.steps.add(expression, step, true);
     }
 
     given(expression: RegExp, step: Function) {
-        this.steps.add(expression, step, StepType.Given);
+        this.steps.add(expression, step, false, StepType.Given);
+    }
+
+    givenAsync(expression: RegExp, step: Function) {
+        this.steps.add(expression, step, true, StepType.Given);
     }
 
     when(expression: RegExp, step: Function) {
-        this.steps.add(expression, step, StepType.When);
+        this.steps.add(expression, step, false, StepType.When);
+    }
+
+    whenAsync(expression: RegExp, step: Function) {
+        this.steps.add(expression, step, true, StepType.When);
     }
 
     then(expression: RegExp, step: Function) {
-        this.steps.add(expression, step, StepType.Then);
+        this.steps.add(expression, step, false, StepType.Then);
+    }
+
+    thenAsync(expression: RegExp, step: Function) {
+        this.steps.add(expression, step, true, StepType.Then);
     }
 
     run(...url: string[]) {

@@ -17,16 +17,28 @@
             this.steps = new Steps_1.StepCollection(testReporter);
         }
         SpecRunner.prototype.addStep = function (expression, step) {
-            this.steps.add(expression, step);
+            this.steps.add(expression, step, false);
+        };
+        SpecRunner.prototype.addStepAsync = function (expression, step) {
+            this.steps.add(expression, step, true);
         };
         SpecRunner.prototype.given = function (expression, step) {
-            this.steps.add(expression, step, Steps_1.StepType.Given);
+            this.steps.add(expression, step, false, Steps_1.StepType.Given);
+        };
+        SpecRunner.prototype.givenAsync = function (expression, step) {
+            this.steps.add(expression, step, true, Steps_1.StepType.Given);
         };
         SpecRunner.prototype.when = function (expression, step) {
-            this.steps.add(expression, step, Steps_1.StepType.When);
+            this.steps.add(expression, step, false, Steps_1.StepType.When);
+        };
+        SpecRunner.prototype.whenAsync = function (expression, step) {
+            this.steps.add(expression, step, true, Steps_1.StepType.When);
         };
         SpecRunner.prototype.then = function (expression, step) {
-            this.steps.add(expression, step, Steps_1.StepType.Then);
+            this.steps.add(expression, step, false, Steps_1.StepType.Then);
+        };
+        SpecRunner.prototype.thenAsync = function (expression, step) {
+            this.steps.add(expression, step, true, Steps_1.StepType.Then);
         };
         SpecRunner.prototype.run = function () {
             var url = [];

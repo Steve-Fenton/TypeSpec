@@ -11,14 +11,14 @@ export class StateBase {
     public scenarioTitle: string;
 
     public tags: string[] = [];
-    public tagsToExclude : string[] = [];
+    public tagsToExclude: string[] = [];
 
     public tableHeaders: string[] = [];
     public tableRows: {}[] = [];
 
-    private givenIndex = 0;
-    private whenIndex = 0;
-    private thenIndex = 0;
+    private givenIndex = -1;
+    private whenIndex = -1;
+    private thenIndex = -1;
 
     constructor(priorState: StateBase) {
         if (priorState !== null) {
@@ -38,30 +38,34 @@ export class StateBase {
         }
     }
 
-    getNextStep() {
+    getAllConditions() {
+        var conditions: { condition: string; type: StepType; }[] = [];
+
         if (this.givenIndex < this.givens.length - 1) {
             this.givenIndex++;
-            return {
-                step: this.givens[this.givenIndex],
+            conditions.push({
+                condition: this.givens[this.givenIndex],
                 type: StepType.Given
-            };
+            });
         }
 
         if (this.whenIndex < this.whens.length - 1) {
             this.whenIndex++;
-            return {
-                step: this.whens[this.whenIndex],
+            conditions.push({
+                condition: this.whens[this.whenIndex],
                 type: StepType.When
-            };
+            });
         }
 
         if (this.thenIndex < this.thens.length - 1) {
             this.thenIndex++;
-            return {
-                step: this.thens[this.thenIndex],
+            conditions.push({
+                condition: this.thens[this.thenIndex],
                 type: StepType.Then
-            };
+            });
         }
+
+        return conditions;
     }
 
     prepareCondition(condition: string, index: number) {

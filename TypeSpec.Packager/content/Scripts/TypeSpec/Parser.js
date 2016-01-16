@@ -42,6 +42,7 @@
             }
         };
         FeatureParser.prototype.runScenario = function (scenario) {
+            var _this = this;
             var tableRowCount = (scenario.tableRows.length > 0) ? scenario.tableRows.length : 1;
             for (var exampleIndex = 0; exampleIndex < tableRowCount; exampleIndex++) {
                 try {
@@ -54,8 +55,20 @@
                     for (i = 0; i < scenario.featureDescription.length; i++) {
                         this.testReporter.information('\t' + scenario.featureDescription[i]);
                     }
-                    var next = scenario.getNextStep();
-                    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, next.step, scenario.featureTitle, scenario.scenarioTitle, next.type);
+                    var conditions = scenario.getAllConditions();
+                    for (var conditionIndex = 0; conditionIndex < conditions.length; conditionIndex++) {
+                        var next = conditions[conditionIndex];
+                        try {
+                            dynamicStateContainer.done = function () {
+                                _this.testReporter.error(scenario.featureTitle, next.condition, new Error('done() called in non-async context.'));
+                            };
+                            this.runCondition(dynamicStateContainer, scenario, exampleIndex, next.condition, next.type);
+                        }
+                        catch (ex) {
+                            this.testReporter.error(scenario.featureTitle, next.condition, ex);
+                            passed = false;
+                        }
+                    }
                 }
                 catch (ex) {
                     passed = false;
@@ -63,16 +76,6 @@
                 finally {
                     this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passed);
                 }
-            }
-        };
-        FeatureParser.prototype.executeWithErrorHandling = function (dynamicStateContainer, scenario, exampleIndex, condition, featureTitle, scenarioTitle, type) {
-            try {
-                this.runCondition(dynamicStateContainer, scenario, exampleIndex, condition, type);
-                return true;
-            }
-            catch (ex) {
-                this.testReporter.error(featureTitle, condition, ex);
-                return false;
             }
         };
         FeatureParser.prototype.runCondition = function (dynamicStateContainer, scenario, exampleIndex, condition, type) {
@@ -88,7 +91,7 @@
                 stepExecution.method.apply(null, stepExecution.parameters);
             }
             else {
-                stepExecution.method(dynamicStateContainer);
+                stepExecution.method.call(null, dynamicStateContainer);
             }
         };
         return FeatureParser;

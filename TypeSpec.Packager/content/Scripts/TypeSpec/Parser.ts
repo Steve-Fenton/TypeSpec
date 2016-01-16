@@ -60,42 +60,29 @@ export class FeatureParser {
                     this.testReporter.information('\t' + scenario.featureDescription[i]);
                 }
 
-                var next = scenario.getNextStep();
+                // Process the scenario steps
+                var conditions = scenario.getAllConditions();
 
-                passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, next.step, scenario.featureTitle, scenario.scenarioTitle, next.type);
+                for (var conditionIndex = 0; conditionIndex < conditions.length; conditionIndex++) {
+                    var next = conditions[conditionIndex];
+                    try {
+                        dynamicStateContainer.done = () => {
+                            this.testReporter.error(scenario.featureTitle, next.condition, new Error('done() called in non-async context.'));
+                        };
 
-                // Given
-                //this.testReporter.information(Keyword.Given);
-                //for (i = 0; i < scenario.givens.length; i++) {
-                //    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.givens[i], scenario.featureTitle, scenario.scenarioTitle, StepType.Given);
-                //}
+                        this.runCondition(dynamicStateContainer, scenario, exampleIndex, next.condition, next.type);
+                    } catch (ex) {
+                        this.testReporter.error(scenario.featureTitle, next.condition, ex);
+                        passed = false;
+                    }
+                }
+                //
 
-                // When
-                //this.testReporter.information(Keyword.When);
-                //for (i = 0; i < scenario.whens.length; i++) {
-                //    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.whens[i], scenario.featureTitle, scenario.scenarioTitle, StepType.When);
-                //}
-
-                // Then
-                //this.testReporter.information(Keyword.Then);
-                //for (i = 0; i < scenario.thens.length; i++) {
-                //    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.thens[i], scenario.featureTitle, scenario.scenarioTitle, StepType.Then);
-                //}
             } catch (ex) {
                 passed = false;
             } finally {
                 this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passed);
             }
-        }
-    }
-
-    private executeWithErrorHandling(dynamicStateContainer: any, scenario: StateBase, exampleIndex: number, condition: string, featureTitle: string, scenarioTitle: string, type: StepType) {
-        try {
-            this.runCondition(dynamicStateContainer, scenario, exampleIndex, condition, type);
-            return true;
-        } catch (ex) {
-            this.testReporter.error(featureTitle, condition, ex);
-            return false;
         }
     }
 
@@ -117,7 +104,7 @@ export class FeatureParser {
             stepExecution.method.apply(null, stepExecution.parameters);
         } else {
             // Call the step method
-            stepExecution.method(dynamicStateContainer);
+            stepExecution.method.call(null, dynamicStateContainer);
         }
     }
 }

@@ -23,9 +23,9 @@ var __extends = (this && this.__extends) || function (d, b) {
             this.tagsToExclude = [];
             this.tableHeaders = [];
             this.tableRows = [];
-            this.givenIndex = 0;
-            this.whenIndex = 0;
-            this.thenIndex = 0;
+            this.givenIndex = -1;
+            this.whenIndex = -1;
+            this.thenIndex = -1;
             if (priorState !== null) {
                 this.featureTitle = priorState.featureTitle;
                 this.featureDescription = priorState.featureDescription;
@@ -39,28 +39,30 @@ var __extends = (this && this.__extends) || function (d, b) {
                 this.thens = priorState.thens;
             }
         }
-        StateBase.prototype.getNextStep = function () {
+        StateBase.prototype.getAllConditions = function () {
+            var conditions = [];
             if (this.givenIndex < this.givens.length - 1) {
                 this.givenIndex++;
-                return {
-                    step: this.givens[this.givenIndex],
+                conditions.push({
+                    condition: this.givens[this.givenIndex],
                     type: Steps_1.StepType.Given
-                };
+                });
             }
             if (this.whenIndex < this.whens.length - 1) {
                 this.whenIndex++;
-                return {
-                    step: this.whens[this.whenIndex],
+                conditions.push({
+                    condition: this.whens[this.whenIndex],
                     type: Steps_1.StepType.When
-                };
+                });
             }
             if (this.thenIndex < this.thens.length - 1) {
                 this.thenIndex++;
-                return {
-                    step: this.thens[this.thenIndex],
+                conditions.push({
+                    condition: this.thens[this.thenIndex],
                     type: Steps_1.StepType.Then
-                };
+                });
             }
+            return conditions;
         };
         StateBase.prototype.prepareCondition = function (condition, index) {
             if (this.tableRows.length > index) {
