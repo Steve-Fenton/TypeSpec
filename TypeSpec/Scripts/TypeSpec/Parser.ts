@@ -61,9 +61,7 @@ export class FeatureParser {
                 this.testReporter.information('--------------------------------------');
                 this.testReporter.information(Keyword.Feature);
                 this.testReporter.information(scenario.featureTitle);
-                for (i = 0; i < scenario.featureDescription.length; i++) {
-                    this.testReporter.information('\t' + scenario.featureDescription[i]);
-                }
+                this.testReporter.information('\t' + scenario.featureDescription.join('\r\n\t') + '\r\n\r\n');
 
                 // Process the scenario steps
                 var conditions = scenario.getAllConditions();
@@ -85,7 +83,7 @@ export class FeatureParser {
 
             context.done = () => {
                 if (this.asyncTimer) {
-                    window.clearTimeout(this.asyncTimer);
+                    clearTimeout(this.asyncTimer);
                 }
                 if (i < conditions.length) {
                     this.runNextCondition(conditions, i, context, scenario, exampleIndex, passing);
@@ -115,7 +113,7 @@ export class FeatureParser {
             }
 
             if (isAsync) {
-                this.asyncTimer = window.setTimeout(() => {
+                this.asyncTimer = setTimeout(() => {
                     this.testReporter.error('Async Exception', condition, new Error('Async step timed out'));
                     this.runNextCondition(conditions, i, context, scenario, exampleIndex, false);
                 }, this.asyncTimeout);

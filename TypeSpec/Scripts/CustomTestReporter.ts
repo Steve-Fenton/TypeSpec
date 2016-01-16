@@ -17,6 +17,6 @@ export class CustomTestReporter extends TestReporter {
 
     information(message: string) {
         // Uncoment to see very detailed output
-        //console.log(message);
+        console.log(message);
     }
 }

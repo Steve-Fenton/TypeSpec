@@ -57,9 +57,7 @@
                     this.testReporter.information('--------------------------------------');
                     this.testReporter.information(Keyword_1.Keyword.Feature);
                     this.testReporter.information(scenario.featureTitle);
-                    for (i = 0; i < scenario.featureDescription.length; i++) {
-                        this.testReporter.information('\t' + scenario.featureDescription[i]);
-                    }
+                    this.testReporter.information(scenario.featureDescription.join('\r\n\t'));
                     // Process the scenario steps
                     var conditions = scenario.getAllConditions();
                     this.runNextCondition(conditions, 0, context, scenario, exampleIndex, true);
@@ -68,53 +66,57 @@
                     passed = false;
                     this.testReporter.error(scenario.featureTitle, this.currentCondition, ex);
                 }
-                finally {
-                    this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passed);
-                }
             }
         };
         FeatureParser.prototype.runNextCondition = function (conditions, conditionIndex, context, scenario, exampleIndex, passing) {
             var _this = this;
-            var next = conditions[conditionIndex];
-            var i = conditionIndex + 1;
-            this.currentCondition = next.condition;
-            context.done = function () {
-                if (_this.asyncTimer) {
-                    window.clearTimeout(_this.asyncTimer);
+            try {
+                var next = conditions[conditionIndex];
+                var i = conditionIndex + 1;
+                this.currentCondition = next.condition;
+                context.done = function () {
+                    if (_this.asyncTimer) {
+                        clearTimeout(_this.asyncTimer);
+                    }
+                    if (i < conditions.length) {
+                        _this.runNextCondition(conditions, i, context, scenario, exampleIndex, passing);
+                    }
+                    else {
+                        _this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passing);
+                    }
+                };
+                var condition = scenario.prepareCondition(next.condition, exampleIndex);
+                this.testReporter.information('\t' + condition);
+                var stepExecution = this.steps.find(condition, next.type);
+                var isAsync = stepExecution.isAsync;
+                if (stepExecution === null) {
+                    var stepMethodBuilder = new StepMethodBuilder(condition);
+                    throw new Error('No step definition defined.\n\n' + stepMethodBuilder.getSuggestedStepMethod());
                 }
-                if (i < conditions.length) {
-                    _this.runNextCondition(conditions, i, context, scenario, exampleIndex, passing);
+                if (stepExecution.parameters) {
+                    // Add the context container as the first argument
+                    stepExecution.parameters.unshift(context);
+                    // Call the step method
+                    stepExecution.method.apply(null, stepExecution.parameters);
                 }
                 else {
-                    _this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passing);
+                    // Call the step method
+                    stepExecution.method.call(null, context);
                 }
-            };
-            var condition = scenario.prepareCondition(next.condition, exampleIndex);
-            this.testReporter.information('\t' + condition);
-            var stepExecution = this.steps.find(condition, next.type);
-            var isAsync = stepExecution.isAsync;
-            if (stepExecution === null) {
-                var stepMethodBuilder = new StepMethodBuilder(condition);
-                throw new Error('No step definition defined.\n\n' + stepMethodBuilder.getSuggestedStepMethod());
+                if (isAsync) {
+                    this.asyncTimer = setTimeout(function () {
+                        _this.testReporter.error('Async Exception', condition, new Error('Async step timed out'));
+                        _this.runNextCondition(conditions, i, context, scenario, exampleIndex, false);
+                    }, this.asyncTimeout);
+                }
+                else {
+                    context.done();
+                }
             }
-            if (stepExecution.parameters) {
-                // Add the context container as the first argument
-                stepExecution.parameters.unshift(context);
-                // Call the step method
-                stepExecution.method.apply(null, stepExecution.parameters);
-            }
-            else {
-                // Call the step method
-                stepExecution.method.call(null, context);
-            }
-            if (isAsync) {
-                this.asyncTimer = window.setTimeout(function () {
-                    _this.testReporter.error('Async Exception', condition, new Error('Async step timed out'));
-                    _this.runNextCondition(conditions, i, context, scenario, exampleIndex, false);
-                }, this.asyncTimeout);
-            }
-            else {
-                context.done();
+            catch (ex) {
+                passing = false;
+                this.testReporter.error(scenario.featureTitle, this.currentCondition, ex);
+                this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passing);
             }
         };
         return FeatureParser;

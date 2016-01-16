@@ -90,6 +90,22 @@ Will result in the following suggested step definition:
             throw new Error('Not implemented.');
         });
 
+### Async Steps
+
+Each step method has an async counterpart: `addStepAsync`, `givenAsync`, `whenAsync`, `thenAsync`. 
+If you define a step using one of these methods, you are responsible for calling `context.done();` to
+tell TypeSpec your step is finished.
+
+    runner.addStepAsync(/I asynchronously enter (\"\d+\") into the calculator/i,
+        (context: CalculatorTestContext, num: number) => {
+            window.setTimeout(() => {
+                context.calculator.add(num);
+
+                // Tell TypeSpec the async operation is complete.
+                context.done();
+            }, 200);
+        });
+
 ### Regular Expressions
 
 You can be as explicit as you like with the regular expressions. You don't have to allow case-insensitive
