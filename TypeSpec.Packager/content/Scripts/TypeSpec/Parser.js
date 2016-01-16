@@ -17,10 +17,13 @@
             this.tags = [];
             this.state = [];
             this.scenarioIndex = 0;
+            this.currentCondition = '';
+            this.asyncTimeout = 1000;
             this.state[this.scenarioIndex] = new State_1.InitializedState(this.tagsToExclude);
         }
         FeatureParser.prototype.process = function (line) {
             if (this.state[this.scenarioIndex].isNewScenario(line)) {
+                // This is an additional scenario within the same feature.
                 var existingFeatureTitle = this.state[this.scenarioIndex].featureTitle;
                 var existingFeatureDescription = this.state[this.scenarioIndex].featureDescription;
                 this.scenarioIndex++;
@@ -29,9 +32,11 @@
                 this.state[this.scenarioIndex].featureDescription = existingFeatureDescription;
                 this.state[this.scenarioIndex].tagsToExclude = this.tagsToExclude;
             }
+            // Process the new line
             this.state[this.scenarioIndex] = this.state[this.scenarioIndex].process(line);
         };
         FeatureParser.prototype.run = function () {
+            // Each Scenario
             for (var scenarioIndex = 0; scenarioIndex < this.state.length; scenarioIndex++) {
                 var scenario = this.state[scenarioIndex];
                 if (typeof scenario.scenarioTitle === 'undefined') {
@@ -42,56 +47,74 @@
             }
         };
         FeatureParser.prototype.runScenario = function (scenario) {
-            var _this = this;
             var tableRowCount = (scenario.tableRows.length > 0) ? scenario.tableRows.length : 1;
+            // Each Example Row
             for (var exampleIndex = 0; exampleIndex < tableRowCount; exampleIndex++) {
                 try {
                     var passed = true;
                     var i;
-                    var dynamicStateContainer = {};
+                    var context = {};
                     this.testReporter.information('--------------------------------------');
                     this.testReporter.information(Keyword_1.Keyword.Feature);
                     this.testReporter.information(scenario.featureTitle);
                     for (i = 0; i < scenario.featureDescription.length; i++) {
                         this.testReporter.information('\t' + scenario.featureDescription[i]);
                     }
+                    // Process the scenario steps
                     var conditions = scenario.getAllConditions();
-                    for (var conditionIndex = 0; conditionIndex < conditions.length; conditionIndex++) {
-                        var next = conditions[conditionIndex];
-                        try {
-                            dynamicStateContainer.done = function () {
-                                _this.testReporter.error(scenario.featureTitle, next.condition, new Error('done() called in non-async context.'));
-                            };
-                            this.runCondition(dynamicStateContainer, scenario, exampleIndex, next.condition, next.type);
-                        }
-                        catch (ex) {
-                            this.testReporter.error(scenario.featureTitle, next.condition, ex);
-                            passed = false;
-                        }
-                    }
+                    this.runNextCondition(conditions, 0, context, scenario, exampleIndex, true);
                 }
                 catch (ex) {
                     passed = false;
+                    this.testReporter.error(scenario.featureTitle, this.currentCondition, ex);
                 }
                 finally {
                     this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passed);
                 }
             }
         };
-        FeatureParser.prototype.runCondition = function (dynamicStateContainer, scenario, exampleIndex, condition, type) {
-            condition = scenario.prepareCondition(condition, exampleIndex);
+        FeatureParser.prototype.runNextCondition = function (conditions, conditionIndex, context, scenario, exampleIndex, passing) {
+            var _this = this;
+            var next = conditions[conditionIndex];
+            var i = conditionIndex + 1;
+            this.currentCondition = next.condition;
+            context.done = function () {
+                if (_this.asyncTimer) {
+                    window.clearTimeout(_this.asyncTimer);
+                }
+                if (i < conditions.length) {
+                    _this.runNextCondition(conditions, i, context, scenario, exampleIndex, passing);
+                }
+                else {
+                    _this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passing);
+                }
+            };
+            var condition = scenario.prepareCondition(next.condition, exampleIndex);
             this.testReporter.information('\t' + condition);
-            var stepExecution = this.steps.find(condition, type);
+            var stepExecution = this.steps.find(condition, next.type);
+            var isAsync = stepExecution.isAsync;
             if (stepExecution === null) {
                 var stepMethodBuilder = new StepMethodBuilder(condition);
                 throw new Error('No step definition defined.\n\n' + stepMethodBuilder.getSuggestedStepMethod());
             }
             if (stepExecution.parameters) {
-                stepExecution.parameters.unshift(dynamicStateContainer);
+                // Add the context container as the first argument
+                stepExecution.parameters.unshift(context);
+                // Call the step method
                 stepExecution.method.apply(null, stepExecution.parameters);
             }
             else {
-                stepExecution.method.call(null, dynamicStateContainer);
+                // Call the step method
+                stepExecution.method.call(null, context);
+            }
+            if (isAsync) {
+                this.asyncTimer = window.setTimeout(function () {
+                    _this.testReporter.error('Async Exception', condition, new Error('Async step timed out'));
+                    _this.runNextCondition(conditions, i, context, scenario, exampleIndex, false);
+                }, this.asyncTimeout);
+            }
+            else {
+                context.done();
             }
         };
         return FeatureParser;
@@ -103,8 +126,11 @@
         }
         StepMethodBuilder.prototype.getSuggestedStepMethod = function () {
             var argumentParser = new ArgumentParser(this.originalCondition);
+            /* Template for step method */
+            var params = argumentParser.getParameters();
+            var comma = (params.length > 0) ? ', ' : '';
             var suggestion = '    runner.addStep(/' + argumentParser.getCondition() + '/i,\n' +
-                '        (context: any, ' + argumentParser.getParameters() + ') => {\n' +
+                '        (context: any' + comma + params + ') => {\n' +
                 '            throw new Error(\'Not implemented.\');\n' +
                 '        });';
             return suggestion;
@@ -137,14 +163,17 @@
             var trimmedArgument = quotedArgument.replace(/"/g, '');
             var argumentExpression = null;
             if (trimmedArgument.toLowerCase() === 'true' || trimmedArgument.toLowerCase() === 'false') {
+                // Argument is boolean
                 this.arguments.push('p' + position + ': boolean');
                 argumentExpression = RegEx_1.ExpressionLibrary.trueFalseString;
             }
             else if (parseFloat(trimmedArgument).toString() === trimmedArgument) {
+                // Argument is number
                 this.arguments.push('p' + position + ': number');
                 argumentExpression = RegEx_1.ExpressionLibrary.numberString;
             }
             else {
+                // Argument is string
                 this.arguments.push('p' + position + ': string');
                 argumentExpression = RegEx_1.ExpressionLibrary.defaultString;
             }
@@ -153,3 +182,4 @@
         return ArgumentParser;
     })();
 });
+//# sourceMappingURL=Parser.js.map

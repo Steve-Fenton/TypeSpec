@@ -16,10 +16,6 @@ export class StateBase {
     public tableHeaders: string[] = [];
     public tableRows: {}[] = [];
 
-    private givenIndex = -1;
-    private whenIndex = -1;
-    private thenIndex = -1;
-
     constructor(priorState: StateBase) {
         if (priorState !== null) {
             this.featureTitle = priorState.featureTitle;
@@ -41,26 +37,23 @@ export class StateBase {
     getAllConditions() {
         var conditions: { condition: string; type: StepType; }[] = [];
 
-        if (this.givenIndex < this.givens.length - 1) {
-            this.givenIndex++;
+        for (var i = 0; i < this.givens.length; i++) {
             conditions.push({
-                condition: this.givens[this.givenIndex],
+                condition: this.givens[i],
                 type: StepType.Given
             });
         }
 
-        if (this.whenIndex < this.whens.length - 1) {
-            this.whenIndex++;
+        for (var i = 0; i < this.whens.length; i++) {
             conditions.push({
-                condition: this.whens[this.whenIndex],
+                condition: this.whens[i],
                 type: StepType.When
             });
         }
 
-        if (this.thenIndex < this.thens.length - 1) {
-            this.thenIndex++;
+        for (var i = 0; i < this.thens.length; i++) {
             conditions.push({
-                condition: this.thens[this.thenIndex],
+                condition: this.thens[i],
                 type: StepType.Then
             });
         }

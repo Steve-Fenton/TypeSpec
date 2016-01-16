@@ -28,7 +28,7 @@ CalculatorSteps.register(runner);
 ArgumentSteps.register(runner);
 
 // Run the specifications listed
-runner.runInRandomOrder(
+runner.run(
     '/Specifications/Basic.txt',
     '/Specifications/ArgumentTypes.txt',
     '/Specifications/MultipleArgumentsPerLine.txt',

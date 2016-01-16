@@ -7,6 +7,9 @@ export class FeatureParser {
     public tags: string[] = [];
     public state: StateBase[] = [];
     public scenarioIndex = 0;
+    public currentCondition = '';
+    public asyncTimeout = 1000;
+    public asyncTimer: any;
 
     constructor(private steps: StepCollection, private testReporter: ITestReporter, private tagsToExclude: string[]) {
         this.state[this.scenarioIndex] = new InitializedState(this.tagsToExclude);
@@ -31,6 +34,7 @@ export class FeatureParser {
     }
 
     run() {
+        // Each Scenario
         for (var scenarioIndex = 0; scenarioIndex < this.state.length; scenarioIndex++) {
             var scenario = this.state[scenarioIndex];
 
@@ -46,12 +50,13 @@ export class FeatureParser {
     private runScenario(scenario: StateBase) {
         var tableRowCount = (scenario.tableRows.length > 0) ? scenario.tableRows.length : 1;
 
+        // Each Example Row
         for (var exampleIndex = 0; exampleIndex < tableRowCount; exampleIndex++) {
             try {
                 var passed = true;
 
                 var i: number;
-                var dynamicStateContainer: any = {};
+                var context: any = {};
 
                 this.testReporter.information('--------------------------------------');
                 this.testReporter.information(Keyword.Feature);
@@ -62,35 +67,38 @@ export class FeatureParser {
 
                 // Process the scenario steps
                 var conditions = scenario.getAllConditions();
-
-                for (var conditionIndex = 0; conditionIndex < conditions.length; conditionIndex++) {
-                    var next = conditions[conditionIndex];
-                    try {
-                        dynamicStateContainer.done = () => {
-                            this.testReporter.error(scenario.featureTitle, next.condition, new Error('done() called in non-async context.'));
-                        };
-
-                        this.runCondition(dynamicStateContainer, scenario, exampleIndex, next.condition, next.type);
-                    } catch (ex) {
-                        this.testReporter.error(scenario.featureTitle, next.condition, ex);
-                        passed = false;
-                    }
-                }
-                //
+                this.runNextCondition(conditions, 0, context, scenario, exampleIndex, true);
 
             } catch (ex) {
                 passed = false;
+                this.testReporter.error(scenario.featureTitle, this. currentCondition, ex);
             } finally {
                 this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passed);
             }
         }
     }
 
-    private runCondition(dynamicStateContainer: any, scenario: StateBase, exampleIndex: number, condition: string, type: StepType) {
+    private runNextCondition(conditions: { condition: string; type: StepType; }[], conditionIndex: number, context: any, scenario: StateBase, exampleIndex: number, passing: boolean) {
+        var next = conditions[conditionIndex];
+        var i = conditionIndex + 1;
 
-        condition = scenario.prepareCondition(condition, exampleIndex);
+        this.currentCondition = next.condition;
+
+        context.done = () => {
+            if (this.asyncTimer) {
+                window.clearTimeout(this.asyncTimer);
+            }
+            if (i < conditions.length) {
+                this.runNextCondition(conditions, i, context, scenario, exampleIndex, passing);
+            } else {
+                this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passing);
+            }
+        }
+
+        var condition = scenario.prepareCondition(next.condition, exampleIndex);
         this.testReporter.information('\t' + condition);
-        var stepExecution = this.steps.find(condition, type);
+        var stepExecution = this.steps.find(condition, next.type);
+        var isAsync = stepExecution.isAsync;
 
         if (stepExecution === null) {
             var stepMethodBuilder = new StepMethodBuilder(condition);
@@ -99,12 +107,21 @@ export class FeatureParser {
 
         if (stepExecution.parameters) {
             // Add the context container as the first argument
-            stepExecution.parameters.unshift(dynamicStateContainer);
+            stepExecution.parameters.unshift(context);
             // Call the step method
             stepExecution.method.apply(null, stepExecution.parameters);
         } else {
             // Call the step method
-            stepExecution.method.call(null, dynamicStateContainer);
+            stepExecution.method.call(null, context);
+        }
+
+        if (isAsync) {
+            this.asyncTimer = window.setTimeout(() => {
+                this.testReporter.error('Async Exception', condition, new Error('Async step timed out'));
+                this.runNextCondition(conditions, i, context, scenario, exampleIndex, false);
+            }, this.asyncTimeout);
+        } else {
+            context.done();
         }
     }
 }
@@ -116,8 +133,10 @@ class StepMethodBuilder {
         var argumentParser = new ArgumentParser(this.originalCondition);
 
         /* Template for step method */
+        var params = argumentParser.getParameters();
+        var comma = (params.length > 0) ? ', ' : '';
         var suggestion = '    runner.addStep(/' + argumentParser.getCondition() + '/i,\n' +
-            '        (context: any, ' + argumentParser.getParameters() + ') => {\n' +
+            '        (context: any' + comma + params + ') => {\n' +
             '            throw new Error(\'Not implemented.\');\n' +
             '        });';
 

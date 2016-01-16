@@ -6,7 +6,7 @@ export class StepDefinition {
 }
 
 export class StepExecution {
-    constructor(public method: Function, public parameters: any[]) { }
+    constructor(public method: Function, public isAsync: boolean, public parameters: any[]) { }
 }
 
 export enum StepType {
@@ -39,7 +39,7 @@ export class StepCollection {
                 }
 
                 var params = this.getParams(text, ExpressionLibrary.defaultStepRegExp, step.expression);
-                return new StepExecution(step.step, params);
+                return new StepExecution(step.step, step.isAsync, params);
             }
         }
 

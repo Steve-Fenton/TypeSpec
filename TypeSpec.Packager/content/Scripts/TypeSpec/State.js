@@ -23,9 +23,6 @@ var __extends = (this && this.__extends) || function (d, b) {
             this.tagsToExclude = [];
             this.tableHeaders = [];
             this.tableRows = [];
-            this.givenIndex = -1;
-            this.whenIndex = -1;
-            this.thenIndex = -1;
             if (priorState !== null) {
                 this.featureTitle = priorState.featureTitle;
                 this.featureDescription = priorState.featureDescription;
@@ -41,24 +38,21 @@ var __extends = (this && this.__extends) || function (d, b) {
         }
         StateBase.prototype.getAllConditions = function () {
             var conditions = [];
-            if (this.givenIndex < this.givens.length - 1) {
-                this.givenIndex++;
+            for (var i = 0; i < this.givens.length; i++) {
                 conditions.push({
-                    condition: this.givens[this.givenIndex],
+                    condition: this.givens[i],
                     type: Steps_1.StepType.Given
                 });
             }
-            if (this.whenIndex < this.whens.length - 1) {
-                this.whenIndex++;
+            for (var i = 0; i < this.whens.length; i++) {
                 conditions.push({
-                    condition: this.whens[this.whenIndex],
+                    condition: this.whens[i],
                     type: Steps_1.StepType.When
                 });
             }
-            if (this.thenIndex < this.thens.length - 1) {
-                this.thenIndex++;
+            for (var i = 0; i < this.thens.length; i++) {
                 conditions.push({
-                    condition: this.thens[this.thenIndex],
+                    condition: this.thens[i],
                     type: Steps_1.StepType.Then
                 });
             }
@@ -77,6 +71,7 @@ var __extends = (this && this.__extends) || function (d, b) {
         StateBase.prototype.process = function (line) {
             line = line.trim();
             if (!line) {
+                // Skip empty lines
                 return this;
             }
             if (Keyword_1.Keyword.isFeatureDeclaration(line)) {
@@ -161,6 +156,11 @@ var __extends = (this && this.__extends) || function (d, b) {
         return StateBase;
     })();
     exports.StateBase = StateBase;
+    /*
+        Each state objects only has the methods it allows.
+        This makes it easy to see which methods are allowed in
+        any given state
+    */
     var InitializedState = (function (_super) {
         __extends(InitializedState, _super);
         function InitializedState(tagsToExclude) {
@@ -191,6 +191,7 @@ var __extends = (this && this.__extends) || function (d, b) {
                 var trimmedTag = tags[i].trim().toLowerCase();
                 if (trimmedTag) {
                     if (this.isTagExcluded(trimmedTag)) {
+                        // Exclude this scenario...
                         return new ExcludedScenarioState(this);
                     }
                     trimmedTags.push(trimmedTag);
@@ -220,32 +221,41 @@ var __extends = (this && this.__extends) || function (d, b) {
             return this.hasScenario && (Keyword_1.Keyword.isScenarioDeclaration(line) || Keyword_1.Keyword.isOutlineDeclaration(line) || Keyword_1.Keyword.isTagDeclaration(line));
         };
         ExcludedScenarioState.prototype.tag = function (line) {
+            // Discard
             return this;
         };
         ExcludedScenarioState.prototype.scenario = function (line) {
+            // Discard
             this.hasScenario = true;
             return this;
         };
         ExcludedScenarioState.prototype.outline = function (line) {
+            // Discard
             this.hasScenario = true;
             return this;
         };
         ExcludedScenarioState.prototype.given = function (line) {
+            // Discard
             return this;
         };
         ExcludedScenarioState.prototype.when = function (line) {
+            // Discard
             return this;
         };
         ExcludedScenarioState.prototype.then = function (line) {
+            // Discard
             return this;
         };
         ExcludedScenarioState.prototype.and = function (line) {
+            // Discard
             return this;
         };
         ExcludedScenarioState.prototype.examples = function (line) {
+            // Discard
             return this;
         };
         ExcludedScenarioState.prototype.table = function (line) {
+            // Discard
             return this;
         };
         return ExcludedScenarioState;
@@ -347,3 +357,4 @@ var __extends = (this && this.__extends) || function (d, b) {
         return TableState;
     })(StateBase);
 });
+//# sourceMappingURL=State.js.map

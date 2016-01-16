@@ -36,6 +36,8 @@ export class CalculatorSteps {
             (context: CalculatorTestContext, num: number) => {
                 window.setTimeout(() => {
                     context.calculator.add(num);
+
+                    // Tell TypeSpec the async operation is complete.
                     context.done();
                 }, 200);
             });
