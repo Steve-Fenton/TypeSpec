@@ -1,19 +1,15 @@
-﻿import {Keyword} from './Keyword';
+﻿import {Keyword, ITestReporter} from './Keyword';
 import {ExpressionLibrary} from './RegEx';
-import {StepCollection} from './Steps';
+import {StepCollection, StepType} from './Steps';
 import {StateBase, InitializedState, FeatureState} from './State';
-
-export interface ITestReporter {
-    summary(featureTitle: string, scenarioTitle: string, isSuccess: boolean): void;
-    error(featureTitle: string, condition: string, error: Error): void;
-    information(message: string): void;
-    complete(): void;
-}
 
 export class FeatureParser {
     public tags: string[] = [];
     public state: StateBase[] = [];
     public scenarioIndex = 0;
+    public currentCondition = '';
+    public asyncTimeout = 1000;
+    public asyncTimer: any;
 
     constructor(private steps: StepCollection, private testReporter: ITestReporter, private tagsToExclude: string[]) {
         this.state[this.scenarioIndex] = new InitializedState(this.tagsToExclude);
@@ -38,6 +34,7 @@ export class FeatureParser {
     }
 
     run() {
+        // Each Scenario
         for (var scenarioIndex = 0; scenarioIndex < this.state.length; scenarioIndex++) {
             var scenario = this.state[scenarioIndex];
 
@@ -53,74 +50,80 @@ export class FeatureParser {
     private runScenario(scenario: StateBase) {
         var tableRowCount = (scenario.tableRows.length > 0) ? scenario.tableRows.length : 1;
 
+        // Each Example Row
         for (var exampleIndex = 0; exampleIndex < tableRowCount; exampleIndex++) {
             try {
                 var passed = true;
 
                 var i: number;
-                var dynamicStateContainer: any = {};
+                var context: any = {};
 
                 this.testReporter.information('--------------------------------------');
                 this.testReporter.information(Keyword.Feature);
                 this.testReporter.information(scenario.featureTitle);
-                for (i = 0; i < scenario.featureDescription.length; i++) {
-                    this.testReporter.information('\t' + scenario.featureDescription[i]);
-                }
+                this.testReporter.information('\t' + scenario.featureDescription.join('\r\n\t') + '\r\n\r\n');
 
-                // Given
-                this.testReporter.information(Keyword.Given);
-                for (i = 0; i < scenario.givens.length; i++) {
-                    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.givens[i], scenario.featureTitle, scenario.scenarioTitle);
-                }
+                // Process the scenario steps
+                var conditions = scenario.getAllConditions();
+                this.runNextCondition(conditions, 0, context, scenario, exampleIndex, true);
 
-                // When
-                this.testReporter.information(Keyword.When);
-                for (i = 0; i < scenario.whens.length; i++) {
-                    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.whens[i], scenario.featureTitle, scenario.scenarioTitle);
-                }
-
-                // Then
-                this.testReporter.information(Keyword.Then);
-                for (i = 0; i < scenario.thens.length; i++) {
-                    passed = passed && this.executeWithErrorHandling(dynamicStateContainer, scenario, exampleIndex, scenario.thens[i], scenario.featureTitle, scenario.scenarioTitle);
-                }
             } catch (ex) {
                 passed = false;
-            } finally {
-                this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passed);
+                this.testReporter.error(scenario.featureTitle, this.currentCondition, ex);
             }
         }
     }
 
-    private executeWithErrorHandling(dynamicStateContainer: any, scenario: StateBase, exampleIndex: number, condition: string, featureTitle: string, scenarioTitle: string) {
+    private runNextCondition(conditions: { condition: string; type: StepType; }[], conditionIndex: number, context: any, scenario: StateBase, exampleIndex: number, passing: boolean) {
         try {
-            this.runCondition(dynamicStateContainer, scenario, exampleIndex, condition);
-            return true;
+            var next = conditions[conditionIndex];
+            var i = conditionIndex + 1;
+
+            this.currentCondition = next.condition;
+
+            context.done = () => {
+                if (this.asyncTimer) {
+                    clearTimeout(this.asyncTimer);
+                }
+                if (i < conditions.length) {
+                    this.runNextCondition(conditions, i, context, scenario, exampleIndex, passing);
+                } else {
+                    this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passing);
+                }
+            }
+
+            var condition = scenario.prepareCondition(next.condition, exampleIndex);
+            this.testReporter.information('\t' + condition);
+            var stepExecution = this.steps.find(condition, next.type);
+            var isAsync = stepExecution.isAsync;
+
+            if (stepExecution === null) {
+                var stepMethodBuilder = new StepMethodBuilder(condition);
+                throw new Error('No step definition defined.\n\n' + stepMethodBuilder.getSuggestedStepMethod());
+            }
+
+            if (stepExecution.parameters) {
+                // Add the context container as the first argument
+                stepExecution.parameters.unshift(context);
+                // Call the step method
+                stepExecution.method.apply(null, stepExecution.parameters);
+            } else {
+                // Call the step method
+                stepExecution.method.call(null, context);
+            }
+
+            if (isAsync) {
+                this.asyncTimer = setTimeout(() => {
+                    this.testReporter.error('Async Exception', condition, new Error('Async step timed out'));
+                    this.runNextCondition(conditions, i, context, scenario, exampleIndex, false);
+                }, this.asyncTimeout);
+            } else {
+                context.done();
+            }
         } catch (ex) {
-            this.testReporter.error(featureTitle, condition, ex);
-            return false;
-        }
-    }
-
-    private runCondition(dynamicStateContainer: any, scenario: StateBase, exampleIndex: number, condition: string) {
-
-        condition = scenario.prepareCondition(condition, exampleIndex);
-        this.testReporter.information('\t' + condition);
-        var stepExecution = this.steps.find(condition);
-
-        if (stepExecution === null) {
-            var stepMethodBuilder = new StepMethodBuilder(condition);
-            throw new Error('No step definition defined.\n\n' + stepMethodBuilder.getSuggestedStepMethod());
-        }
-
-        if (stepExecution.parameters) {
-            // Add the context container as the first argument
-            stepExecution.parameters.unshift(dynamicStateContainer);
-            // Call the step method
-            stepExecution.method.apply(null, stepExecution.parameters);
-        } else {
-            // Call the step method
-            stepExecution.method(dynamicStateContainer);
+            passing = false;
+            this.testReporter.error(scenario.featureTitle, this.currentCondition, ex);
+            this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passing);
         }
     }
 }
@@ -132,8 +135,10 @@ class StepMethodBuilder {
         var argumentParser = new ArgumentParser(this.originalCondition);
 
         /* Template for step method */
+        var params = argumentParser.getParameters();
+        var comma = (params.length > 0) ? ', ' : '';
         var suggestion = '    runner.addStep(/' + argumentParser.getCondition() + '/i,\n' +
-            '        (context: any, ' + argumentParser.getParameters() + ') => {\n' +
+            '        (context: any' + comma + params + ') => {\n' +
             '            throw new Error(\'Not implemented.\');\n' +
             '        });';
 

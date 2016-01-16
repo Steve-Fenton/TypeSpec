@@ -1,18 +1,57 @@
-﻿import {FeatureParser, ITestReporter} from './Parser';
-import {StepCollection} from './Steps';
+﻿import {FeatureParser} from './Parser';
+import {StepCollection, StepType} from './Steps';
+import {ITestReporter} from './Keyword';
+
+declare var require: any;
 
 export class SpecRunner {
-    private steps: StepCollection = new StepCollection();
+    private steps: StepCollection;
     private excludedTags: string[] = [];
+    private hasWindow = (typeof window !== 'undefined');
 
-    constructor(private testReporter: ITestReporter = new TestReporter()) { }
+    constructor(private testReporter: ITestReporter = new TestReporter()) {
+        this.steps = new StepCollection(testReporter);
+    }
 
     addStep(expression: RegExp, step: Function) {
-        this.steps.add(expression, step);
+        this.steps.add(expression, step, false);
+    }
+
+    addStepAsync(expression: RegExp, step: Function) {
+        this.steps.add(expression, step, true);
+    }
+
+    given(expression: RegExp, step: Function) {
+        this.steps.add(expression, step, false, StepType.Given);
+    }
+
+    givenAsync(expression: RegExp, step: Function) {
+        this.steps.add(expression, step, true, StepType.Given);
+    }
+
+    when(expression: RegExp, step: Function) {
+        this.steps.add(expression, step, false, StepType.When);
+    }
+
+    whenAsync(expression: RegExp, step: Function) {
+        this.steps.add(expression, step, true, StepType.When);
+    }
+
+    then(expression: RegExp, step: Function) {
+        this.steps.add(expression, step, false, StepType.Then);
+    }
+
+    thenAsync(expression: RegExp, step: Function) {
+        this.steps.add(expression, step, true, StepType.Then);
     }
 
     run(...url: string[]) {
         this.readFile(0, url);
+    }
+
+    runInRandomOrder(...url: string[]) {
+        var specList = new SpecificationList(url);
+        this.readFile(0, specList.randomise());
     }
 
     excludeTags(...tags: string[]) {
@@ -22,8 +61,6 @@ export class SpecRunner {
     }
 
     private readFile(index: number, url: string[]) {
-        // TODO: detect local file path and use node js to read file
-        // This is the default for browser-based tests...
         var cacheBust = '?cb=' + new Date().getTime();
         if (index < url.length) {
             var nextIndex = index + 1;
@@ -32,7 +69,12 @@ export class SpecRunner {
             if (nextIndex === url.length) {
                 finalCallback = () => { this.testReporter.complete(); };
             }
-            this.getFile(url[index], cacheBust, () => { this.readFile(nextIndex, url); }, finalCallback);
+
+            if (this.hasWindow) {
+                this.getFile(url[index], cacheBust, () => { this.readFile(nextIndex, url); }, finalCallback);
+            } else {
+                this.getNodeFile(url[index], cacheBust, () => { this.readFile(nextIndex, url); }, finalCallback);
+            }
         }
     }
 
@@ -56,8 +98,25 @@ export class SpecRunner {
         client.send();
     }
 
-    private processSpecification(spec: string) {
+    private getNodeFile(url: string, cacheBust: string, successCallback: Function, allCallback: Function) {
+        var fs: any = require('fs');
+        var path: any = require('path');
 
+        // Make the path relative in Node's terms and resolve it
+        var resolvedUrl = path.resolve('.' + url);
+
+        fs.readFile(resolvedUrl, 'utf8', (err: any, data: string) => {
+            if (err) {
+                this.testReporter.error('getNodeFile', url, new Error('Error loading specification: ' + err + ').'));
+                allCallback();
+            }
+            this.processSpecification(data);
+            successCallback();
+            allCallback();
+        });
+    }
+
+    private processSpecification(spec: string) {
         var hasParsed = true;
         var composer = new FeatureParser(this.steps, this.testReporter, this.excludedTags);
 
@@ -79,6 +138,27 @@ export class SpecRunner {
         if (hasParsed) {
             composer.run();
         }
+    }
+}
+
+export class SpecificationList {
+    constructor(private specifications: string[]) {
+    }
+
+    randomise() {
+        var orderedSpecs: string[] = [];
+
+        while (this.specifications.length > 0) {
+            var index = this.getRandomInt(0, this.specifications.length);
+            orderedSpecs.push(this.specifications[index]);
+            this.specifications.splice(index, 1);
+        }
+
+        return orderedSpecs;
+    }
+
+    private getRandomInt(min: number, max: number) {
+        return Math.floor(Math.random() * (max - min)) + min;
     }
 }
 

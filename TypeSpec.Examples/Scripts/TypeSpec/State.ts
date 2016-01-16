@@ -1,4 +1,5 @@
 ﻿import {Keyword} from './Keyword';
+import {StepType} from './Steps';
 
 export class StateBase {
     public givens: string[] = [];
@@ -10,7 +11,7 @@ export class StateBase {
     public scenarioTitle: string;
 
     public tags: string[] = [];
-    public tagsToExclude : string[] = [];
+    public tagsToExclude: string[] = [];
 
     public tableHeaders: string[] = [];
     public tableRows: {}[] = [];
@@ -31,6 +32,33 @@ export class StateBase {
             this.whens = priorState.whens;
             this.thens = priorState.thens;
         }
+    }
+
+    getAllConditions() {
+        var conditions: { condition: string; type: StepType; }[] = [];
+
+        for (var i = 0; i < this.givens.length; i++) {
+            conditions.push({
+                condition: this.givens[i],
+                type: StepType.Given
+            });
+        }
+
+        for (var i = 0; i < this.whens.length; i++) {
+            conditions.push({
+                condition: this.whens[i],
+                type: StepType.When
+            });
+        }
+
+        for (var i = 0; i < this.thens.length; i++) {
+            conditions.push({
+                condition: this.thens[i],
+                type: StepType.Then
+            });
+        }
+
+        return conditions;
     }
 
     prepareCondition(condition: string, index: number) {
@@ -226,7 +254,7 @@ class ExcludedScenarioState extends StateBase {
     }
 
     isNewScenario(line: string) {
-        return this.hasScenario && (Keyword.isScenarioDeclaration(line) || Keyword.isTagDeclaration(line));
+        return this.hasScenario && (Keyword.isScenarioDeclaration(line) || Keyword.isOutlineDeclaration(line) || Keyword.isTagDeclaration(line));
     }
 
     tag(line: string): StateBase {
@@ -335,7 +363,7 @@ class ThenState extends StateBase {
     }
 
     isNewScenario(line: string) {
-        return (Keyword.isScenarioDeclaration(line) || Keyword.isTagDeclaration(line));
+        return (Keyword.isScenarioDeclaration(line) || Keyword.isOutlineDeclaration(line) || Keyword.isTagDeclaration(line));
     }
 
     and(line: string) {

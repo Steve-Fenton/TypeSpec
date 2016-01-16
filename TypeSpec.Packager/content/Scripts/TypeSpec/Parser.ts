@@ -61,7 +61,7 @@ export class FeatureParser {
                 this.testReporter.information('--------------------------------------');
                 this.testReporter.information(Keyword.Feature);
                 this.testReporter.information(scenario.featureTitle);
-                this.testReporter.information(scenario.featureDescription.join('\r\n\t'));
+                this.testReporter.information('\t' + scenario.featureDescription.join('\r\n\t') + '\r\n\r\n');
 
                 // Process the scenario steps
                 var conditions = scenario.getAllConditions();

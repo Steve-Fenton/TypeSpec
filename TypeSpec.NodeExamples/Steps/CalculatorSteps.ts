@@ -2,6 +2,7 @@
 import {Calculator} from '../Scripts/Calculator';
 
 interface CalculatorTestContext {
+    done: Function;
     calculator: Calculator;
 }
 
@@ -12,15 +13,12 @@ export class CalculatorSteps {
                 context.calculator = new Calculator();
             });
 
-        runner.addStep(/I enter (\"\d+\") into the calculator/i,
+        runner.addStepAsync(/I enter (\"\d+\") into the calculator/i,
             (context: CalculatorTestContext, num: number) => {
-                context.calculator.add(num);
-            });
-
-        runner.addStep(/I enter (\"\d+\") and (\"\d+\") into the calculator/i,
-            (context: CalculatorTestContext, num1: number, num2: number) => {
-                context.calculator.add(num1);
-                context.calculator.add(num2);
+                setTimeout(() => {
+                    context.calculator.add(num);
+                    context.done();
+                }, 20);
             });
 
         runner.addStep(/I press the total button/gi,

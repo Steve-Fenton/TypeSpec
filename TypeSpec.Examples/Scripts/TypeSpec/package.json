@@ -1,0 +1,41 @@
+{
+  "author": "Steve Fenton",
+  "name": "typespec-bdd",
+  "description": "BDD framework for TypeScript.",
+  "keywords": [
+    "typespec",
+    "typescript",
+    "bdd",
+    "behaviour",
+    "driven"
+  ],
+  "version": "0.6.1",
+  "homepage": "https://github.com/Steve-Fenton/TypeSpec",
+  "bugs": "https://github.com/Steve-Fenton/TypeSpec/issues",
+  "license": "Apache-2.0",
+  "files": [
+    "Keyword.ts",
+    "Parser.ts",
+    "RegEx.ts",
+    "State.ts",
+    "Steps.ts",
+    "TypeSpec.ts",
+
+    "Keyword.js",
+    "Parser.js",
+    "RegEx.js",
+    "State.js",
+    "Steps.js",
+    "TypeSpec.js"
+  ],
+  "repository": {
+    "url": "https://github.com/Steve-Fenton/TypeSpec"
+  },
+  "main": "TypeSpec.js",
+  "dependencies": { },
+  "devDependencies": { },
+  "optionalDependencies": { },
+  "engines": {
+    "node": "*"
+  }
+}

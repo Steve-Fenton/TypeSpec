@@ -75,7 +75,6 @@
                     return [];
                 }
                 for (var i = 0; i < params.length; i++) {
-                    // Remove leading and trailing quotes
                     var val = params[i];
                     if (val.substr(0, 1) === '"') {
                         val = val.substr(1);
@@ -83,7 +82,6 @@
                     if (val.substr(-1) === '"') {
                         val = val.substr(0, val.length - 1);
                     }
-                    // Replace escaped quotes
                     val = val.replace(/\\\"/g, '"');
                     if (typeIndicators !== null && typeIndicators[i]) {
                         var indicator = typeIndicators[i];
@@ -106,4 +104,3 @@
     })();
     exports.StepCollection = StepCollection;
 });
-//# sourceMappingURL=Steps.js.map

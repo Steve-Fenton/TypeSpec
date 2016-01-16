@@ -107,7 +107,6 @@
             var _this = this;
             var fs = require('fs');
             var path = require('path');
-            // Make the path relative in Node's terms and resolve it
             var resolvedUrl = path.resolve('.' + url);
             fs.readFile(resolvedUrl, 'utf8', function (err, data) {
                 if (err) {
@@ -122,7 +121,6 @@
         SpecRunner.prototype.processSpecification = function (spec) {
             var hasParsed = true;
             var composer = new Parser_1.FeatureParser(this.steps, this.testReporter, this.excludedTags);
-            /* Normalise line endings before splitting */
             var lines = spec.replace('\r\n', '\n').split('\n');
             for (var i = 0; i < lines.length; i++) {
                 var line = lines[i];
@@ -251,7 +249,7 @@
                             indexString + ' is null and b' +
                             indexString + ' is not null', message);
                     }
-                    return; // correct: both are nulls
+                    return;
                 }
                 else if (actual === null) {
                     indexString = resultToString(result);
@@ -404,7 +402,6 @@
             return new Error(resultMessage);
         };
         Assert.getNameOfClass = function (inputClass) {
-            // see: https://www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
             var funcNameRegex = /function (.{1,})\(/;
             var results = (funcNameRegex).exec(inputClass.constructor.toString());
             return (results && results.length > 1) ? results[1] : '';
@@ -422,4 +419,3 @@
     })();
     exports.Assert = Assert;
 });
-//# sourceMappingURL=TypeSpec.js.map

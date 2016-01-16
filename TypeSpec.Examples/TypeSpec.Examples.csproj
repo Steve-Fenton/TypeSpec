@@ -26,23 +26,27 @@
     <Content Include="index.html" />
     <Content Include="Scripts\r.js" />
     <Content Include="Scripts\require.js" />
+    <Content Include="Scripts\TypeSpec\Assert.js" />
+    <Content Include="Scripts\TypeSpec\ScenarioState.js" />
     <Content Include="Specifications\Basic.txt" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
+    <TypeScriptCompile Include="Scripts\Calculator.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\Keyword.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\Parser.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\RegEx.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\State.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\Steps.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\TypeSpec.ts" />
-    <TypeScriptCompile Include="Scripts\Calculator.ts" />
     <TypeScriptCompile Include="Steps\CalculatorSteps.ts" />
     <TypeScriptCompile Include="Steps\CustomTestReporter.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+    <Content Include="Scripts\TypeSpec\package.json" />
+    <Content Include="Scripts\TypeSpec\npm-publish.bat" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

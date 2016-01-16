@@ -23,7 +23,6 @@
         }
         FeatureParser.prototype.process = function (line) {
             if (this.state[this.scenarioIndex].isNewScenario(line)) {
-                // This is an additional scenario within the same feature.
                 var existingFeatureTitle = this.state[this.scenarioIndex].featureTitle;
                 var existingFeatureDescription = this.state[this.scenarioIndex].featureDescription;
                 this.scenarioIndex++;
@@ -32,11 +31,9 @@
                 this.state[this.scenarioIndex].featureDescription = existingFeatureDescription;
                 this.state[this.scenarioIndex].tagsToExclude = this.tagsToExclude;
             }
-            // Process the new line
             this.state[this.scenarioIndex] = this.state[this.scenarioIndex].process(line);
         };
         FeatureParser.prototype.run = function () {
-            // Each Scenario
             for (var scenarioIndex = 0; scenarioIndex < this.state.length; scenarioIndex++) {
                 var scenario = this.state[scenarioIndex];
                 if (typeof scenario.scenarioTitle === 'undefined') {
@@ -48,7 +45,6 @@
         };
         FeatureParser.prototype.runScenario = function (scenario) {
             var tableRowCount = (scenario.tableRows.length > 0) ? scenario.tableRows.length : 1;
-            // Each Example Row
             for (var exampleIndex = 0; exampleIndex < tableRowCount; exampleIndex++) {
                 try {
                     var passed = true;
@@ -57,8 +53,7 @@
                     this.testReporter.information('--------------------------------------');
                     this.testReporter.information(Keyword_1.Keyword.Feature);
                     this.testReporter.information(scenario.featureTitle);
-                    this.testReporter.information(scenario.featureDescription.join('\r\n\t'));
-                    // Process the scenario steps
+                    this.testReporter.information('\t' + scenario.featureDescription.join('\r\n\t') + '\r\n\r\n');
                     var conditions = scenario.getAllConditions();
                     this.runNextCondition(conditions, 0, context, scenario, exampleIndex, true);
                 }
@@ -94,13 +89,10 @@
                     throw new Error('No step definition defined.\n\n' + stepMethodBuilder.getSuggestedStepMethod());
                 }
                 if (stepExecution.parameters) {
-                    // Add the context container as the first argument
                     stepExecution.parameters.unshift(context);
-                    // Call the step method
                     stepExecution.method.apply(null, stepExecution.parameters);
                 }
                 else {
-                    // Call the step method
                     stepExecution.method.call(null, context);
                 }
                 if (isAsync) {
@@ -128,7 +120,6 @@
         }
         StepMethodBuilder.prototype.getSuggestedStepMethod = function () {
             var argumentParser = new ArgumentParser(this.originalCondition);
-            /* Template for step method */
             var params = argumentParser.getParameters();
             var comma = (params.length > 0) ? ', ' : '';
             var suggestion = '    runner.addStep(/' + argumentParser.getCondition() + '/i,\n' +
@@ -165,17 +156,14 @@
             var trimmedArgument = quotedArgument.replace(/"/g, '');
             var argumentExpression = null;
             if (trimmedArgument.toLowerCase() === 'true' || trimmedArgument.toLowerCase() === 'false') {
-                // Argument is boolean
                 this.arguments.push('p' + position + ': boolean');
                 argumentExpression = RegEx_1.ExpressionLibrary.trueFalseString;
             }
             else if (parseFloat(trimmedArgument).toString() === trimmedArgument) {
-                // Argument is number
                 this.arguments.push('p' + position + ': number');
                 argumentExpression = RegEx_1.ExpressionLibrary.numberString;
             }
             else {
-                // Argument is string
                 this.arguments.push('p' + position + ': string');
                 argumentExpression = RegEx_1.ExpressionLibrary.defaultString;
             }
@@ -184,4 +172,3 @@
         return ArgumentParser;
     })();
 });
-//# sourceMappingURL=Parser.js.map

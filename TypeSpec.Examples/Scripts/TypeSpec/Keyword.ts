@@ -57,3 +57,10 @@
         return this.isKeywordMatch(text, this.Table);
     }
 }
+
+export interface ITestReporter {
+    summary(featureTitle: string, scenarioTitle: string, isSuccess: boolean): void;
+    error(featureTitle: string, condition: string, error: Error): void;
+    information(message: string): void;
+    complete(): void;
+}
