@@ -14,6 +14,7 @@
             this.testReporter = testReporter;
             this.excludedTags = [];
             this.hasWindow = (typeof window !== 'undefined');
+            this.fileCount = 0;
             this.steps = new Steps_1.StepCollection(testReporter);
         }
         SpecRunner.prototype.addStep = function (expression, step) {
@@ -45,6 +46,7 @@
             for (var _i = 0; _i < arguments.length; _i++) {
                 url[_i - 0] = arguments[_i];
             }
+            this.fileCount = url.length;
             this.readFile(0, url);
         };
         SpecRunner.prototype.runInRandomOrder = function () {
@@ -52,6 +54,7 @@
             for (var _i = 0; _i < arguments.length; _i++) {
                 url[_i - 0] = arguments[_i];
             }
+            this.fileCount = url.length;
             var specList = new SpecificationList(url);
             this.readFile(0, specList.randomise());
         };
@@ -64,24 +67,32 @@
                 this.excludedTags.push(tags[i].replace(/@/g, ''));
             }
         };
-        SpecRunner.prototype.readFile = function (index, url) {
+        SpecRunner.prototype.readFile = function (index, urls) {
             var _this = this;
             var cacheBust = '?cb=' + new Date().getTime();
-            if (index < url.length) {
+            if (index < urls.length) {
                 var nextIndex = index + 1;
                 var finalCallback = function () { };
-                if (nextIndex === url.length) {
-                    finalCallback = function () { _this.testReporter.complete(); };
-                }
+                //if (nextIndex === urls.length) {
+                //    finalCallback = () => { this.testReporter.complete(); };
+                //}
+                var completedFiles = 0;
+                var fileComplete = function () {
+                    completedFiles++;
+                    if (completedFiles === urls.length) {
+                        _this.testReporter.complete();
+                        alert('done');
+                    }
+                };
                 if (this.hasWindow) {
-                    this.getFile(url[index], cacheBust, function () { _this.readFile(nextIndex, url); }, finalCallback);
+                    this.getFile(urls[index], cacheBust, function () { _this.readFile(nextIndex, urls); }, finalCallback, fileComplete);
                 }
                 else {
-                    this.getNodeFile(url[index], cacheBust, function () { _this.readFile(nextIndex, url); }, finalCallback);
+                    this.getNodeFile(urls[index], cacheBust, function () { _this.readFile(nextIndex, urls); }, finalCallback, fileComplete);
                 }
             }
         };
-        SpecRunner.prototype.getFile = function (url, cacheBust, successCallback, allCallback) {
+        SpecRunner.prototype.getFile = function (url, cacheBust, successCallback, allCallback, fileComplete) {
             var _this = this;
             var client = new XMLHttpRequest();
             client.open('GET', url + cacheBust);
@@ -89,7 +100,7 @@
                 if (client.readyState === 4) {
                     try {
                         if (client.status === 200) {
-                            _this.processSpecification(client.responseText);
+                            _this.processSpecification(client.responseText, fileComplete);
                             successCallback();
                         }
                         else {
@@ -103,24 +114,26 @@
             };
             client.send();
         };
-        SpecRunner.prototype.getNodeFile = function (url, cacheBust, successCallback, allCallback) {
+        SpecRunner.prototype.getNodeFile = function (url, cacheBust, successCallback, allCallback, fileComplete) {
             var _this = this;
             var fs = require('fs');
             var path = require('path');
+            // Make the path relative in Node's terms and resolve it
             var resolvedUrl = path.resolve('.' + url);
             fs.readFile(resolvedUrl, 'utf8', function (err, data) {
                 if (err) {
                     _this.testReporter.error('getNodeFile', url, new Error('Error loading specification: ' + err + ').'));
                     allCallback();
                 }
-                _this.processSpecification(data);
+                _this.processSpecification(data, fileComplete);
                 successCallback();
                 allCallback();
             });
         };
-        SpecRunner.prototype.processSpecification = function (spec) {
+        SpecRunner.prototype.processSpecification = function (spec, fileComplete) {
             var hasParsed = true;
             var composer = new Parser_1.FeatureParser(this.steps, this.testReporter, this.excludedTags);
+            /* Normalise line endings before splitting */
             var lines = spec.replace('\r\n', '\n').split('\n');
             for (var i = 0; i < lines.length; i++) {
                 var line = lines[i];
@@ -134,7 +147,7 @@
                 }
             }
             if (hasParsed) {
-                composer.run();
+                composer.run(fileComplete);
             }
         };
         return SpecRunner;
@@ -249,7 +262,7 @@
                             indexString + ' is null and b' +
                             indexString + ' is not null', message);
                     }
-                    return;
+                    return; // correct: both are nulls
                 }
                 else if (actual === null) {
                     indexString = resultToString(result);
@@ -402,6 +415,7 @@
             return new Error(resultMessage);
         };
         Assert.getNameOfClass = function (inputClass) {
+            // see: https://www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
             var funcNameRegex = /function (.{1,})\(/;
             var results = (funcNameRegex).exec(inputClass.constructor.toString());
             return (results && results.length > 1) ? results[1] : '';
@@ -419,3 +433,4 @@
     })();
     exports.Assert = Assert;
 });
+//# sourceMappingURL=TypeSpec.js.map

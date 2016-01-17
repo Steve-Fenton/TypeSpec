@@ -33,22 +33,39 @@ export class FeatureParser {
         this.state[this.scenarioIndex] = this.state[this.scenarioIndex].process(line);
     }
 
-    run() {
+    run(featureComplete: Function) {
+        var completedScenarios = 0;
+        var scenarioComplete = () => {
+            completedScenarios++;
+            if (completedScenarios === this.state.length) {
+                featureComplete();
+            }
+        };
+
         // Each Scenario
         for (var scenarioIndex = 0; scenarioIndex < this.state.length; scenarioIndex++) {
             var scenario = this.state[scenarioIndex];
 
             if (typeof scenario.scenarioTitle === 'undefined') {
                 this.testReporter.information(scenario.featureTitle + ' has an ignored scenario, or a scenario missing a title.');
+                scenarioComplete();
                 continue;
             }
 
-            this.runScenario(scenario);
+            this.runScenario(scenario, scenarioComplete);
         }
     }
 
-    private runScenario(scenario: StateBase) {
+    private runScenario(scenario: StateBase, scenarioComplete: Function) {
         var tableRowCount = (scenario.tableRows.length > 0) ? scenario.tableRows.length : 1;
+
+        var completedExamples = 0;
+        var examplesComplete = () => {
+            completedExamples++;
+            if (completedExamples === tableRowCount) {
+                scenarioComplete();
+            }
+        };
 
         // Each Example Row
         for (var exampleIndex = 0; exampleIndex < tableRowCount; exampleIndex++) {
@@ -65,7 +82,7 @@ export class FeatureParser {
 
                 // Process the scenario steps
                 var conditions = scenario.getAllConditions();
-                this.runNextCondition(conditions, 0, context, scenario, exampleIndex, true);
+                this.runNextCondition(conditions, 0, context, scenario, exampleIndex, true, examplesComplete);
 
             } catch (ex) {
                 passed = false;
@@ -74,7 +91,7 @@ export class FeatureParser {
         }
     }
 
-    private runNextCondition(conditions: { condition: string; type: StepType; }[], conditionIndex: number, context: any, scenario: StateBase, exampleIndex: number, passing: boolean) {
+    private runNextCondition(conditions: { condition: string; type: StepType; }[], conditionIndex: number, context: any, scenario: StateBase, exampleIndex: number, passing: boolean, examplesComplete: Function) {
         try {
             var next = conditions[conditionIndex];
             var i = conditionIndex + 1;
@@ -86,9 +103,10 @@ export class FeatureParser {
                     clearTimeout(this.asyncTimer);
                 }
                 if (i < conditions.length) {
-                    this.runNextCondition(conditions, i, context, scenario, exampleIndex, passing);
+                    this.runNextCondition(conditions, i, context, scenario, exampleIndex, passing, examplesComplete);
                 } else {
                     this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passing);
+                    examplesComplete();
                 }
             }
 
@@ -115,7 +133,7 @@ export class FeatureParser {
             if (isAsync) {
                 this.asyncTimer = setTimeout(() => {
                     this.testReporter.error('Async Exception', condition, new Error('Async step timed out'));
-                    this.runNextCondition(conditions, i, context, scenario, exampleIndex, false);
+                    this.runNextCondition(conditions, i, context, scenario, exampleIndex, false, examplesComplete);
                 }, this.asyncTimeout);
             } else {
                 context.done();
@@ -124,6 +142,7 @@ export class FeatureParser {
             passing = false;
             this.testReporter.error(scenario.featureTitle, this.currentCondition, ex);
             this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passing);
+            examplesComplete();
         }
     }
 }

@@ -9,6 +9,8 @@ export class SpecRunner {
     private excludedTags: string[] = [];
     private hasWindow = (typeof window !== 'undefined');
 
+    private fileCount = 0;
+
     constructor(private testReporter: ITestReporter = new TestReporter()) {
         this.steps = new StepCollection(testReporter);
     }
@@ -46,10 +48,12 @@ export class SpecRunner {
     }
 
     run(...url: string[]) {
+        this.fileCount = url.length;
         this.readFile(0, url);
     }
 
     runInRandomOrder(...url: string[]) {
+        this.fileCount = url.length;
         var specList = new SpecificationList(url);
         this.readFile(0, specList.randomise());
     }
@@ -60,32 +64,41 @@ export class SpecRunner {
         }
     }
 
-    private readFile(index: number, url: string[]) {
+    private readFile(index: number, urls: string[]) {
         var cacheBust = '?cb=' + new Date().getTime();
-        if (index < url.length) {
+        if (index < urls.length) {
             var nextIndex = index + 1;
 
             var finalCallback = () => { };
-            if (nextIndex === url.length) {
-                finalCallback = () => { this.testReporter.complete(); };
-            }
+            //if (nextIndex === urls.length) {
+            //    finalCallback = () => { this.testReporter.complete(); };
+            //}
+
+            var completedFiles = 0;
+            var fileComplete = () => {
+                completedFiles++;
+                if (completedFiles === urls.length) {
+                    this.testReporter.complete();
+                    alert('done');
+                }
+            };
 
             if (this.hasWindow) {
-                this.getFile(url[index], cacheBust, () => { this.readFile(nextIndex, url); }, finalCallback);
+                this.getFile(urls[index], cacheBust, () => { this.readFile(nextIndex, urls); }, finalCallback, fileComplete);
             } else {
-                this.getNodeFile(url[index], cacheBust, () => { this.readFile(nextIndex, url); }, finalCallback);
+                this.getNodeFile(urls[index], cacheBust, () => { this.readFile(nextIndex, urls); }, finalCallback, fileComplete);
             }
         }
     }
 
-    private getFile(url: string, cacheBust: string, successCallback: Function, allCallback: Function) {
+    private getFile(url: string, cacheBust: string, successCallback: Function, allCallback: Function, fileComplete: Function) {
         var client = new XMLHttpRequest();
         client.open('GET', url + cacheBust);
         client.onreadystatechange = () => {
             if (client.readyState === 4) {
                 try {
                     if (client.status === 200) {
-                        this.processSpecification(client.responseText);
+                        this.processSpecification(client.responseText, fileComplete);
                         successCallback();
                     } else {
                         this.testReporter.error('getFile', url, new Error('Error loading specification: ' + client.statusText + ' (' + client.status + ').'));
@@ -98,7 +111,7 @@ export class SpecRunner {
         client.send();
     }
 
-    private getNodeFile(url: string, cacheBust: string, successCallback: Function, allCallback: Function) {
+    private getNodeFile(url: string, cacheBust: string, successCallback: Function, allCallback: Function, fileComplete: Function) {
         var fs: any = require('fs');
         var path: any = require('path');
 
@@ -110,13 +123,13 @@ export class SpecRunner {
                 this.testReporter.error('getNodeFile', url, new Error('Error loading specification: ' + err + ').'));
                 allCallback();
             }
-            this.processSpecification(data);
+            this.processSpecification(data, fileComplete);
             successCallback();
             allCallback();
         });
     }
 
-    private processSpecification(spec: string) {
+    private processSpecification(spec: string, fileComplete: Function) {
         var hasParsed = true;
         var composer = new FeatureParser(this.steps, this.testReporter, this.excludedTags);
 
@@ -136,7 +149,7 @@ export class SpecRunner {
         }
 
         if (hasParsed) {
-            composer.run();
+            composer.run(fileComplete);
         }
     }
 }
