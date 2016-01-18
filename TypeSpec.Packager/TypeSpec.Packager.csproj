@@ -46,7 +46,7 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <None Include="content\Scripts\TypeSpec\npm-publish.bat" />
+    <None Include="content\Scripts\npm-publish.bat" />
     <None Include="content\Scripts\TypeSpec\package.json" />
     <None Include="content\Scripts\TypeSpec\README.md" />
     <None Include="NuGetPackage.ps1" />

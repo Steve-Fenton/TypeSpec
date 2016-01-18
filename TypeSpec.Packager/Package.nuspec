@@ -28,6 +28,7 @@
   <files>
     <file src="lib\" target="lib" />
     <file src="tools\" target="tools" />
-    <file src="content\Scripts\TypeSpec\*.*" target="content\Scripts\TypeSpec\" />
+    <file src="content\Scripts\TypeSpec\*.ts" target="content\Scripts\TypeSpec\" />
+    <file src="content\Scripts\TypeSpec\*.js" target="content\Scripts\TypeSpec\" />
   </files>
 </package>
