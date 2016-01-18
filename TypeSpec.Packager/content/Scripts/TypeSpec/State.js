@@ -3,14 +3,14 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-(function (deps, factory) {
+(function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(deps, factory);
+        define(["require", "exports", './Keyword', './Steps'], factory);
     }
-})(["require", "exports", './Keyword', './Steps'], function (require, exports) {
+})(function (require, exports) {
     var Keyword_1 = require('./Keyword');
     var Steps_1 = require('./Steps');
     var StateBase = (function () {
@@ -62,7 +62,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             if (this.tableRows.length > index) {
                 var data = this.tableRows[index];
                 for (var prop in data) {
-                    var token = Keyword_1.Keyword.TokenStart + prop + Keyword_1.Keyword.TokenEnd;
+                    var token = Keyword_1.Keyword.getToken(prop);
                     condition = condition.replace(token, data[prop]);
                 }
             }
@@ -74,34 +74,34 @@ var __extends = (this && this.__extends) || function (d, b) {
                 // Skip empty lines
                 return this;
             }
-            if (Keyword_1.Keyword.isFeatureDeclaration(line)) {
+            if (Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Feature)) {
                 return this.feature(line);
             }
-            if (Keyword_1.Keyword.isTagDeclaration(line)) {
+            if (Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Tag)) {
                 return this.tag(line);
             }
-            if (Keyword_1.Keyword.isScenarioDeclaration(line)) {
+            if (Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Scenario)) {
                 return this.scenario(line);
             }
-            if (Keyword_1.Keyword.isOutlineDeclaration(line)) {
+            if (Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Outline)) {
                 return this.outline(line);
             }
-            if (Keyword_1.Keyword.isGivenDeclaration(line)) {
+            if (Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Given)) {
                 return this.given(line);
             }
-            if (Keyword_1.Keyword.isWhenDeclaration(line)) {
+            if (Keyword_1.Keyword.is(line, Keyword_1.KeywordType.When)) {
                 return this.when(line);
             }
-            if (Keyword_1.Keyword.isThenDeclaration(line)) {
+            if (Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Then)) {
                 return this.then(line);
             }
-            if (Keyword_1.Keyword.isAndDeclaration(line)) {
+            if (Keyword_1.Keyword.is(line, Keyword_1.KeywordType.And)) {
                 return this.and(line);
             }
-            if (Keyword_1.Keyword.isExamplesDeclaration(line)) {
+            if (Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Examples)) {
                 return this.examples(line);
             }
-            if (Keyword_1.Keyword.isTableDeclaration(line)) {
+            if (Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Table)) {
                 return this.table(line);
             }
             return this.unknown(line);
@@ -150,9 +150,6 @@ var __extends = (this && this.__extends) || function (d, b) {
         StateBase.prototype.table = function (line) {
             throw new Error('Did not expect line: ' + line);
         };
-        StateBase.prototype.trimLine = function (text, keyword) {
-            return text.substring(keyword.length).trim();
-        };
         return StateBase;
     })();
     exports.StateBase = StateBase;
@@ -169,7 +166,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             this.tagsToExclude = tagsToExclude;
         }
         InitializedState.prototype.feature = function (line) {
-            this.featureTitle = this.trimLine(line, Keyword_1.Keyword.Feature);
+            this.featureTitle = Keyword_1.Keyword.trimKeyword(line, Keyword_1.KeywordType.Feature);
             return new FeatureState(this);
         };
         return InitializedState;
@@ -185,7 +182,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return this;
         };
         FeatureState.prototype.tag = function (line) {
-            var tags = line.split(Keyword_1.Keyword.Tag);
+            var tags = Keyword_1.Keyword.getTags(line);
             var trimmedTags = [];
             for (var i = 0; i < tags.length; i++) {
                 var trimmedTag = tags[i].trim().toLowerCase();
@@ -201,11 +198,11 @@ var __extends = (this && this.__extends) || function (d, b) {
             return this;
         };
         FeatureState.prototype.scenario = function (line) {
-            this.scenarioTitle = this.trimLine(line, Keyword_1.Keyword.Scenario);
+            this.scenarioTitle = Keyword_1.Keyword.trimKeyword(line, Keyword_1.KeywordType.Scenario);
             return new ScenarioState(this);
         };
         FeatureState.prototype.outline = function (line) {
-            this.scenarioTitle = this.trimLine(line, Keyword_1.Keyword.Scenario);
+            this.scenarioTitle = Keyword_1.Keyword.trimKeyword(line, Keyword_1.KeywordType.Scenario);
             return new ScenarioState(this);
         };
         return FeatureState;
@@ -218,7 +215,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             this.hasScenario = false;
         }
         ExcludedScenarioState.prototype.isNewScenario = function (line) {
-            return this.hasScenario && (Keyword_1.Keyword.isScenarioDeclaration(line) || Keyword_1.Keyword.isOutlineDeclaration(line) || Keyword_1.Keyword.isTagDeclaration(line));
+            return this.hasScenario && (Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Scenario) || Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Outline) || Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Tag));
         };
         ExcludedScenarioState.prototype.tag = function (line) {
             // Discard
@@ -266,7 +263,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             _super.call(this, priorState);
         }
         ScenarioState.prototype.given = function (line) {
-            this.givens.push(this.trimLine(line, Keyword_1.Keyword.Given));
+            this.givens.push(Keyword_1.Keyword.trimKeyword(line, Keyword_1.KeywordType.Given));
             return new GivenState(this);
         };
         return ScenarioState;
@@ -277,15 +274,15 @@ var __extends = (this && this.__extends) || function (d, b) {
             _super.call(this, priorState);
         }
         GivenState.prototype.when = function (line) {
-            this.whens.push(this.trimLine(line, Keyword_1.Keyword.When));
+            this.whens.push(Keyword_1.Keyword.trimKeyword(line, Keyword_1.KeywordType.When));
             return new WhenState(this);
         };
         GivenState.prototype.then = function (line) {
-            this.thens.push(this.trimLine(line, Keyword_1.Keyword.Then));
+            this.thens.push(Keyword_1.Keyword.trimKeyword(line, Keyword_1.KeywordType.Then));
             return new ThenState(this);
         };
         GivenState.prototype.and = function (line) {
-            this.givens.push(this.trimLine(line, Keyword_1.Keyword.And));
+            this.givens.push(Keyword_1.Keyword.trimKeyword(line, Keyword_1.KeywordType.And));
             return this;
         };
         return GivenState;
@@ -296,11 +293,11 @@ var __extends = (this && this.__extends) || function (d, b) {
             _super.call(this, priorState);
         }
         WhenState.prototype.then = function (line) {
-            this.thens.push(this.trimLine(line, Keyword_1.Keyword.Then));
+            this.thens.push(Keyword_1.Keyword.trimKeyword(line, Keyword_1.KeywordType.Then));
             return new ThenState(this);
         };
         WhenState.prototype.and = function (line) {
-            this.whens.push(this.trimLine(line, Keyword_1.Keyword.And));
+            this.whens.push(Keyword_1.Keyword.trimKeyword(line, Keyword_1.KeywordType.And));
             return this;
         };
         return WhenState;
@@ -311,10 +308,10 @@ var __extends = (this && this.__extends) || function (d, b) {
             _super.call(this, priorState);
         }
         ThenState.prototype.isNewScenario = function (line) {
-            return (Keyword_1.Keyword.isScenarioDeclaration(line) || Keyword_1.Keyword.isOutlineDeclaration(line) || Keyword_1.Keyword.isTagDeclaration(line));
+            return (Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Scenario) || Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Outline) || Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Tag));
         };
         ThenState.prototype.and = function (line) {
-            this.thens.push(this.trimLine(line, Keyword_1.Keyword.And));
+            this.thens.push(Keyword_1.Keyword.trimKeyword(line, Keyword_1.KeywordType.And));
             return this;
         };
         ThenState.prototype.examples = function (line) {
@@ -328,7 +325,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             _super.call(this, priorState);
         }
         ExampleState.prototype.table = function (line) {
-            var headings = line.split(Keyword_1.Keyword.Table);
+            var headings = Keyword_1.Keyword.getTableRow(line);
             for (var i = 0; i < headings.length; i++) {
                 var trimmedHeading = headings[i].trim();
                 this.tableHeaders.push(trimmedHeading);
@@ -343,7 +340,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             _super.call(this, priorState);
         }
         TableState.prototype.table = function (line) {
-            var data = line.split(Keyword_1.Keyword.Table);
+            var data = Keyword_1.Keyword.getTableRow(line);
             var row = {};
             for (var i = 0; i < data.length; i++) {
                 var trimmedData = data[i].trim();

@@ -20,7 +20,6 @@
     "State.ts",
     "Steps.ts",
     "TypeSpec.ts",
-
     "Keyword.js",
     "Parser.js",
     "RegEx.js",

@@ -76,7 +76,6 @@ export class FeatureParser {
                 var context: any = {};
 
                 this.testReporter.information('--------------------------------------');
-                this.testReporter.information(Keyword.Feature);
                 this.testReporter.information(scenario.featureTitle);
                 this.testReporter.information('\t' + scenario.featureDescription.join('\r\n\t') + '\r\n\r\n');
 

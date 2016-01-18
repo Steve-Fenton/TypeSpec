@@ -1,11 +1,11 @@
-(function (deps, factory) {
+(function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(deps, factory);
+        define(["require", "exports", './Parser', './Steps'], factory);
     }
-})(["require", "exports", './Parser', './Steps'], function (require, exports) {
+})(function (require, exports) {
     var Parser_1 = require('./Parser');
     var Steps_1 = require('./Steps');
     var SpecRunner = (function () {
@@ -14,7 +14,8 @@
             this.testReporter = testReporter;
             this.excludedTags = [];
             this.hasWindow = (typeof window !== 'undefined');
-            this.fileCount = 0;
+            this.expectedFiles = 0;
+            this.completedFiles = 0;
             this.steps = new Steps_1.StepCollection(testReporter);
         }
         SpecRunner.prototype.addStep = function (expression, step) {
@@ -46,7 +47,7 @@
             for (var _i = 0; _i < arguments.length; _i++) {
                 url[_i - 0] = arguments[_i];
             }
-            this.fileCount = url.length;
+            this.expectedFiles = url.length;
             this.readFile(0, url);
         };
         SpecRunner.prototype.runInRandomOrder = function () {
@@ -54,7 +55,7 @@
             for (var _i = 0; _i < arguments.length; _i++) {
                 url[_i - 0] = arguments[_i];
             }
-            this.fileCount = url.length;
+            this.expectedFiles = url.length;
             var specList = new SpecificationList(url);
             this.readFile(0, specList.randomise());
         };
@@ -72,16 +73,12 @@
             var cacheBust = '?cb=' + new Date().getTime();
             if (index < urls.length) {
                 var nextIndex = index + 1;
+                // TODO: Remove
                 var finalCallback = function () { };
-                //if (nextIndex === urls.length) {
-                //    finalCallback = () => { this.testReporter.complete(); };
-                //}
-                var completedFiles = 0;
                 var fileComplete = function () {
-                    completedFiles++;
-                    if (completedFiles === urls.length) {
+                    _this.completedFiles++;
+                    if (_this.completedFiles === _this.expectedFiles) {
                         _this.testReporter.complete();
-                        alert('done');
                     }
                 };
                 if (this.hasWindow) {
@@ -148,6 +145,9 @@
             }
             if (hasParsed) {
                 composer.run(fileComplete);
+            }
+            else {
+                fileComplete();
             }
         };
         return SpecRunner;

@@ -48,6 +48,7 @@ export class FeatureParser {
 
             if (typeof scenario.scenarioTitle === 'undefined') {
                 this.testReporter.information(scenario.featureTitle + ' has an ignored scenario, or a scenario missing a title.');
+                scenarioComplete();
                 continue;
             }
 
@@ -75,7 +76,6 @@ export class FeatureParser {
                 var context: any = {};
 
                 this.testReporter.information('--------------------------------------');
-                this.testReporter.information(Keyword.Feature);
                 this.testReporter.information(scenario.featureTitle);
                 this.testReporter.information('\t' + scenario.featureDescription.join('\r\n\t') + '\r\n\r\n');
 
@@ -105,9 +105,7 @@ export class FeatureParser {
                     this.runNextCondition(conditions, i, context, scenario, exampleIndex, passing, examplesComplete);
                 } else {
                     this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passing);
-                    if (i >= conditions.length) {
-                        examplesComplete();
-                    }
+                    examplesComplete();
                 }
             }
 
@@ -143,6 +141,7 @@ export class FeatureParser {
             passing = false;
             this.testReporter.error(scenario.featureTitle, this.currentCondition, ex);
             this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passing);
+            examplesComplete();
         }
     }
 }

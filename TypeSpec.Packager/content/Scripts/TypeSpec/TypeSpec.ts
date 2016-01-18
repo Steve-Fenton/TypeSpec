@@ -9,7 +9,8 @@ export class SpecRunner {
     private excludedTags: string[] = [];
     private hasWindow = (typeof window !== 'undefined');
 
-    private fileCount = 0;
+    private expectedFiles = 0;
+    private completedFiles = 0;
 
     constructor(private testReporter: ITestReporter = new TestReporter()) {
         this.steps = new StepCollection(testReporter);
@@ -48,12 +49,12 @@ export class SpecRunner {
     }
 
     run(...url: string[]) {
-        this.fileCount = url.length;
+        this.expectedFiles = url.length;
         this.readFile(0, url);
     }
 
     runInRandomOrder(...url: string[]) {
-        this.fileCount = url.length;
+        this.expectedFiles = url.length;
         var specList = new SpecificationList(url);
         this.readFile(0, specList.randomise());
     }
@@ -63,23 +64,19 @@ export class SpecRunner {
             this.excludedTags.push(tags[i].replace(/@/g, ''));
         }
     }
-
+    
     private readFile(index: number, urls: string[]) {
         var cacheBust = '?cb=' + new Date().getTime();
         if (index < urls.length) {
             var nextIndex = index + 1;
 
+            // TODO: Remove
             var finalCallback = () => { };
-            //if (nextIndex === urls.length) {
-            //    finalCallback = () => { this.testReporter.complete(); };
-            //}
 
-            var completedFiles = 0;
             var fileComplete = () => {
-                completedFiles++;
-                if (completedFiles === urls.length) {
+                this.completedFiles++;
+                if (this.completedFiles === this.expectedFiles) {
                     this.testReporter.complete();
-                    alert('done');
                 }
             };
 
@@ -150,6 +147,8 @@ export class SpecRunner {
 
         if (hasParsed) {
             composer.run(fileComplete);
+        } else {
+            fileComplete();
         }
     }
 }

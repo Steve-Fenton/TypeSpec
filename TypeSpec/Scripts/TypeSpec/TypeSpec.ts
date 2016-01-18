@@ -64,7 +64,7 @@ export class SpecRunner {
             this.excludedTags.push(tags[i].replace(/@/g, ''));
         }
     }
-
+    
     private readFile(index: number, urls: string[]) {
         var cacheBust = '?cb=' + new Date().getTime();
         if (index < urls.length) {

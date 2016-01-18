@@ -1,11 +1,11 @@
-(function (deps, factory) {
+(function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(deps, factory);
+        define(["require", "exports", './RegEx'], factory);
     }
-})(["require", "exports", './RegEx'], function (require, exports) {
+})(function (require, exports) {
     var RegEx_1 = require('./RegEx');
     var StepDefinition = (function () {
         function StepDefinition(expression, step, isAsync, type) {

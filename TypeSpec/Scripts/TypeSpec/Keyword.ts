@@ -1,62 +1,98 @@
-﻿export class Keyword {
-    public static Feature = 'Feature:';
-    public static Scenario = 'Scenario:';
-    public static Outline = 'Scenario Outline:';
-    public static Examples = 'Examples:';
-    public static Tag = '@';
-    public static Table = '|';
-    public static TokenStart = '<';
-    public static TokenEnd = '>';
+﻿export enum KeywordType {
+    Unknown,
+    Feature,
+    Scenario,
+    Outline,
+    Examples,
+    Tag,
+    Table,
+    TokenStart,
+    TokenEnd,
+    Given,
+    When,
+    Then,
+    And
+}
 
-    public static Given = 'Given ';
-    public static And = 'And ';
-    public static When = 'When ';
-    public static Then = 'Then ';
+class KeywordMap {
+    [key: string]: KeywordType;
+}
 
-    private static isKeywordMatch(text: string, keyword: string) {
+class KeywordTypeMap {
+    [key: number]: string;
+}
+
+export class Keywords {
+    private Feature = 'Feature:';
+    private Scenario = 'Scenario:';
+    private Outline = 'Scenario Outline:';
+    private Examples = 'Examples:';
+    private Tag = '@';
+    private Table = '|';
+    private TokenStart = '<';
+    private TokenEnd = '>';
+
+    private Given = 'Given ';
+    private When = 'When ';
+    private Then = 'Then ';
+    private And = 'And ';
+
+    private KeywordMap: KeywordMap = {};
+    private KeywordTypeMap: KeywordTypeMap = {};
+
+    constructor() {
+        this.addMap(this.Feature, KeywordType.Feature);
+        this.addMap(this.Scenario, KeywordType.Scenario);
+        this.addMap(this.Outline, KeywordType.Outline);
+        this.addMap(this.Examples, KeywordType.Examples);
+        this.addMap(this.Tag, KeywordType.Tag);
+        this.addMap(this.Table, KeywordType.Table);
+        this.addMap(this.TokenStart, KeywordType.TokenStart);
+        this.addMap(this.TokenEnd, KeywordType.TokenEnd);
+
+        this.addMap(this.Given, KeywordType.Given);
+        this.addMap(this.When, KeywordType.When);
+        this.addMap(this.Then, KeywordType.Then);
+        this.addMap(this.And, KeywordType.And);
+    }
+
+    public is(text: string, keywordType: KeywordType) {
+        var keyword = this.KeywordTypeMap[keywordType];
         return (text.length >= keyword.length && text.substring(0, keyword.length) === keyword);
     }
 
-    public static isFeatureDeclaration(text: string) {
-        return this.isKeywordMatch(text, this.Feature);
+    public trimKeyword(text: string, keywordType: KeywordType) {
+        var keyword = this.KeywordTypeMap[keywordType];
+        return text.substring(keyword.length).trim();
     }
 
-    public static isScenarioDeclaration(text: string) {
-        return this.isKeywordMatch(text, this.Scenario);
+    public getToken(text: string) {
+        return Keyword.TokenStart + text + Keyword.TokenEnd;
     }
 
-    public static isOutlineDeclaration(text: string) {
-        return this.isKeywordMatch(text, this.Outline);
+    public getTags(text: string) {
+        return text.split(Keyword.Tag);
     }
 
-    public static isTagDeclaration(text: string) {
-        return this.isKeywordMatch(text, this.Tag);
+    public getTableRow(text: string) {
+        return text.split(Keyword.Table);
     }
 
-    public static isGivenDeclaration(text: string) {
-        return this.isKeywordMatch(text, this.Given);
+    private addMap(keyword: string, keywordType: KeywordType) {
+        this.KeywordMap[keyword] = keywordType;
+        this.KeywordTypeMap[keywordType] = keyword;
     }
 
-    public static isWhenDeclaration(text: string) {
-        return this.isKeywordMatch(text, this.When);
-    }
+    private getKeywordType(text: string) {
+        if (this.KeywordMap[text]) {
+            return this.KeywordMap[text];
+        }
 
-    public static isThenDeclaration(text: string) {
-        return this.isKeywordMatch(text, this.Then);
-    }
-
-    public static isAndDeclaration(text: string) {
-        return this.isKeywordMatch(text, this.And);
-    }
-
-    public static isExamplesDeclaration(text: string) {
-        return this.isKeywordMatch(text, this.Examples);
-    }
-
-    public static isTableDeclaration(text: string) {
-        return this.isKeywordMatch(text, this.Table);
+        return KeywordType.Unknown;
     }
 }
+
+export var Keyword = new Keywords();
 
 export interface ITestReporter {
     summary(featureTitle: string, scenarioTitle: string, isSuccess: boolean): void;

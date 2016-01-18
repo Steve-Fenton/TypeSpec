@@ -1,7 +1,15 @@
 ﻿import {TestReporter} from './TypeSpec/TypeSpec';
 
 export class CustomTestReporter extends TestReporter {
+    private testCount = 0;
+    private passedCount = 0;
+
     summary(featureTitle: string, scenarioTitle: string, isSuccess: boolean) {
+        this.testCount++;
+        if (isSuccess) {
+            this.passedCount++;
+        }
+
         var div = document.createElement('li');
         div.className = (isSuccess ? 'good' : 'bad');
         div.innerHTML = this.escape((isSuccess ? '✔' : '✘') + ' ' + featureTitle + '. ' + scenarioTitle + '.');
@@ -17,5 +25,10 @@ export class CustomTestReporter extends TestReporter {
     information(message: string) {
         // Uncoment to see very detailed output
         console.log(message);
+    }
+
+    complete() {
+        var title = (this.passedCount === this.testCount) ? 'Passed' : 'Failed';
+        document.title = title + ' (' + this.passedCount + '/' + this.testCount + ' Passed)';
     }
 }

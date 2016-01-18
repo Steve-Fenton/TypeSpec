@@ -1,12 +1,11 @@
-(function (deps, factory) {
+(function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(deps, factory);
+        define(["require", "exports", './RegEx', './State'], factory);
     }
-})(["require", "exports", './Keyword', './RegEx', './State'], function (require, exports) {
-    var Keyword_1 = require('./Keyword');
+})(function (require, exports) {
     var RegEx_1 = require('./RegEx');
     var State_1 = require('./State');
     var FeatureParser = (function () {
@@ -49,6 +48,7 @@
                 var scenario = this.state[scenarioIndex];
                 if (typeof scenario.scenarioTitle === 'undefined') {
                     this.testReporter.information(scenario.featureTitle + ' has an ignored scenario, or a scenario missing a title.');
+                    scenarioComplete();
                     continue;
                 }
                 this.runScenario(scenario, scenarioComplete);
@@ -70,7 +70,6 @@
                     var i;
                     var context = {};
                     this.testReporter.information('--------------------------------------');
-                    this.testReporter.information(Keyword_1.Keyword.Feature);
                     this.testReporter.information(scenario.featureTitle);
                     this.testReporter.information('\t' + scenario.featureDescription.join('\r\n\t') + '\r\n\r\n');
                     // Process the scenario steps
@@ -98,9 +97,7 @@
                     }
                     else {
                         _this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passing);
-                        if (i >= conditions.length) {
-                            examplesComplete();
-                        }
+                        examplesComplete();
                     }
                 };
                 var condition = scenario.prepareCondition(next.condition, exampleIndex);
@@ -135,6 +132,7 @@
                 passing = false;
                 this.testReporter.error(scenario.featureTitle, this.currentCondition, ex);
                 this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passing);
+                examplesComplete();
             }
         };
         return FeatureParser;
