@@ -9,7 +9,7 @@
     "behaviour",
     "driven"
   ],
-  "version": "0.6.2",
+  "version": "0.6.3",
   "homepage": "https://github.com/Steve-Fenton/TypeSpec",
   "bugs": "https://github.com/Steve-Fenton/TypeSpec/issues",
   "license": "Apache-2.0",
@@ -20,7 +20,6 @@
     "State.ts",
     "Steps.ts",
     "TypeSpec.ts",
-
     "Keyword.js",
     "Parser.js",
     "RegEx.js",

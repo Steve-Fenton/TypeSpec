@@ -7,12 +7,15 @@ declare var require: any;
 export class SpecRunner {
     private steps: StepCollection;
     private excludedTags: string[] = [];
-    private hasWindow = (typeof window !== 'undefined');
 
-    private fileCount = 0;
+    private fileReader: FileReader;
+
+    private expectedFiles = 0;
+    private completedFiles = 0;
 
     constructor(private testReporter: ITestReporter = new TestReporter()) {
         this.steps = new StepCollection(testReporter);
+        this.fileReader = FileReader.getInstance(this.testReporter);
     }
 
     addStep(expression: RegExp, step: Function) {
@@ -48,12 +51,12 @@ export class SpecRunner {
     }
 
     run(...url: string[]) {
-        this.fileCount = url.length;
+        this.expectedFiles = url.length;
         this.readFile(0, url);
     }
 
     runInRandomOrder(...url: string[]) {
-        this.fileCount = url.length;
+        this.expectedFiles = url.length;
         var specList = new SpecificationList(url);
         this.readFile(0, specList.randomise());
     }
@@ -64,69 +67,22 @@ export class SpecRunner {
         }
     }
 
+    private fileCompleted() {
+        this.completedFiles++;
+        if (this.completedFiles === this.expectedFiles) {
+            this.testReporter.complete();
+        }
+    }
+
     private readFile(index: number, urls: string[]) {
-        var cacheBust = '?cb=' + new Date().getTime();
         if (index < urls.length) {
             var nextIndex = index + 1;
 
-            var finalCallback = () => { };
-            //if (nextIndex === urls.length) {
-            //    finalCallback = () => { this.testReporter.complete(); };
-            //}
-
-            var completedFiles = 0;
-            var fileComplete = () => {
-                completedFiles++;
-                if (completedFiles === urls.length) {
-                    this.testReporter.complete();
-                    alert('done');
-                }
-            };
-
-            if (this.hasWindow) {
-                this.getFile(urls[index], cacheBust, () => { this.readFile(nextIndex, urls); }, finalCallback, fileComplete);
-            } else {
-                this.getNodeFile(urls[index], cacheBust, () => { this.readFile(nextIndex, urls); }, finalCallback, fileComplete);
-            }
+            this.fileReader.getFile(urls[index], (responseText: string) => {
+                this.processSpecification(responseText, () => this.fileCompleted());
+                this.readFile(nextIndex, urls);
+            });
         }
-    }
-
-    private getFile(url: string, cacheBust: string, successCallback: Function, allCallback: Function, fileComplete: Function) {
-        var client = new XMLHttpRequest();
-        client.open('GET', url + cacheBust);
-        client.onreadystatechange = () => {
-            if (client.readyState === 4) {
-                try {
-                    if (client.status === 200) {
-                        this.processSpecification(client.responseText, fileComplete);
-                        successCallback();
-                    } else {
-                        this.testReporter.error('getFile', url, new Error('Error loading specification: ' + client.statusText + ' (' + client.status + ').'));
-                    }
-                } finally {
-                    allCallback();
-                }
-            }
-        }
-        client.send();
-    }
-
-    private getNodeFile(url: string, cacheBust: string, successCallback: Function, allCallback: Function, fileComplete: Function) {
-        var fs: any = require('fs');
-        var path: any = require('path');
-
-        // Make the path relative in Node's terms and resolve it
-        var resolvedUrl = path.resolve('.' + url);
-
-        fs.readFile(resolvedUrl, 'utf8', (err: any, data: string) => {
-            if (err) {
-                this.testReporter.error('getNodeFile', url, new Error('Error loading specification: ' + err + ').'));
-                allCallback();
-            }
-            this.processSpecification(data, fileComplete);
-            successCallback();
-            allCallback();
-        });
     }
 
     private processSpecification(spec: string, fileComplete: Function) {
@@ -143,14 +99,75 @@ export class SpecRunner {
                 composer.process(line);
             } catch (ex) {
                 hasParsed = false;
-                var state = composer.state[0] || { featureTitle: 'Unknown' };
+                var state = composer.scenarios[0] || { featureTitle: 'Unknown' };
                 this.testReporter.error(state.featureTitle, line, ex);
             }
         }
 
         if (hasParsed) {
-            composer.run(fileComplete);
+            composer.runFeature(fileComplete);
+        } else {
+            fileComplete();
         }
+    }
+}
+
+interface FileReaderCallback {
+    (responseText: string): void;
+}
+
+abstract class FileReader {
+    static getInstance(testReporter: ITestReporter) : FileReader {
+        if (typeof window !== 'undefined') {
+            return new BrowserFileReader(testReporter);
+        }
+
+        return new NodeFileReader(testReporter);
+    }
+
+    abstract getFile(url: string, successCallback: FileReaderCallback) : void;
+}
+
+class BrowserFileReader extends FileReader {
+    constructor(private testReporter: ITestReporter) {
+        super();
+    }
+
+    getFile(url: string, successCallback: FileReaderCallback) {
+        var cacheBust = '?cb=' + new Date().getTime();
+        var client = new XMLHttpRequest();
+        client.open('GET', url + cacheBust);
+        client.onreadystatechange = () => {
+            if (client.readyState === 4) {
+                if (client.status === 200) {
+                    successCallback(client.responseText);
+                } else {
+                    this.testReporter.error('getFile', url, new Error('Error loading specification: ' + client.statusText + ' (' + client.status + ').'));
+                }
+            }
+        }
+        client.send();
+    }
+}
+
+class NodeFileReader extends FileReader {
+    constructor(private testReporter: ITestReporter) {
+        super();
+    }
+
+    getFile(url: string, successCallback: FileReaderCallback) {
+        var fs: any = require('fs');
+        var path: any = require('path');
+
+        // Make the path relative in Node's terms and resolve it
+        var resolvedUrl = path.resolve('.' + url);
+
+        fs.readFile(resolvedUrl, 'utf8', (err: any, data: string) => {
+            if (err) {
+                this.testReporter.error('getNodeFile', url, new Error('Error loading specification: ' + err + ').'));
+            }
+            successCallback(data);
+        });
     }
 }
 
@@ -228,7 +245,7 @@ export class TapReporter implements ITestReporter {
     }
 }
 
-// Assertions lifted from tsUnit and made static here.
+// Assertions lifted from tsUnit and made static here. Any improvements ought to be passed back to tsUnit too.
 
 export interface IThrowsParameters {
     fn: () => void;

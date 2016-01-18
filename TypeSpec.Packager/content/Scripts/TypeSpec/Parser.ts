@@ -4,36 +4,51 @@ import {StepCollection, StepType} from './Steps';
 import {Scenario, InitializedState, FeatureState} from './State';
 
 export class FeatureParser {
-    //public tags: string[] = [];
     public scenarios: Scenario[] = [];
-    public scenarioIndex = 0;
-    public currentCondition = '';
-    public asyncTimeout = 1000; // TODO: Make user configurable
-    public asyncTimer: any;
+    private i = 0;
+    private featureRunner: FeatureRunner;
 
     constructor(private steps: StepCollection, private testReporter: ITestReporter, private tagsToExclude: string[]) {
-        this.scenarios[this.scenarioIndex] = new InitializedState(this.tagsToExclude);
+        this.scenarios[this.i] = new InitializedState(this.tagsToExclude);
+        this.featureRunner = new FeatureRunner(steps, testReporter);
     }
 
     process(line: string) {
-        if (this.scenarios[this.scenarioIndex].isNewScenario(line)) {
-            // This is an additional scenario within the same feature.
-            var existingFeatureTitle = this.scenarios[this.scenarioIndex].featureTitle;
-            var existingFeatureDescription = this.scenarios[this.scenarioIndex].featureDescription;
+        if (this.scenarios[this.i].isNewScenario(line)) {
+            // This is an additional scenario within the same feature file.
+            var existingFeatureTitle = this.scenarios[this.i].featureTitle;
+            var existingFeatureDescription = this.scenarios[this.i].featureDescription;
 
-            this.scenarioIndex++;
+            this.i++;
 
-            this.scenarios[this.scenarioIndex] = new FeatureState(null);
-            this.scenarios[this.scenarioIndex].featureTitle = existingFeatureTitle;
-            this.scenarios[this.scenarioIndex].featureDescription = existingFeatureDescription;
-            this.scenarios[this.scenarioIndex].tagsToExclude = this.tagsToExclude;
+            this.scenarios[this.i] = new FeatureState(null);
+            this.scenarios[this.i].featureTitle = existingFeatureTitle;
+            this.scenarios[this.i].featureDescription = existingFeatureDescription;
+            this.scenarios[this.i].tagsToExclude = this.tagsToExclude;
         }
 
         // Process the new line
-        this.scenarios[this.scenarioIndex] = this.scenarios[this.scenarioIndex].process(line);
+        this.scenarios[this.i] = this.scenarios[this.i].process(line);
     }
 
-    run(featureComplete: Function) {
+    runFeature(featureComplete: Function) {
+        this.featureRunner.run(this.scenarios, featureComplete);
+    }
+}
+
+export class FeatureRunner {
+    private scenarios: Scenario[] = [];
+    private currentCondition = '';
+    private asyncTimeout = 1000; // TODO: Make user configurable
+    private asyncTimer: any;
+
+    constructor(private steps: StepCollection, private testReporter: ITestReporter) {
+
+    }
+
+    run(scenarios: Scenario[], featureComplete: Function) {
+        this.scenarios = scenarios;
+
         var completedScenarios = 0;
         var scenarioComplete = () => {
             completedScenarios++;

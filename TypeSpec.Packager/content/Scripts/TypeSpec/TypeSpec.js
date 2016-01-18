@@ -1,3 +1,8 @@
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -13,10 +18,10 @@
             if (testReporter === void 0) { testReporter = new TestReporter(); }
             this.testReporter = testReporter;
             this.excludedTags = [];
-            this.hasWindow = (typeof window !== 'undefined');
             this.expectedFiles = 0;
             this.completedFiles = 0;
             this.steps = new Steps_1.StepCollection(testReporter);
+            this.fileReader = FileReader.getInstance(this.testReporter);
         }
         SpecRunner.prototype.addStep = function (expression, step) {
             this.steps.add(expression, step, false);
@@ -68,64 +73,21 @@
                 this.excludedTags.push(tags[i].replace(/@/g, ''));
             }
         };
-        SpecRunner.prototype.readFile = function (index, urls) {
-            var _this = this;
-            var cacheBust = '?cb=' + new Date().getTime();
-            if (index < urls.length) {
-                var nextIndex = index + 1;
-                // TODO: Remove
-                var finalCallback = function () { };
-                var fileComplete = function () {
-                    _this.completedFiles++;
-                    if (_this.completedFiles === _this.expectedFiles) {
-                        _this.testReporter.complete();
-                    }
-                };
-                if (this.hasWindow) {
-                    this.getFile(urls[index], cacheBust, function () { _this.readFile(nextIndex, urls); }, finalCallback, fileComplete);
-                }
-                else {
-                    this.getNodeFile(urls[index], cacheBust, function () { _this.readFile(nextIndex, urls); }, finalCallback, fileComplete);
-                }
+        SpecRunner.prototype.fileCompleted = function () {
+            this.completedFiles++;
+            if (this.completedFiles === this.expectedFiles) {
+                this.testReporter.complete();
             }
         };
-        SpecRunner.prototype.getFile = function (url, cacheBust, successCallback, allCallback, fileComplete) {
+        SpecRunner.prototype.readFile = function (index, urls) {
             var _this = this;
-            var client = new XMLHttpRequest();
-            client.open('GET', url + cacheBust);
-            client.onreadystatechange = function () {
-                if (client.readyState === 4) {
-                    try {
-                        if (client.status === 200) {
-                            _this.processSpecification(client.responseText, fileComplete);
-                            successCallback();
-                        }
-                        else {
-                            _this.testReporter.error('getFile', url, new Error('Error loading specification: ' + client.statusText + ' (' + client.status + ').'));
-                        }
-                    }
-                    finally {
-                        allCallback();
-                    }
-                }
-            };
-            client.send();
-        };
-        SpecRunner.prototype.getNodeFile = function (url, cacheBust, successCallback, allCallback, fileComplete) {
-            var _this = this;
-            var fs = require('fs');
-            var path = require('path');
-            // Make the path relative in Node's terms and resolve it
-            var resolvedUrl = path.resolve('.' + url);
-            fs.readFile(resolvedUrl, 'utf8', function (err, data) {
-                if (err) {
-                    _this.testReporter.error('getNodeFile', url, new Error('Error loading specification: ' + err + ').'));
-                    allCallback();
-                }
-                _this.processSpecification(data, fileComplete);
-                successCallback();
-                allCallback();
-            });
+            if (index < urls.length) {
+                var nextIndex = index + 1;
+                this.fileReader.getFile(urls[index], function (responseText) {
+                    _this.processSpecification(responseText, function () { return _this.fileCompleted(); });
+                    _this.readFile(nextIndex, urls);
+                });
+            }
         };
         SpecRunner.prototype.processSpecification = function (spec, fileComplete) {
             var hasParsed = true;
@@ -144,7 +106,7 @@
                 }
             }
             if (hasParsed) {
-                composer.run(fileComplete);
+                composer.runFeature(fileComplete);
             }
             else {
                 fileComplete();
@@ -153,6 +115,63 @@
         return SpecRunner;
     })();
     exports.SpecRunner = SpecRunner;
+    var FileReader = (function () {
+        function FileReader() {
+        }
+        FileReader.getInstance = function (testReporter) {
+            if (typeof window !== 'undefined') {
+                return new BrowserFileReader(testReporter);
+            }
+            return new NodeFileReader(testReporter);
+        };
+        return FileReader;
+    })();
+    var BrowserFileReader = (function (_super) {
+        __extends(BrowserFileReader, _super);
+        function BrowserFileReader(testReporter) {
+            _super.call(this);
+            this.testReporter = testReporter;
+        }
+        BrowserFileReader.prototype.getFile = function (url, successCallback) {
+            var _this = this;
+            var cacheBust = '?cb=' + new Date().getTime();
+            var client = new XMLHttpRequest();
+            client.open('GET', url + cacheBust);
+            client.onreadystatechange = function () {
+                if (client.readyState === 4) {
+                    if (client.status === 200) {
+                        successCallback(client.responseText);
+                    }
+                    else {
+                        _this.testReporter.error('getFile', url, new Error('Error loading specification: ' + client.statusText + ' (' + client.status + ').'));
+                    }
+                }
+            };
+            client.send();
+        };
+        return BrowserFileReader;
+    })(FileReader);
+    var NodeFileReader = (function (_super) {
+        __extends(NodeFileReader, _super);
+        function NodeFileReader(testReporter) {
+            _super.call(this);
+            this.testReporter = testReporter;
+        }
+        NodeFileReader.prototype.getFile = function (url, successCallback) {
+            var _this = this;
+            var fs = require('fs');
+            var path = require('path');
+            // Make the path relative in Node's terms and resolve it
+            var resolvedUrl = path.resolve('.' + url);
+            fs.readFile(resolvedUrl, 'utf8', function (err, data) {
+                if (err) {
+                    _this.testReporter.error('getNodeFile', url, new Error('Error loading specification: ' + err + ').'));
+                }
+                successCallback(data);
+            });
+        };
+        return NodeFileReader;
+    })(FileReader);
     var SpecificationList = (function () {
         function SpecificationList(specifications) {
             this.specifications = specifications;

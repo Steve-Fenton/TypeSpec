@@ -1,7 +1,7 @@
-﻿import {Keyword} from './Keyword';
+﻿import {Keyword, KeywordType} from './Keyword';
 import {StepType} from './Steps';
 
-export class StateBase {
+export class Scenario {
     public givens: string[] = [];
     public whens: string[] = [];
     public thens: string[] = [];
@@ -16,7 +16,7 @@ export class StateBase {
     public tableHeaders: string[] = [];
     public tableRows: {}[] = [];
 
-    constructor(priorState: StateBase) {
+    constructor(priorState: Scenario) {
         if (priorState !== null) {
             this.featureTitle = priorState.featureTitle;
             this.featureDescription = priorState.featureDescription;
@@ -65,7 +65,7 @@ export class StateBase {
         if (this.tableRows.length > index) {
             var data: any = this.tableRows[index];
             for (var prop in data) {
-                var token = Keyword.TokenStart + prop + Keyword.TokenEnd;
+                var token = Keyword.getToken(prop);
                 condition = condition.replace(token, data[prop]);
             }
         }
@@ -80,43 +80,43 @@ export class StateBase {
             return this;
         }
 
-        if (Keyword.isFeatureDeclaration(line)) {
+        if (Keyword.is(line, KeywordType.Feature)) {
             return this.feature(line);
         }
 
-        if (Keyword.isTagDeclaration(line)) {
+        if (Keyword.is(line, KeywordType.Tag)) {
             return this.tag(line);
         }
 
-        if (Keyword.isScenarioDeclaration(line)) {
+        if (Keyword.is(line, KeywordType.Scenario)) {
             return this.scenario(line);
         }
 
-        if (Keyword.isOutlineDeclaration(line)) {
+        if (Keyword.is(line, KeywordType.Outline)) {
             return this.outline(line);
         }
 
-        if (Keyword.isGivenDeclaration(line)) {
+        if (Keyword.is(line, KeywordType.Given)) {
             return this.given(line);
         }
 
-        if (Keyword.isWhenDeclaration(line)) {
+        if (Keyword.is(line, KeywordType.When)) {
             return this.when(line);
         }
 
-        if (Keyword.isThenDeclaration(line)) {
+        if (Keyword.is(line, KeywordType.Then)) {
             return this.then(line);
         }
 
-        if (Keyword.isAndDeclaration(line)) {
+        if (Keyword.is(line, KeywordType.And)) {
             return this.and(line);
         }
 
-        if (Keyword.isExamplesDeclaration(line)) {
+        if (Keyword.is(line, KeywordType.Examples)) {
             return this.examples(line);
         }
 
-        if (Keyword.isTableDeclaration(line)) {
+        if (Keyword.is(line, KeywordType.Table)) {
             return this.table(line);
         }
 
@@ -137,53 +137,53 @@ export class StateBase {
         return false;
     }
 
-    unknown(line: string): StateBase {
+    unknown(line: string): Scenario {
         throw new Error('Unknown line ' + line);
     }
 
-    feature(line: string): StateBase {
+    feature(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
-    tag(line: string): StateBase {
+    tag(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
-    scenario(line: string): StateBase {
+    scenario(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
-    outline(line: string): StateBase {
+    outline(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
-    given(line: string): StateBase {
+    given(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
-    when(line: string): StateBase {
+    when(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
-    then(line: string): StateBase {
+    then(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
-    and(line: string): StateBase {
+    and(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
-    examples(line: string): StateBase {
+    examples(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
-    table(line: string): StateBase {
+    table(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
-    protected trimLine(text: string, keyword: string) {
-        return text.substring(keyword.length).trim()
-    }
+    //protected trimLine(text: string, keyword: string) {
+    //    return text.substring(keyword.length).trim()
+    //}
 }
 
 /*
@@ -192,22 +192,22 @@ export class StateBase {
     any given state
 */
 
-export class InitializedState extends StateBase {
+export class InitializedState extends Scenario {
 
     constructor(tagsToExclude: string[] = []) {
         super(null);
         this.tagsToExclude = tagsToExclude;
     }
 
-    feature(line: string): StateBase {
-        this.featureTitle = this.trimLine(line, Keyword.Feature);
+    feature(line: string): Scenario {
+        this.featureTitle = Keyword.trimKeyword(line, KeywordType.Feature);
         return new FeatureState(this);
     }
 }
 
-export class FeatureState extends StateBase {
+export class FeatureState extends Scenario {
 
-    constructor(priorState: StateBase) {
+    constructor(priorState: Scenario) {
         super(priorState);
     }
 
@@ -216,8 +216,8 @@ export class FeatureState extends StateBase {
         return this;
     }
 
-    tag(line: string): StateBase {
-        var tags = line.split(Keyword.Tag);
+    tag(line: string): Scenario {
+        var tags = Keyword.getTags(line);
         var trimmedTags: string[] = [];
         for (var i = 0; i < tags.length; i++) {
             var trimmedTag = tags[i].trim().toLowerCase();
@@ -235,154 +235,154 @@ export class FeatureState extends StateBase {
         return this;
     }
 
-    scenario(line: string): StateBase {
-        this.scenarioTitle = this.trimLine(line, Keyword.Scenario);
+    scenario(line: string): Scenario {
+        this.scenarioTitle = Keyword.trimKeyword(line, KeywordType.Scenario);
         return new ScenarioState(this);
     }
 
-    outline(line: string): StateBase {
-        this.scenarioTitle = this.trimLine(line, Keyword.Scenario);
+    outline(line: string): Scenario {
+        this.scenarioTitle = Keyword.trimKeyword(line, KeywordType.Scenario);
         return new ScenarioState(this);
     }
 }
 
-class ExcludedScenarioState extends StateBase {
+class ExcludedScenarioState extends Scenario {
     private hasScenario: boolean = false;
 
-    constructor(priorState: StateBase) {
+    constructor(priorState: Scenario) {
         super(priorState);
     }
 
     isNewScenario(line: string) {
-        return this.hasScenario && (Keyword.isScenarioDeclaration(line) || Keyword.isOutlineDeclaration(line) || Keyword.isTagDeclaration(line));
+        return this.hasScenario && (Keyword.is(line, KeywordType.Scenario) || Keyword.is(line, KeywordType.Outline) || Keyword.is(line, KeywordType.Tag));
     }
 
-    tag(line: string): StateBase {
+    tag(line: string): Scenario {
         // Discard
         return this;
     }
 
-    scenario(line: string): StateBase {
-        // Discard
-        this.hasScenario = true;
-        return this;
-    }
-
-    outline(line: string): StateBase {
+    scenario(line: string): Scenario {
         // Discard
         this.hasScenario = true;
         return this;
     }
 
-    given(line: string): StateBase {
+    outline(line: string): Scenario {
+        // Discard
+        this.hasScenario = true;
+        return this;
+    }
+
+    given(line: string): Scenario {
         // Discard
         return this;
     }
 
-    when(line: string): StateBase {
+    when(line: string): Scenario {
         // Discard
         return this;
     }
 
-    then(line: string): StateBase {
+    then(line: string): Scenario {
         // Discard
         return this;
     }
 
-    and(line: string): StateBase {
+    and(line: string): Scenario {
         // Discard
         return this;
     }
 
-    examples(line: string): StateBase {
+    examples(line: string): Scenario {
         // Discard
         return this;
     }
 
-    table(line: string): StateBase {
+    table(line: string): Scenario {
         // Discard
         return this;
     }
 }
 
-class ScenarioState extends StateBase {
+class ScenarioState extends Scenario {
 
-    constructor(priorState: StateBase) {
+    constructor(priorState: Scenario) {
         super(priorState);
     }
 
-    given(line: string): StateBase {
-        this.givens.push(this.trimLine(line, Keyword.Given));
+    given(line: string): Scenario {
+        this.givens.push(Keyword.trimKeyword(line, KeywordType.Given));
         return new GivenState(this);
     }
 }
 
-class GivenState extends StateBase {
+class GivenState extends Scenario {
 
-    constructor(priorState: StateBase) {
+    constructor(priorState: Scenario) {
         super(priorState);
     }
 
-    when(line: string): StateBase {
-        this.whens.push(this.trimLine(line, Keyword.When));
+    when(line: string): Scenario {
+        this.whens.push(Keyword.trimKeyword(line, KeywordType.When));
         return new WhenState(this);
     }
 
-    then(line: string): StateBase {
-        this.thens.push(this.trimLine(line, Keyword.Then));
+    then(line: string): Scenario {
+        this.thens.push(Keyword.trimKeyword(line, KeywordType.Then));
         return new ThenState(this);
     }
 
     and(line: string) {
-        this.givens.push(this.trimLine(line, Keyword.And));
+        this.givens.push(Keyword.trimKeyword(line, KeywordType.And));
         return this;
     }
 }
 
-class WhenState extends StateBase {
+class WhenState extends Scenario {
 
-    constructor(priorState: StateBase) {
+    constructor(priorState: Scenario) {
         super(priorState);
     }
 
-    then(line: string): StateBase {
-        this.thens.push(this.trimLine(line, Keyword.Then));
+    then(line: string): Scenario {
+        this.thens.push(Keyword.trimKeyword(line, KeywordType.Then));
         return new ThenState(this);
     }
 
     and(line: string) {
-        this.whens.push(this.trimLine(line, Keyword.And));
+        this.whens.push(Keyword.trimKeyword(line, KeywordType.And));
         return this;
     }
 }
 
-class ThenState extends StateBase {
+class ThenState extends Scenario {
 
-    constructor(priorState: StateBase) {
+    constructor(priorState: Scenario) {
         super(priorState);
     }
 
     isNewScenario(line: string) {
-        return (Keyword.isScenarioDeclaration(line) || Keyword.isOutlineDeclaration(line) || Keyword.isTagDeclaration(line));
+        return (Keyword.is(line, KeywordType.Scenario) || Keyword.is(line, KeywordType.Outline) || Keyword.is(line, KeywordType.Tag));
     }
 
     and(line: string) {
-        this.thens.push(this.trimLine(line, Keyword.And));
+        this.thens.push(Keyword.trimKeyword(line, KeywordType.And));
         return this;
     }
 
-    examples(line: string): StateBase {
+    examples(line: string): Scenario {
         return new ExampleState(this);
     }
 }
 
-class ExampleState extends StateBase {
-    constructor(priorState: StateBase) {
+class ExampleState extends Scenario {
+    constructor(priorState: Scenario) {
         super(priorState);
     }
 
-    table(line: string): StateBase {
-        var headings = line.split(Keyword.Table);
+    table(line: string): Scenario {
+        var headings = Keyword.getTableRow(line);
         for (var i = 0; i < headings.length; i++) {
             var trimmedHeading = headings[i].trim();
             this.tableHeaders.push(trimmedHeading);
@@ -391,13 +391,13 @@ class ExampleState extends StateBase {
     }
 }
 
-class TableState extends StateBase {
-    constructor(priorState: StateBase) {
+class TableState extends Scenario {
+    constructor(priorState: Scenario) {
         super(priorState);
     }
 
-    table(line: string): StateBase {
-        var data = line.split(Keyword.Table);
+    table(line: string): Scenario {
+        var data = Keyword.getTableRow(line);
         var row: any = {};
         for (var i = 0; i < data.length; i++) {
             var trimmedData = data[i].trim();

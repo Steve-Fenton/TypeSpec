@@ -122,8 +122,9 @@
   <PropertyGroup>
     <PostBuildEvent>XCOPY $(ProjectDir)Scripts\TypeSpec\*.ts $(SolutionDir)\TypeSpec.Packager\content\Scripts\TypeSpec\ /y
 
-
 XCOPY $(ProjectDir)Scripts\TypeSpec\*.js $(SolutionDir)\TypeSpec.Packager\content\Scripts\TypeSpec\ /y
+
+XCOPY  $(SolutionDir)README.md $(SolutionDir)\TypeSpec.Packager\content\Scripts\TypeSpec\ /y
 
 </PostBuildEvent>
   </PropertyGroup>

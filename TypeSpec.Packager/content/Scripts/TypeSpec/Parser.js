@@ -13,29 +13,42 @@
             this.steps = steps;
             this.testReporter = testReporter;
             this.tagsToExclude = tagsToExclude;
-            //public tags: string[] = [];
             this.scenarios = [];
-            this.scenarioIndex = 0;
-            this.currentCondition = '';
-            this.asyncTimeout = 1000; // TODO: Make user configurable
-            this.scenarios[this.scenarioIndex] = new State_1.InitializedState(this.tagsToExclude);
+            this.i = 0;
+            this.scenarios[this.i] = new State_1.InitializedState(this.tagsToExclude);
+            this.featureRunner = new FeatureRunner(steps, testReporter);
         }
         FeatureParser.prototype.process = function (line) {
-            if (this.scenarios[this.scenarioIndex].isNewScenario(line)) {
-                // This is an additional scenario within the same feature.
-                var existingFeatureTitle = this.scenarios[this.scenarioIndex].featureTitle;
-                var existingFeatureDescription = this.scenarios[this.scenarioIndex].featureDescription;
-                this.scenarioIndex++;
-                this.scenarios[this.scenarioIndex] = new State_1.FeatureState(null);
-                this.scenarios[this.scenarioIndex].featureTitle = existingFeatureTitle;
-                this.scenarios[this.scenarioIndex].featureDescription = existingFeatureDescription;
-                this.scenarios[this.scenarioIndex].tagsToExclude = this.tagsToExclude;
+            if (this.scenarios[this.i].isNewScenario(line)) {
+                // This is an additional scenario within the same feature file.
+                var existingFeatureTitle = this.scenarios[this.i].featureTitle;
+                var existingFeatureDescription = this.scenarios[this.i].featureDescription;
+                this.i++;
+                this.scenarios[this.i] = new State_1.FeatureState(null);
+                this.scenarios[this.i].featureTitle = existingFeatureTitle;
+                this.scenarios[this.i].featureDescription = existingFeatureDescription;
+                this.scenarios[this.i].tagsToExclude = this.tagsToExclude;
             }
             // Process the new line
-            this.scenarios[this.scenarioIndex] = this.scenarios[this.scenarioIndex].process(line);
+            this.scenarios[this.i] = this.scenarios[this.i].process(line);
         };
-        FeatureParser.prototype.run = function (featureComplete) {
+        FeatureParser.prototype.runFeature = function (featureComplete) {
+            this.featureRunner.run(this.scenarios, featureComplete);
+        };
+        return FeatureParser;
+    })();
+    exports.FeatureParser = FeatureParser;
+    var FeatureRunner = (function () {
+        function FeatureRunner(steps, testReporter) {
+            this.steps = steps;
+            this.testReporter = testReporter;
+            this.scenarios = [];
+            this.currentCondition = '';
+            this.asyncTimeout = 1000; // TODO: Make user configurable
+        }
+        FeatureRunner.prototype.run = function (scenarios, featureComplete) {
             var _this = this;
+            this.scenarios = scenarios;
             var completedScenarios = 0;
             var scenarioComplete = function () {
                 completedScenarios++;
@@ -54,7 +67,7 @@
                 this.runScenario(scenario, scenarioComplete);
             }
         };
-        FeatureParser.prototype.runScenario = function (scenario, scenarioComplete) {
+        FeatureRunner.prototype.runScenario = function (scenario, scenarioComplete) {
             var tableRowCount = (scenario.tableRows.length > 0) ? scenario.tableRows.length : 1;
             var completedExamples = 0;
             var examplesComplete = function () {
@@ -82,7 +95,7 @@
                 }
             }
         };
-        FeatureParser.prototype.runNextCondition = function (conditions, conditionIndex, context, scenario, exampleIndex, passing, examplesComplete) {
+        FeatureRunner.prototype.runNextCondition = function (conditions, conditionIndex, context, scenario, exampleIndex, passing, examplesComplete) {
             var _this = this;
             try {
                 var next = conditions[conditionIndex];
@@ -135,9 +148,9 @@
                 examplesComplete();
             }
         };
-        return FeatureParser;
+        return FeatureRunner;
     })();
-    exports.FeatureParser = FeatureParser;
+    exports.FeatureRunner = FeatureRunner;
     var StepMethodBuilder = (function () {
         function StepMethodBuilder(originalCondition) {
             this.originalCondition = originalCondition;
