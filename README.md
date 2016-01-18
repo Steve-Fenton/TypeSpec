@@ -36,7 +36,7 @@ better than this - but it shows how the parts fit together.
 
     var runner = new SpecRunner();
 
-    runner.addStep(/I have entered (\"\d+\") into the calculator/i, (context: any, num: number) => {
+    runner.addStep(/^I have entered (\"\d+\") into the calculator$/i, (context: any, num: number) => {
         calculator.add(num);
     });
 
@@ -57,7 +57,7 @@ If you want to run the specification in a random order (to discourage coupling),
 Steps are defined using a regular expression, and a function to handle the step.
 For example, the step for the condition `Given I am using a calculator` is defined below:
 
-    runner.given(/I am using a calculator/i,
+    runner.given(/^I am using a calculator$/i,
         (context: CalculatorTestContext) => {
         context.calculator = new Calculator();
     });
@@ -73,7 +73,7 @@ step without the specific value. For example, the steps `And I have entered "50"
 and `And I have entered "70" into the calculator` both match the step defined below (but 
 `And I have entered "Bob" into the calculator` will not match, because `Bob` does not match `(\d+)`):
 
-    runner.addStep(/I have entered (\"\d+\") into the calculator/i,
+    runner.addStep(/^I have entered (\"\d+\") into the calculator$/i,
         (context: CalculatorTestContext, num: number) => {
         context.calculator.add(num);
     });
@@ -85,7 +85,7 @@ including expressions for any arguments it finds. For example:
 
 Will result in the following suggested step definition:
 
-    runner.addStep(/I have a step with a number (\"\d+\") and a boolean (\"true\"|\"false\") and a string "(.*)"/i,
+    runner.addStep(/^I have a step with a number (\"\d+\") and a boolean (\"true\"|\"false\") and a string "(.*)"$/i,
         (context: any, p0: number, p1: boolean, p2: string) => {
             throw new Error('Not implemented.');
         });
@@ -96,7 +96,7 @@ Each step method has an async counterpart: `addStepAsync`, `givenAsync`, `whenAs
 If you define a step using one of these methods, you are responsible for calling `context.done();` to
 tell TypeSpec your step is finished.
 
-    runner.addStepAsync(/I asynchronously enter (\"\d+\") into the calculator/i,
+    runner.addStepAsync(/^I asynchronously enter (\"\d+\") into the calculator$/i,
         (context: CalculatorTestContext, num: number) => {
             window.setTimeout(() => {
                 context.calculator.add(num);
@@ -119,6 +119,12 @@ Regular expressions aren't as bad as they may appear, the short version is...
 *In Action:*
 
  > This `17` word sentence shows that there are `2` matches to be found using this regular expression.
+
+Almost all of your Regular Expressions should start `/^` and end `$/i`. This tells the matcher to only match complete sentences. 
+Without these you may match partial conditions, causing accidental matching of steps where the language is similar, for example:
+
+ - When `the switch is turned on`
+ - When the automatic switch analyzer says `the switch is turned on`
 
 The long version is available at [MDN Regular Expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions).
 
@@ -156,22 +162,22 @@ clarity in your step definitions.
 
     export class CalculatorSteps {
         static register(runner: SpecRunner) {
-            runner.given(/I am using a calculator/i,
+            runner.given(/^I am using a calculator$/i,
                 (context: CalculatorTestContext) => {
                 context.calculator = new Calculator();
             });
 
-            runner.addStep(/I have entered (\"\d+\") into the calculator/i,
+            runner.addStep(/^I have entered (\"\d+\") into the calculator$/i,
                 (context: CalculatorTestContext, num: number) => {
                 context.calculator.add(num);
             });
 
-            runner.addStep(/I press the total button/gi,
+            runner.addStep(/^I press the total button$/gi,
                 (context: CalculatorTestContext) => {
                 // No action needed
             });
 
-            runner.then(/the result should be (\"\d+\") on the screen/i,
+            runner.then(/^the result should be (\"\d+\") on the screen$/i,
                 (context: CalculatorTestContext, num: number) => {
                 var total = context.calculator.getTotal();
                 Assert.areIdentical(num, total);
@@ -285,7 +291,7 @@ considering the difference between TypeSpec and tools such as SpecFlow or Cucumb
 
 TypeScript:
 
-    runner.addStep(/I have entered (\"\d+\") into the calculator/i,
+    runner.addStep(/^I have entered (\"\d+\") into the calculator$/i,
     (context: any, num: number) => {
         calculator.add(num);
     });
@@ -299,6 +305,7 @@ C#
 
 Key differences:
 
+ - You *should* always use the `^` start of string expression and the `$` end of string expression in TypeSpec (although you are not forced too)
  - All arguments must be "quoted" (including numebrs), ie. "1", not just 1 OR (\"\d+\"), not just (\d+)
  - You can choose whether the step matcher is case sensitive (pass the `i` flag to ignore case)
  - The first argument passed to a step is always the test context

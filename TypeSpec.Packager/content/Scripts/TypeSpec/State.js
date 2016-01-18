@@ -13,8 +13,8 @@ var __extends = (this && this.__extends) || function (d, b) {
 })(function (require, exports) {
     var Keyword_1 = require('./Keyword');
     var Steps_1 = require('./Steps');
-    var StateBase = (function () {
-        function StateBase(priorState) {
+    var Scenario = (function () {
+        function Scenario(priorState) {
             this.givens = [];
             this.whens = [];
             this.thens = [];
@@ -36,7 +36,7 @@ var __extends = (this && this.__extends) || function (d, b) {
                 this.thens = priorState.thens;
             }
         }
-        StateBase.prototype.getAllConditions = function () {
+        Scenario.prototype.getAllConditions = function () {
             var conditions = [];
             for (var i = 0; i < this.givens.length; i++) {
                 conditions.push({
@@ -58,7 +58,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             }
             return conditions;
         };
-        StateBase.prototype.prepareCondition = function (condition, index) {
+        Scenario.prototype.prepareCondition = function (condition, index) {
             if (this.tableRows.length > index) {
                 var data = this.tableRows[index];
                 for (var prop in data) {
@@ -68,7 +68,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             }
             return condition;
         };
-        StateBase.prototype.process = function (line) {
+        Scenario.prototype.process = function (line) {
             line = line.trim();
             if (!line) {
                 // Skip empty lines
@@ -106,7 +106,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             }
             return this.unknown(line);
         };
-        StateBase.prototype.isTagExcluded = function (tag) {
+        Scenario.prototype.isTagExcluded = function (tag) {
             for (var i = 0; i < this.tagsToExclude.length; i++) {
                 if (this.tagsToExclude[i] === tag) {
                     return true;
@@ -114,45 +114,45 @@ var __extends = (this && this.__extends) || function (d, b) {
             }
             return false;
         };
-        StateBase.prototype.isNewScenario = function (line) {
+        Scenario.prototype.isNewScenario = function (line) {
             return false;
         };
-        StateBase.prototype.unknown = function (line) {
+        Scenario.prototype.unknown = function (line) {
             throw new Error('Unknown line ' + line);
         };
-        StateBase.prototype.feature = function (line) {
+        Scenario.prototype.feature = function (line) {
             throw new Error('Did not expect line: ' + line);
         };
-        StateBase.prototype.tag = function (line) {
+        Scenario.prototype.tag = function (line) {
             throw new Error('Did not expect line: ' + line);
         };
-        StateBase.prototype.scenario = function (line) {
+        Scenario.prototype.scenario = function (line) {
             throw new Error('Did not expect line: ' + line);
         };
-        StateBase.prototype.outline = function (line) {
+        Scenario.prototype.outline = function (line) {
             throw new Error('Did not expect line: ' + line);
         };
-        StateBase.prototype.given = function (line) {
+        Scenario.prototype.given = function (line) {
             throw new Error('Did not expect line: ' + line);
         };
-        StateBase.prototype.when = function (line) {
+        Scenario.prototype.when = function (line) {
             throw new Error('Did not expect line: ' + line);
         };
-        StateBase.prototype.then = function (line) {
+        Scenario.prototype.then = function (line) {
             throw new Error('Did not expect line: ' + line);
         };
-        StateBase.prototype.and = function (line) {
+        Scenario.prototype.and = function (line) {
             throw new Error('Did not expect line: ' + line);
         };
-        StateBase.prototype.examples = function (line) {
+        Scenario.prototype.examples = function (line) {
             throw new Error('Did not expect line: ' + line);
         };
-        StateBase.prototype.table = function (line) {
+        Scenario.prototype.table = function (line) {
             throw new Error('Did not expect line: ' + line);
         };
-        return StateBase;
+        return Scenario;
     })();
-    exports.StateBase = StateBase;
+    exports.Scenario = Scenario;
     /*
         Each state objects only has the methods it allows.
         This makes it easy to see which methods are allowed in
@@ -170,7 +170,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return new FeatureState(this);
         };
         return InitializedState;
-    })(StateBase);
+    })(Scenario);
     exports.InitializedState = InitializedState;
     var FeatureState = (function (_super) {
         __extends(FeatureState, _super);
@@ -206,7 +206,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return new ScenarioState(this);
         };
         return FeatureState;
-    })(StateBase);
+    })(Scenario);
     exports.FeatureState = FeatureState;
     var ExcludedScenarioState = (function (_super) {
         __extends(ExcludedScenarioState, _super);
@@ -256,7 +256,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return this;
         };
         return ExcludedScenarioState;
-    })(StateBase);
+    })(Scenario);
     var ScenarioState = (function (_super) {
         __extends(ScenarioState, _super);
         function ScenarioState(priorState) {
@@ -267,7 +267,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return new GivenState(this);
         };
         return ScenarioState;
-    })(StateBase);
+    })(Scenario);
     var GivenState = (function (_super) {
         __extends(GivenState, _super);
         function GivenState(priorState) {
@@ -286,7 +286,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return this;
         };
         return GivenState;
-    })(StateBase);
+    })(Scenario);
     var WhenState = (function (_super) {
         __extends(WhenState, _super);
         function WhenState(priorState) {
@@ -301,7 +301,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return this;
         };
         return WhenState;
-    })(StateBase);
+    })(Scenario);
     var ThenState = (function (_super) {
         __extends(ThenState, _super);
         function ThenState(priorState) {
@@ -318,7 +318,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return new ExampleState(this);
         };
         return ThenState;
-    })(StateBase);
+    })(Scenario);
     var ExampleState = (function (_super) {
         __extends(ExampleState, _super);
         function ExampleState(priorState) {
@@ -333,7 +333,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return new TableState(this);
         };
         return ExampleState;
-    })(StateBase);
+    })(Scenario);
     var TableState = (function (_super) {
         __extends(TableState, _super);
         function TableState(priorState) {
@@ -352,6 +352,6 @@ var __extends = (this && this.__extends) || function (d, b) {
             return this;
         };
         return TableState;
-    })(StateBase);
+    })(Scenario);
 });
 //# sourceMappingURL=State.js.map

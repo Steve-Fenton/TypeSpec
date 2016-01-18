@@ -139,7 +139,7 @@
                 }
                 catch (ex) {
                     hasParsed = false;
-                    var state = composer.state[0] || { featureTitle: 'Unknown' };
+                    var state = composer.scenarios[0] || { featureTitle: 'Unknown' };
                     this.testReporter.error(state.featureTitle, line, ex);
                 }
             }

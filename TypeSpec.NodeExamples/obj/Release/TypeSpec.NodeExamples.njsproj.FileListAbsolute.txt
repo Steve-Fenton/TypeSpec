@@ -1,0 +1,2 @@
+C:\Code\GitHub\Repos\TypeSpec\TypeSpec.NodeExamples\obj\Release\TypeSpec.NodeExamples.njsprojResolveAssemblyReference.cache
+C:\Code\GitHub\Repos\TypeSpec\TypeSpec.NodeExamples\bin\Microsoft.NodejsTools.WebRole.dll

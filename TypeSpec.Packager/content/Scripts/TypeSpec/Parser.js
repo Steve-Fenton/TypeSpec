@@ -13,39 +13,39 @@
             this.steps = steps;
             this.testReporter = testReporter;
             this.tagsToExclude = tagsToExclude;
-            this.tags = [];
-            this.state = [];
+            //public tags: string[] = [];
+            this.scenarios = [];
             this.scenarioIndex = 0;
             this.currentCondition = '';
-            this.asyncTimeout = 1000;
-            this.state[this.scenarioIndex] = new State_1.InitializedState(this.tagsToExclude);
+            this.asyncTimeout = 1000; // TODO: Make user configurable
+            this.scenarios[this.scenarioIndex] = new State_1.InitializedState(this.tagsToExclude);
         }
         FeatureParser.prototype.process = function (line) {
-            if (this.state[this.scenarioIndex].isNewScenario(line)) {
+            if (this.scenarios[this.scenarioIndex].isNewScenario(line)) {
                 // This is an additional scenario within the same feature.
-                var existingFeatureTitle = this.state[this.scenarioIndex].featureTitle;
-                var existingFeatureDescription = this.state[this.scenarioIndex].featureDescription;
+                var existingFeatureTitle = this.scenarios[this.scenarioIndex].featureTitle;
+                var existingFeatureDescription = this.scenarios[this.scenarioIndex].featureDescription;
                 this.scenarioIndex++;
-                this.state[this.scenarioIndex] = new State_1.FeatureState(null);
-                this.state[this.scenarioIndex].featureTitle = existingFeatureTitle;
-                this.state[this.scenarioIndex].featureDescription = existingFeatureDescription;
-                this.state[this.scenarioIndex].tagsToExclude = this.tagsToExclude;
+                this.scenarios[this.scenarioIndex] = new State_1.FeatureState(null);
+                this.scenarios[this.scenarioIndex].featureTitle = existingFeatureTitle;
+                this.scenarios[this.scenarioIndex].featureDescription = existingFeatureDescription;
+                this.scenarios[this.scenarioIndex].tagsToExclude = this.tagsToExclude;
             }
             // Process the new line
-            this.state[this.scenarioIndex] = this.state[this.scenarioIndex].process(line);
+            this.scenarios[this.scenarioIndex] = this.scenarios[this.scenarioIndex].process(line);
         };
         FeatureParser.prototype.run = function (featureComplete) {
             var _this = this;
             var completedScenarios = 0;
             var scenarioComplete = function () {
                 completedScenarios++;
-                if (completedScenarios === _this.state.length) {
+                if (completedScenarios === _this.scenarios.length) {
                     featureComplete();
                 }
             };
             // Each Scenario
-            for (var scenarioIndex = 0; scenarioIndex < this.state.length; scenarioIndex++) {
-                var scenario = this.state[scenarioIndex];
+            for (var scenarioIndex = 0; scenarioIndex < this.scenarios.length; scenarioIndex++) {
+                var scenario = this.scenarios[scenarioIndex];
                 if (typeof scenario.scenarioTitle === 'undefined') {
                     this.testReporter.information(scenario.featureTitle + ' has an ignored scenario, or a scenario missing a title.');
                     scenarioComplete();
@@ -103,11 +103,11 @@
                 var condition = scenario.prepareCondition(next.condition, exampleIndex);
                 this.testReporter.information('\t' + condition);
                 var stepExecution = this.steps.find(condition, next.type);
-                var isAsync = stepExecution.isAsync;
                 if (stepExecution === null) {
                     var stepMethodBuilder = new StepMethodBuilder(condition);
                     throw new Error('No step definition defined.\n\n' + stepMethodBuilder.getSuggestedStepMethod());
                 }
+                var isAsync = stepExecution.isAsync;
                 if (stepExecution.parameters) {
                     // Add the context container as the first argument
                     stepExecution.parameters.unshift(context);
@@ -147,7 +147,7 @@
             /* Template for step method */
             var params = argumentParser.getParameters();
             var comma = (params.length > 0) ? ', ' : '';
-            var suggestion = '    runner.addStep(/' + argumentParser.getCondition() + '/i,\n' +
+            var suggestion = '    runner.addStep(/^' + argumentParser.getCondition() + '$/i,\n' +
                 '        (context: any' + comma + params + ') => {\n' +
                 '            throw new Error(\'Not implemented.\');\n' +
                 '        });';
@@ -170,32 +170,36 @@
         };
         ArgumentParser.prototype.parseArguments = function () {
             var foundArguments = this.originalCondition.match(RegEx_1.ExpressionLibrary.quotedArgumentsRegExp);
-            if (foundArguments && foundArguments.length > 0) {
-                for (var i = 0; i < foundArguments.length; i++) {
-                    var foundArgument = foundArguments[i];
-                    this.processFoundArgument(foundArgument, i);
-                }
+            if (foundArguments && foundArguments.length === 0) {
+                return;
+            }
+            for (var i = 0; i < foundArguments.length; i++) {
+                var foundArgument = foundArguments[i];
+                this.replaceArgumentWithExpression(foundArgument, i);
             }
         };
-        ArgumentParser.prototype.processFoundArgument = function (quotedArgument, position) {
+        ArgumentParser.prototype.replaceArgumentWithExpression = function (quotedArgument, position) {
             var trimmedArgument = quotedArgument.replace(/"/g, '');
             var argumentExpression = null;
-            if (trimmedArgument.toLowerCase() === 'true' || trimmedArgument.toLowerCase() === 'false') {
-                // Argument is boolean
+            if (this.isBooleanArgument(trimmedArgument)) {
                 this.arguments.push('p' + position + ': boolean');
                 argumentExpression = RegEx_1.ExpressionLibrary.trueFalseString;
             }
-            else if (parseFloat(trimmedArgument).toString() === trimmedArgument) {
-                // Argument is number
+            else if (this.isNumericArgument(trimmedArgument)) {
                 this.arguments.push('p' + position + ': number');
                 argumentExpression = RegEx_1.ExpressionLibrary.numberString;
             }
             else {
-                // Argument is string
                 this.arguments.push('p' + position + ': string');
                 argumentExpression = RegEx_1.ExpressionLibrary.defaultString;
             }
             this.condition = this.condition.replace(quotedArgument, argumentExpression);
+        };
+        ArgumentParser.prototype.isBooleanArgument = function (argument) {
+            return (argument.toLowerCase() === 'true' || argument.toLowerCase() === 'false');
+        };
+        ArgumentParser.prototype.isNumericArgument = function (argument) {
+            return (parseFloat(argument).toString() === argument);
         };
         return ArgumentParser;
     })();

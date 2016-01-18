@@ -1,7 +1,7 @@
 ﻿import {Keyword, KeywordType} from './Keyword';
 import {StepType} from './Steps';
 
-export class StateBase {
+export class Scenario {
     public givens: string[] = [];
     public whens: string[] = [];
     public thens: string[] = [];
@@ -16,7 +16,7 @@ export class StateBase {
     public tableHeaders: string[] = [];
     public tableRows: {}[] = [];
 
-    constructor(priorState: StateBase) {
+    constructor(priorState: Scenario) {
         if (priorState !== null) {
             this.featureTitle = priorState.featureTitle;
             this.featureDescription = priorState.featureDescription;
@@ -137,47 +137,47 @@ export class StateBase {
         return false;
     }
 
-    unknown(line: string): StateBase {
+    unknown(line: string): Scenario {
         throw new Error('Unknown line ' + line);
     }
 
-    feature(line: string): StateBase {
+    feature(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
-    tag(line: string): StateBase {
+    tag(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
-    scenario(line: string): StateBase {
+    scenario(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
-    outline(line: string): StateBase {
+    outline(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
-    given(line: string): StateBase {
+    given(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
-    when(line: string): StateBase {
+    when(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
-    then(line: string): StateBase {
+    then(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
-    and(line: string): StateBase {
+    and(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
-    examples(line: string): StateBase {
+    examples(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
-    table(line: string): StateBase {
+    table(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
 
@@ -192,22 +192,22 @@ export class StateBase {
     any given state
 */
 
-export class InitializedState extends StateBase {
+export class InitializedState extends Scenario {
 
     constructor(tagsToExclude: string[] = []) {
         super(null);
         this.tagsToExclude = tagsToExclude;
     }
 
-    feature(line: string): StateBase {
+    feature(line: string): Scenario {
         this.featureTitle = Keyword.trimKeyword(line, KeywordType.Feature);
         return new FeatureState(this);
     }
 }
 
-export class FeatureState extends StateBase {
+export class FeatureState extends Scenario {
 
-    constructor(priorState: StateBase) {
+    constructor(priorState: Scenario) {
         super(priorState);
     }
 
@@ -216,7 +216,7 @@ export class FeatureState extends StateBase {
         return this;
     }
 
-    tag(line: string): StateBase {
+    tag(line: string): Scenario {
         var tags = Keyword.getTags(line);
         var trimmedTags: string[] = [];
         for (var i = 0; i < tags.length; i++) {
@@ -235,21 +235,21 @@ export class FeatureState extends StateBase {
         return this;
     }
 
-    scenario(line: string): StateBase {
+    scenario(line: string): Scenario {
         this.scenarioTitle = Keyword.trimKeyword(line, KeywordType.Scenario);
         return new ScenarioState(this);
     }
 
-    outline(line: string): StateBase {
+    outline(line: string): Scenario {
         this.scenarioTitle = Keyword.trimKeyword(line, KeywordType.Scenario);
         return new ScenarioState(this);
     }
 }
 
-class ExcludedScenarioState extends StateBase {
+class ExcludedScenarioState extends Scenario {
     private hasScenario: boolean = false;
 
-    constructor(priorState: StateBase) {
+    constructor(priorState: Scenario) {
         super(priorState);
     }
 
@@ -257,78 +257,78 @@ class ExcludedScenarioState extends StateBase {
         return this.hasScenario && (Keyword.is(line, KeywordType.Scenario) || Keyword.is(line, KeywordType.Outline) || Keyword.is(line, KeywordType.Tag));
     }
 
-    tag(line: string): StateBase {
+    tag(line: string): Scenario {
         // Discard
         return this;
     }
 
-    scenario(line: string): StateBase {
-        // Discard
-        this.hasScenario = true;
-        return this;
-    }
-
-    outline(line: string): StateBase {
+    scenario(line: string): Scenario {
         // Discard
         this.hasScenario = true;
         return this;
     }
 
-    given(line: string): StateBase {
+    outline(line: string): Scenario {
+        // Discard
+        this.hasScenario = true;
+        return this;
+    }
+
+    given(line: string): Scenario {
         // Discard
         return this;
     }
 
-    when(line: string): StateBase {
+    when(line: string): Scenario {
         // Discard
         return this;
     }
 
-    then(line: string): StateBase {
+    then(line: string): Scenario {
         // Discard
         return this;
     }
 
-    and(line: string): StateBase {
+    and(line: string): Scenario {
         // Discard
         return this;
     }
 
-    examples(line: string): StateBase {
+    examples(line: string): Scenario {
         // Discard
         return this;
     }
 
-    table(line: string): StateBase {
+    table(line: string): Scenario {
         // Discard
         return this;
     }
 }
 
-class ScenarioState extends StateBase {
+class ScenarioState extends Scenario {
 
-    constructor(priorState: StateBase) {
+    constructor(priorState: Scenario) {
         super(priorState);
     }
 
-    given(line: string): StateBase {
+    given(line: string): Scenario {
         this.givens.push(Keyword.trimKeyword(line, KeywordType.Given));
         return new GivenState(this);
     }
 }
 
-class GivenState extends StateBase {
+class GivenState extends Scenario {
 
-    constructor(priorState: StateBase) {
+    constructor(priorState: Scenario) {
         super(priorState);
     }
 
-    when(line: string): StateBase {
+    when(line: string): Scenario {
         this.whens.push(Keyword.trimKeyword(line, KeywordType.When));
         return new WhenState(this);
     }
 
-    then(line: string): StateBase {
+    then(line: string): Scenario {
         this.thens.push(Keyword.trimKeyword(line, KeywordType.Then));
         return new ThenState(this);
     }
@@ -339,13 +339,13 @@ class GivenState extends StateBase {
     }
 }
 
-class WhenState extends StateBase {
+class WhenState extends Scenario {
 
-    constructor(priorState: StateBase) {
+    constructor(priorState: Scenario) {
         super(priorState);
     }
 
-    then(line: string): StateBase {
+    then(line: string): Scenario {
         this.thens.push(Keyword.trimKeyword(line, KeywordType.Then));
         return new ThenState(this);
     }
@@ -356,9 +356,9 @@ class WhenState extends StateBase {
     }
 }
 
-class ThenState extends StateBase {
+class ThenState extends Scenario {
 
-    constructor(priorState: StateBase) {
+    constructor(priorState: Scenario) {
         super(priorState);
     }
 
@@ -371,17 +371,17 @@ class ThenState extends StateBase {
         return this;
     }
 
-    examples(line: string): StateBase {
+    examples(line: string): Scenario {
         return new ExampleState(this);
     }
 }
 
-class ExampleState extends StateBase {
-    constructor(priorState: StateBase) {
+class ExampleState extends Scenario {
+    constructor(priorState: Scenario) {
         super(priorState);
     }
 
-    table(line: string): StateBase {
+    table(line: string): Scenario {
         var headings = Keyword.getTableRow(line);
         for (var i = 0; i < headings.length; i++) {
             var trimmedHeading = headings[i].trim();
@@ -391,12 +391,12 @@ class ExampleState extends StateBase {
     }
 }
 
-class TableState extends StateBase {
-    constructor(priorState: StateBase) {
+class TableState extends Scenario {
+    constructor(priorState: Scenario) {
         super(priorState);
     }
 
-    table(line: string): StateBase {
+    table(line: string): Scenario {
         var data = Keyword.getTableRow(line);
         var row: any = {};
         for (var i = 0; i < data.length; i++) {
