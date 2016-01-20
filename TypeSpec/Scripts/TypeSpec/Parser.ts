@@ -200,7 +200,7 @@ class ArgumentParser {
     private parseArguments() {
         var foundArguments = this.originalCondition.match(ExpressionLibrary.quotedArgumentsRegExp);
 
-        if (foundArguments && foundArguments.length === 0) {
+        if (!foundArguments || foundArguments.length === 0) {
             return;
         }
 
