@@ -23,6 +23,8 @@
   <ItemGroup>
     <Content Include="app.css" />
     <Content Include="index.html" />
+    <Content Include="Scripts\r.js" />
+    <Content Include="Scripts\require.js" />
     <Content Include="Specifications\ArgumentTypes.txt" />
     <Content Include="Specifications\AsyncSteps.txt" />
     <Content Include="Specifications\QuotedStrings.txt" />

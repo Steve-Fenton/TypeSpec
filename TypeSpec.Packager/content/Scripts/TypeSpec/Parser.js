@@ -100,14 +100,15 @@
             var _this = this;
             try {
                 var next = conditions[conditionIndex];
-                var i = conditionIndex + 1;
+                var nextConditionIndex = conditionIndex + 1;
+                var timer = null;
                 this.currentCondition = next.condition;
                 context.done = function () {
-                    if (_this.asyncTimer) {
-                        clearTimeout(_this.asyncTimer);
+                    if (timer) {
+                        clearTimeout(timer);
                     }
-                    if (i < conditions.length) {
-                        _this.runNextCondition(conditions, i, context, scenario, exampleIndex, passing, examplesComplete);
+                    if (nextConditionIndex < conditions.length) {
+                        _this.runNextCondition(conditions, nextConditionIndex, context, scenario, exampleIndex, passing, examplesComplete);
                     }
                     else {
                         _this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passing);
@@ -133,9 +134,12 @@
                     stepExecution.method.call(null, context);
                 }
                 if (isAsync) {
-                    this.asyncTimer = setTimeout(function () {
+                    timer = setTimeout(function () {
+                        console.log('Timer Expired');
                         _this.testReporter.error('Async Exception', condition, new Error('Async step timed out'));
-                        _this.runNextCondition(conditions, i, context, scenario, exampleIndex, false, examplesComplete);
+                        if (nextConditionIndex < conditions.length) {
+                            _this.runNextCondition(conditions, nextConditionIndex, context, scenario, exampleIndex, false, examplesComplete);
+                        }
                     }, this.asyncTimeout);
                 }
                 else {

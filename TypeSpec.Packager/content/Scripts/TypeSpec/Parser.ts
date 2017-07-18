@@ -40,7 +40,6 @@ export class FeatureRunner {
     private scenarios: Scenario[] = [];
     private currentCondition = '';
     private asyncTimeout = 1000; // TODO: Make user configurable
-    private asyncTimer: any;
 
     constructor(private steps: StepCollection, private testReporter: ITestReporter) {
 
@@ -108,16 +107,17 @@ export class FeatureRunner {
     private runNextCondition(conditions: { condition: string; type: StepType; }[], conditionIndex: number, context: any, scenario: Scenario, exampleIndex: number, passing: boolean, examplesComplete: Function) {
         try {
             var next = conditions[conditionIndex];
-            var i = conditionIndex + 1;
+            var nextConditionIndex = conditionIndex + 1;
+            var timer: any = null;
 
             this.currentCondition = next.condition;
 
             context.done = () => {
-                if (this.asyncTimer) {
-                    clearTimeout(this.asyncTimer);
+                if (timer) {
+                    clearTimeout(timer);
                 }
-                if (i < conditions.length) {
-                    this.runNextCondition(conditions, i, context, scenario, exampleIndex, passing, examplesComplete);
+                if (nextConditionIndex < conditions.length) {
+                    this.runNextCondition(conditions, nextConditionIndex, context, scenario, exampleIndex, passing, examplesComplete);
                 } else {
                     this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passing);
                     examplesComplete();
@@ -146,9 +146,12 @@ export class FeatureRunner {
             }
 
             if (isAsync) {
-                this.asyncTimer = setTimeout(() => {
+                timer = setTimeout(() => {
+                    console.log('Timer Expired');
                     this.testReporter.error('Async Exception', condition, new Error('Async step timed out'));
-                    this.runNextCondition(conditions, i, context, scenario, exampleIndex, false, examplesComplete);
+                    if (nextConditionIndex < conditions.length) {
+                        this.runNextCondition(conditions, nextConditionIndex, context, scenario, exampleIndex, false, examplesComplete);
+                    }
                 }, this.asyncTimeout);
             } else {
                 context.done();
