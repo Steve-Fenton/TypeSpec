@@ -17,23 +17,23 @@
             this.testReporter = testReporter;
             this.tagsToExclude = tagsToExclude;
             this.scenarios = [];
-            this.i = 0;
-            this.scenarios[this.i] = new State_1.InitializedState(this.tagsToExclude);
+            this.scenarioIndex = 0;
+            this.scenarios[this.scenarioIndex] = new State_1.InitializedState(this.tagsToExclude);
             this.featureRunner = new FeatureRunner(steps, testReporter);
         }
         FeatureParser.prototype.process = function (line) {
-            if (this.scenarios[this.i].isNewScenario(line)) {
+            if (this.scenarios[this.scenarioIndex].isNewScenario(line)) {
                 // This is an additional scenario within the same feature file.
-                var existingFeatureTitle = this.scenarios[this.i].featureTitle;
-                var existingFeatureDescription = this.scenarios[this.i].featureDescription;
-                this.i++;
-                this.scenarios[this.i] = new State_1.FeatureState(null);
-                this.scenarios[this.i].featureTitle = existingFeatureTitle;
-                this.scenarios[this.i].featureDescription = existingFeatureDescription;
-                this.scenarios[this.i].tagsToExclude = this.tagsToExclude;
+                var existingFeatureTitle = this.scenarios[this.scenarioIndex].featureTitle;
+                var existingFeatureDescription = this.scenarios[this.scenarioIndex].featureDescription;
+                this.scenarioIndex++;
+                this.scenarios[this.scenarioIndex] = new State_1.FeatureState(null);
+                this.scenarios[this.scenarioIndex].featureTitle = existingFeatureTitle;
+                this.scenarios[this.scenarioIndex].featureDescription = existingFeatureDescription;
+                this.scenarios[this.scenarioIndex].tagsToExclude = this.tagsToExclude;
             }
             // Process the new line
-            this.scenarios[this.i] = this.scenarios[this.i].process(line);
+            this.scenarios[this.scenarioIndex] = this.scenarios[this.scenarioIndex].process(line);
         };
         FeatureParser.prototype.runFeature = function (featureComplete) {
             this.featureRunner.run(this.scenarios, featureComplete);

@@ -25,16 +25,6 @@
         KeywordType[KeywordType["Then"] = 11] = "Then";
         KeywordType[KeywordType["And"] = 12] = "And";
     })(KeywordType = exports.KeywordType || (exports.KeywordType = {}));
-    var KeywordMap = (function () {
-        function KeywordMap() {
-        }
-        return KeywordMap;
-    }());
-    var KeywordTypeMap = (function () {
-        function KeywordTypeMap() {
-        }
-        return KeywordTypeMap;
-    }());
     var Keywords = (function () {
         function Keywords() {
             this.Feature = 'Feature:';

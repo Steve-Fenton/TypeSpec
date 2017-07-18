@@ -73,28 +73,26 @@
         StepCollection.prototype.getParams = function (text, parameterExpression, findExpression) {
             if (parameterExpression) {
                 var typeIndicators = findExpression.source.toString().match(RegEx_1.ExpressionLibrary.regexFinderRegExp);
-                var params = text.match(parameterExpression);
-                var expressionMatches = text.match(findExpression);
-                if (!expressionMatches) {
+                var matches = text.match(findExpression);
+                if (!matches) {
                     return [];
                 }
                 var result = [];
-                for (var i = 1; i < expressionMatches.length; i++) {
-                    var m = expressionMatches[i];
-                    m = m.replace(/^"(.+(?="$))"$/, '$1');
-                    m = m.replace(/^'(.+(?='$))'$/, '$1');
+                for (var i = 1; i < matches.length; i++) {
+                    var match = matches[i];
+                    match = match.replace(/^"(.+(?="$))"$/, '$1');
+                    match = match.replace(/^'(.+(?='$))'$/, '$1');
                     var paramIndex = i - 1;
-                    if (!isNaN(parseFloat(m)) && isFinite(parseFloat(m))) {
-                        result[paramIndex] = parseFloat(m);
-                    }
-                    else if (m.toLowerCase() == 'true') {
-                        result[paramIndex] = true;
-                    }
-                    else if (m.toLowerCase() == 'false') {
-                        result[paramIndex] = false;
-                    }
-                    else {
-                        result[paramIndex] = m;
+                    var indicator = typeIndicators[i - 1] || '';
+                    switch (indicator) {
+                        case "\\d+":
+                            result[paramIndex] = parseFloat(match);
+                            break;
+                        case "(\\\"true\\\"|\\\"false\\\")":
+                            result[paramIndex] = (match.toLowerCase() === 'true');
+                            break;
+                        default:
+                            result[paramIndex] = match;
                     }
                 }
                 return result;

@@ -77,8 +77,9 @@ var __extends = (this && this.__extends) || (function () {
             for (var _i = 0; _i < arguments.length; _i++) {
                 tags[_i] = arguments[_i];
             }
-            for (var i = 0; i < tags.length; i++) {
-                this.excludedTags.push(tags[i].replace(/@/g, ''));
+            for (var _a = 0, tags_1 = tags; _a < tags_1.length; _a++) {
+                var tag = tags_1[_a];
+                this.excludedTags.push(tag.replace(/@/g, ''));
             }
         };
         SpecRunner.prototype.fileCompleted = function () {
@@ -90,10 +91,10 @@ var __extends = (this && this.__extends) || (function () {
         SpecRunner.prototype.readFile = function (index, urls) {
             var _this = this;
             if (index < urls.length) {
-                var nextIndex = index + 1;
+                var nextIndex_1 = index + 1;
                 this.fileReader.getFile(urls[index], function (responseText) {
                     _this.processSpecification(responseText, function () { return _this.fileCompleted(); });
-                    _this.readFile(nextIndex, urls);
+                    _this.readFile(nextIndex_1, urls);
                 });
             }
         };
@@ -102,8 +103,8 @@ var __extends = (this && this.__extends) || (function () {
             var composer = new Parser_1.FeatureParser(this.steps, this.testReporter, this.excludedTags);
             /* Normalise line endings before splitting */
             var lines = spec.replace('\r\n', '\n').split('\n');
-            for (var i = 0; i < lines.length; i++) {
-                var line = lines[i];
+            for (var _i = 0, lines_1 = lines; _i < lines_1.length; _i++) {
+                var line = lines_1[_i];
                 try {
                     composer.process(line);
                 }
@@ -248,8 +249,9 @@ var __extends = (this && this.__extends) || (function () {
         };
         TapReporter.prototype.complete = function () {
             console.log('1..' + this.results.length);
-            for (var i = 0; i < this.results.length; i++) {
-                console.log(this.results[i].output());
+            for (var _i = 0, _a = this.results; _i < _a.length; _i++) {
+                var result = _a[_i];
+                console.log(result.output());
             }
         };
         return TapReporter;

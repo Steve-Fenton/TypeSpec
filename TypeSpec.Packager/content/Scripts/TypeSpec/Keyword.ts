@@ -14,11 +14,11 @@
     And
 }
 
-class KeywordMap {
+interface KeywordMap {
     [key: string]: KeywordType;
 }
 
-class KeywordTypeMap {
+interface KeywordTypeMap {
     [key: number]: string;
 }
 
