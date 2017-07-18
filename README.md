@@ -306,7 +306,7 @@ C#
 Key differences:
 
  - You *should* always use the `^` start of string expression and the `$` end of string expression in TypeSpec (although you are not forced too)
- - All arguments must be "quoted" (including numebrs), ie. "1", not just 1 OR (\"\d+\"), not just (\d+)
+ - <del>All arguments must be "quoted" (including numebrs), ie. "1", not just 1 OR (\"\d+\"), not just (\d+)</del> you can now choose your style!
  - You can choose whether the step matcher is case sensitive (pass the `i` flag to ignore case)
  - The first argument passed to a step is always the test context
 
