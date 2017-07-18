@@ -42,17 +42,17 @@ export class CalculatorSteps {
                 }, 200);
             });
 
-        runner.addStep(/^the asynchronous request times out when I enter (\"\d+\") into the calculator$/i,
+        runner.addStepAsync(/^the asynchronous request times out when I enter (\"\d+\") into the calculator$/i,
             (context: any, num: number) => {
                 window.setTimeout(() => {
                     context.calculator.add(num);
 
                     // Tell TypeSpec the async operation is complete.
                     context.done();
-                }, 1200);
+                }, 1200); // 1200ms exceeds the timeout of 1000ms
             });
 
-        runner.when(/^I press the total button$/gi,
+        runner.addStep(/^I press the total button$/gi,
             (context: CalculatorTestContext) => {
                 // No action needed
             });

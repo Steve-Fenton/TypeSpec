@@ -11,6 +11,7 @@ var __extends = (this && this.__extends) || function (d, b) {
         define(["require", "exports", './Keyword', './Steps'], factory);
     }
 })(function (require, exports) {
+    "use strict";
     var Keyword_1 = require('./Keyword');
     var Steps_1 = require('./Steps');
     var Scenario = (function () {
@@ -151,7 +152,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             throw new Error('Did not expect line: ' + line);
         };
         return Scenario;
-    })();
+    }());
     exports.Scenario = Scenario;
     /*
         Each state objects only has the methods it allows.
@@ -170,7 +171,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return new FeatureState(this);
         };
         return InitializedState;
-    })(Scenario);
+    }(Scenario));
     exports.InitializedState = InitializedState;
     var FeatureState = (function (_super) {
         __extends(FeatureState, _super);
@@ -206,7 +207,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return new ScenarioState(this);
         };
         return FeatureState;
-    })(Scenario);
+    }(Scenario));
     exports.FeatureState = FeatureState;
     var ExcludedScenarioState = (function (_super) {
         __extends(ExcludedScenarioState, _super);
@@ -256,7 +257,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return this;
         };
         return ExcludedScenarioState;
-    })(Scenario);
+    }(Scenario));
     var ScenarioState = (function (_super) {
         __extends(ScenarioState, _super);
         function ScenarioState(priorState) {
@@ -267,7 +268,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return new GivenState(this);
         };
         return ScenarioState;
-    })(Scenario);
+    }(Scenario));
     var GivenState = (function (_super) {
         __extends(GivenState, _super);
         function GivenState(priorState) {
@@ -286,7 +287,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return this;
         };
         return GivenState;
-    })(Scenario);
+    }(Scenario));
     var WhenState = (function (_super) {
         __extends(WhenState, _super);
         function WhenState(priorState) {
@@ -301,7 +302,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return this;
         };
         return WhenState;
-    })(Scenario);
+    }(Scenario));
     var ThenState = (function (_super) {
         __extends(ThenState, _super);
         function ThenState(priorState) {
@@ -318,7 +319,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return new ExampleState(this);
         };
         return ThenState;
-    })(Scenario);
+    }(Scenario));
     var ExampleState = (function (_super) {
         __extends(ExampleState, _super);
         function ExampleState(priorState) {
@@ -333,7 +334,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return new TableState(this);
         };
         return ExampleState;
-    })(Scenario);
+    }(Scenario));
     var TableState = (function (_super) {
         __extends(TableState, _super);
         function TableState(priorState) {
@@ -352,6 +353,6 @@ var __extends = (this && this.__extends) || function (d, b) {
             return this;
         };
         return TableState;
-    })(Scenario);
+    }(Scenario));
 });
 //# sourceMappingURL=State.js.map

@@ -6,6 +6,7 @@
         define(["require", "exports", './RegEx', './State'], factory);
     }
 })(function (require, exports) {
+    "use strict";
     var RegEx_1 = require('./RegEx');
     var State_1 = require('./State');
     var FeatureParser = (function () {
@@ -36,7 +37,7 @@
             this.featureRunner.run(this.scenarios, featureComplete);
         };
         return FeatureParser;
-    })();
+    }());
     exports.FeatureParser = FeatureParser;
     var FeatureRunner = (function () {
         function FeatureRunner(steps, testReporter) {
@@ -149,7 +150,7 @@
             }
         };
         return FeatureRunner;
-    })();
+    }());
     exports.FeatureRunner = FeatureRunner;
     var StepMethodBuilder = (function () {
         function StepMethodBuilder(originalCondition) {
@@ -167,7 +168,7 @@
             return suggestion;
         };
         return StepMethodBuilder;
-    })();
+    }());
     var ArgumentParser = (function () {
         function ArgumentParser(originalCondition) {
             this.originalCondition = originalCondition;
@@ -183,7 +184,7 @@
         };
         ArgumentParser.prototype.parseArguments = function () {
             var foundArguments = this.originalCondition.match(RegEx_1.ExpressionLibrary.quotedArgumentsRegExp);
-            if (foundArguments && foundArguments.length === 0) {
+            if (!foundArguments || foundArguments.length === 0) {
                 return;
             }
             for (var i = 0; i < foundArguments.length; i++) {
@@ -215,6 +216,6 @@
             return (parseFloat(argument).toString() === argument);
         };
         return ArgumentParser;
-    })();
+    }());
 });
 //# sourceMappingURL=Parser.js.map

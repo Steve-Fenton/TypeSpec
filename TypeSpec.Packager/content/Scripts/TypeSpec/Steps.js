@@ -6,6 +6,7 @@
         define(["require", "exports", './RegEx'], factory);
     }
 })(function (require, exports) {
+    "use strict";
     var RegEx_1 = require('./RegEx');
     var StepDefinition = (function () {
         function StepDefinition(expression, step, isAsync, type) {
@@ -15,7 +16,7 @@
             this.type = type;
         }
         return StepDefinition;
-    })();
+    }());
     exports.StepDefinition = StepDefinition;
     var StepExecution = (function () {
         function StepExecution(method, isAsync, parameters) {
@@ -24,7 +25,7 @@
             this.parameters = parameters;
         }
         return StepExecution;
-    })();
+    }());
     exports.StepExecution = StepExecution;
     (function (StepType) {
         StepType[StepType["Given"] = 1] = "Given";
@@ -103,7 +104,7 @@
             return [];
         };
         return StepCollection;
-    })();
+    }());
     exports.StepCollection = StepCollection;
 });
 //# sourceMappingURL=Steps.js.map

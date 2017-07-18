@@ -6,6 +6,7 @@
         define(["require", "exports"], factory);
     }
 })(function (require, exports) {
+    "use strict";
     var ExpressionLibrary = (function () {
         function ExpressionLibrary() {
         }
@@ -20,7 +21,7 @@
         ExpressionLibrary.numberString = '(\\"\\d+\\")';
         ExpressionLibrary.trueFalseString = '(\\"true\\"|\\"false\\")';
         return ExpressionLibrary;
-    })();
+    }());
     exports.ExpressionLibrary = ExpressionLibrary;
 });
 //# sourceMappingURL=RegEx.js.map

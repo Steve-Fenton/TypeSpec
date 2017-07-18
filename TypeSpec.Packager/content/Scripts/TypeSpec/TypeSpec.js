@@ -11,6 +11,7 @@ var __extends = (this && this.__extends) || function (d, b) {
         define(["require", "exports", './Parser', './Steps'], factory);
     }
 })(function (require, exports) {
+    "use strict";
     var Parser_1 = require('./Parser');
     var Steps_1 = require('./Steps');
     var SpecRunner = (function () {
@@ -113,7 +114,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             }
         };
         return SpecRunner;
-    })();
+    }());
     exports.SpecRunner = SpecRunner;
     var FileReader = (function () {
         function FileReader() {
@@ -125,7 +126,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return new NodeFileReader(testReporter);
         };
         return FileReader;
-    })();
+    }());
     var BrowserFileReader = (function (_super) {
         __extends(BrowserFileReader, _super);
         function BrowserFileReader(testReporter) {
@@ -150,7 +151,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             client.send();
         };
         return BrowserFileReader;
-    })(FileReader);
+    }(FileReader));
     var NodeFileReader = (function (_super) {
         __extends(NodeFileReader, _super);
         function NodeFileReader(testReporter) {
@@ -171,7 +172,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             });
         };
         return NodeFileReader;
-    })(FileReader);
+    }(FileReader));
     var SpecificationList = (function () {
         function SpecificationList(specifications) {
             this.specifications = specifications;
@@ -189,7 +190,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return Math.floor(Math.random() * (max - min)) + min;
         };
         return SpecificationList;
-    })();
+    }());
     exports.SpecificationList = SpecificationList;
     var TestReporter = (function () {
         function TestReporter() {
@@ -210,7 +211,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return input.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         };
         return TestReporter;
-    })();
+    }());
     exports.TestReporter = TestReporter;
     var TapResult = (function () {
         function TapResult(hash, isOk, description) {
@@ -222,7 +223,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return (this.isOk ? '' : 'not ') + 'ok ' + this.hash + ' ' + this.description;
         };
         return TapResult;
-    })();
+    }());
     var TapReporter = (function () {
         function TapReporter() {
             this.hash = 0;
@@ -243,7 +244,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             }
         };
         return TapReporter;
-    })();
+    }());
     exports.TapReporter = TapReporter;
     var Assert = (function () {
         function Assert() {
@@ -449,7 +450,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             return '{' + (typeof variable) + '} "' + variable + '"';
         };
         return Assert;
-    })();
+    }());
     exports.Assert = Assert;
 });
 //# sourceMappingURL=TypeSpec.js.map

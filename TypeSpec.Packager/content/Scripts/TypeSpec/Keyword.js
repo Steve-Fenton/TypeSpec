@@ -6,6 +6,7 @@
         define(["require", "exports"], factory);
     }
 })(function (require, exports) {
+    "use strict";
     (function (KeywordType) {
         KeywordType[KeywordType["Unknown"] = 0] = "Unknown";
         KeywordType[KeywordType["Feature"] = 1] = "Feature";
@@ -26,12 +27,12 @@
         function KeywordMap() {
         }
         return KeywordMap;
-    })();
+    }());
     var KeywordTypeMap = (function () {
         function KeywordTypeMap() {
         }
         return KeywordTypeMap;
-    })();
+    }());
     var Keywords = (function () {
         function Keywords() {
             this.Feature = 'Feature:';
@@ -89,7 +90,7 @@
             return KeywordType.Unknown;
         };
         return Keywords;
-    })();
+    }());
     exports.Keywords = Keywords;
     exports.Keyword = new Keywords();
 });
