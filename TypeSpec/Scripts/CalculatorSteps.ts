@@ -25,6 +25,11 @@ export class CalculatorSteps {
                 context.calculator.add(num2);
             });
 
+        runner.addStep(/^I enter an unquoted (\d+) into the calculator$/i,
+            (context: CalculatorTestContext, num: number) => {
+                context.calculator.add(num);
+            });
+
         runner.addStep(/^I speak "(.*)" into the calculator$/i,
             (context: CalculatorTestContext, sentence: string) => {
                 var matches = sentence.match(/(\+|-)?((\d+(\.\d+)?)|(\.\d+))/);
@@ -58,6 +63,12 @@ export class CalculatorSteps {
             });
 
         runner.then(/^the result should be (\"\d+\") on the screen$/i,
+            (context: CalculatorTestContext, expected: number) => {
+                var actual = context.calculator.getTotal();
+                Assert.areIdentical(expected, actual);
+            });
+
+        runner.then(/^the result should be an unquoted (\d+) on the screen$/i,
             (context: CalculatorTestContext, expected: number) => {
                 var actual = context.calculator.getTotal();
                 Assert.areIdentical(expected, actual);

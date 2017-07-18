@@ -62,42 +62,31 @@ export class StepCollection {
             var typeIndicators = findExpression.source.toString().match(ExpressionLibrary.regexFinderRegExp);
             var params = text.match(parameterExpression);
 
-            if (!params) {
+            var expressionMatches = text.match(findExpression);
+
+            if (!expressionMatches) {
                 return [];
             }
 
-            for (var i = 0; i < params.length; i++) {
-                // Remove leading and trailing quotes
-                var val: any = params[i];
+            var result: any[] = [];
+            for (var i = 1; i < expressionMatches.length; i++) {
+                var m = expressionMatches[i];
+                m = m.replace(/^"(.+(?="$))"$/, '$1');
+                m = m.replace(/^'(.+(?='$))'$/, '$1');
+                var paramIndex = i - 1;
 
-                if (val.substr(0, 1) === '"') {
-                    val = val.substr(1);
+                if (!isNaN(parseFloat(m)) && isFinite(parseFloat(m))) {
+                    result[paramIndex] = parseFloat(m);
+                } else if (m.toLowerCase() == 'true') {
+                    result[paramIndex] = true;
+                } else if (m.toLowerCase() == 'false') {
+                    result[paramIndex] = false;
+                } else {
+                    result[paramIndex] = m;
                 }
-
-                if (val.substr(-1) === '"') {
-                    val = val.substr(0, val.length - 1);
-                }
-
-                // Replace escaped quotes
-                val = val.replace(/\\\"/g, '"');
-
-                if (typeIndicators !== null && typeIndicators[i]) {
-                    var indicator = typeIndicators[i];
-
-                    switch (indicator) {
-                        case "\\d+":
-                            val = parseFloat(val);
-                            break;
-                        case "(\\\"true\\\"|\\\"false\\\")", "(\\\"true\\\"|\\\"false\\\")":
-                            val = ((<string>val).toLowerCase() === 'true');
-                            break;
-                    }
-                }
-
-                params[i] = val;
             }
 
-            return params;
+            return result;
         }
 
         return [];

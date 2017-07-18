@@ -27,6 +27,7 @@
     <Content Include="Scripts\require.js" />
     <Content Include="Specifications\ArgumentTypes.txt" />
     <Content Include="Specifications\AsyncSteps.txt" />
+    <Content Include="Specifications\UnquotedExpressions.txt" />
     <Content Include="Specifications\QuotedStrings.txt" />
     <Content Include="Specifications\ExcludedByTag.txt" />
     <Content Include="Specifications\MultipleArgumentsPerLine.txt" />

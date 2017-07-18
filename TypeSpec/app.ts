@@ -37,6 +37,7 @@ runner.run(
     '/Specifications/MixedSpecificationFiles.txt',
     '/Specifications/QuotedStrings.txt',
     '/Specifications/AsyncSteps.txt',
+    '/Specifications/UnquotedExpressions.txt',
 
     //Deliberately failing features
     '/Specifications/Failing.txt',

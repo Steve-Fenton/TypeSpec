@@ -149,9 +149,8 @@ export class FeatureRunner {
                 timer = setTimeout(() => {
                     console.log('Timer Expired');
                     this.testReporter.error('Async Exception', condition, new Error('Async step timed out'));
-                    if (nextConditionIndex < conditions.length) {
-                        this.runNextCondition(conditions, nextConditionIndex, context, scenario, exampleIndex, false, examplesComplete);
-                    }
+                    this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, false);
+                    examplesComplete();
                 }, this.asyncTimeout);
             } else {
                 context.done();
