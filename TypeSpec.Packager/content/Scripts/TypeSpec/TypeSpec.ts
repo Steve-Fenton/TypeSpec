@@ -103,7 +103,9 @@ export class SpecRunner {
         }
 
         if (hasParsed) {
+            console.log('RUNNING FEATURE');
             composer.runFeature(fileComplete);
+            console.log('FEATURE DONE');
         } else {
             fileComplete();
         }

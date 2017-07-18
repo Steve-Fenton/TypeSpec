@@ -45,6 +45,7 @@ export class FeatureRunner {
 
     }
 
+    // HOOK BEFORE / AFTER FEATURE
     run(scenarios: Scenario[], featureComplete: Function) {
         this.scenarios = scenarios;
 
@@ -58,7 +59,7 @@ export class FeatureRunner {
 
         // Each Scenario
         for (const scenario of this.scenarios) {
-            if (typeof scenario.scenarioTitle === 'undefined') {
+            if (!scenario.scenarioTitle) {
                 this.testReporter.information(scenario.featureTitle + ' has an ignored scenario, or a scenario missing a title.');
                 scenarioComplete();
                 continue;
@@ -68,13 +69,15 @@ export class FeatureRunner {
         }
     }
 
+    // HOOK BEFORE / AFTER SCENARIO
     private runScenario(scenario: Scenario, scenarioComplete: Function) {
         const tableRowCount = (scenario.tableRows.length > 0) ? scenario.tableRows.length : 1;
 
         let completedExamples = 0;
-        const examplesComplete = () => {
+
+        const examplesComplete = (fail: boolean = false) => {
             completedExamples++;
-            if (completedExamples === tableRowCount) {
+            if (completedExamples === tableRowCount || fail) {
                 scenarioComplete();
             }
         };
@@ -98,6 +101,7 @@ export class FeatureRunner {
         }
     }
 
+    // HOOK BEFORE / AFTER CONDITION
     private runNextCondition(conditions: { condition: string; type: StepType; }[], conditionIndex: number, context: any, scenario: Scenario, exampleIndex: number, passing: boolean, examplesComplete: Function) {
         try {
             const next = conditions[conditionIndex];
@@ -142,10 +146,9 @@ export class FeatureRunner {
 
             if (isAsync) {
                 timer = setTimeout(() => {
-                    console.log('Timer Expired');
+                    passing = false;
                     this.testReporter.error('Async Exception', condition, new Error('Async step timed out'));
-                    this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, false);
-                    examplesComplete();
+                    examplesComplete(true);
                 }, this.asyncTimeout);
             } else {
                 context.done();
