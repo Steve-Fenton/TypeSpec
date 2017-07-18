@@ -1,12 +1,15 @@
 (function (factory) {
-    if (typeof module === 'object' && typeof module.exports === 'object') {
-        var v = factory(require, exports); if (v !== undefined) module.exports = v;
+    if (typeof module === "object" && typeof module.exports === "object") {
+        var v = factory(require, exports);
+        if (v !== undefined) module.exports = v;
     }
-    else if (typeof define === 'function' && define.amd) {
+    else if (typeof define === "function" && define.amd) {
         define(["require", "exports"], factory);
     }
 })(function (require, exports) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var KeywordType;
     (function (KeywordType) {
         KeywordType[KeywordType["Unknown"] = 0] = "Unknown";
         KeywordType[KeywordType["Feature"] = 1] = "Feature";
@@ -21,8 +24,7 @@
         KeywordType[KeywordType["When"] = 10] = "When";
         KeywordType[KeywordType["Then"] = 11] = "Then";
         KeywordType[KeywordType["And"] = 12] = "And";
-    })(exports.KeywordType || (exports.KeywordType = {}));
-    var KeywordType = exports.KeywordType;
+    })(KeywordType = exports.KeywordType || (exports.KeywordType = {}));
     var KeywordMap = (function () {
         function KeywordMap() {
         }

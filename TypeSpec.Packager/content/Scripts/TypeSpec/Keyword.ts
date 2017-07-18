@@ -57,12 +57,12 @@ export class Keywords {
     }
 
     public is(text: string, keywordType: KeywordType) {
-        var keyword = this.KeywordTypeMap[keywordType];
+        const keyword = this.KeywordTypeMap[keywordType];
         return (text.length >= keyword.length && text.substring(0, keyword.length) === keyword);
     }
 
     public trimKeyword(text: string, keywordType: KeywordType) {
-        var keyword = this.KeywordTypeMap[keywordType];
+        const keyword = this.KeywordTypeMap[keywordType];
         return text.substring(keyword.length).trim();
     }
 
@@ -92,7 +92,7 @@ export class Keywords {
     }
 }
 
-export var Keyword = new Keywords();
+export const Keyword = new Keywords();
 
 export interface ITestReporter {
     summary(featureTitle: string, scenarioTitle: string, isSuccess: boolean): void;

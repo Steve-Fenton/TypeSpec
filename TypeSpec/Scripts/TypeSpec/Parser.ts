@@ -16,8 +16,8 @@ export class FeatureParser {
     process(line: string) {
         if (this.scenarios[this.i].isNewScenario(line)) {
             // This is an additional scenario within the same feature file.
-            var existingFeatureTitle = this.scenarios[this.i].featureTitle;
-            var existingFeatureDescription = this.scenarios[this.i].featureDescription;
+            const existingFeatureTitle = this.scenarios[this.i].featureTitle;
+            const existingFeatureDescription = this.scenarios[this.i].featureDescription;
 
             this.i++;
 
@@ -48,8 +48,8 @@ export class FeatureRunner {
     run(scenarios: Scenario[], featureComplete: Function) {
         this.scenarios = scenarios;
 
-        var completedScenarios = 0;
-        var scenarioComplete = () => {
+        let completedScenarios = 0;
+        const scenarioComplete = () => {
             completedScenarios++;
             if (completedScenarios === this.scenarios.length) {
                 featureComplete();
@@ -57,9 +57,7 @@ export class FeatureRunner {
         };
 
         // Each Scenario
-        for (var scenarioIndex = 0; scenarioIndex < this.scenarios.length; scenarioIndex++) {
-            var scenario = this.scenarios[scenarioIndex];
-
+        for (const scenario of this.scenarios) {
             if (typeof scenario.scenarioTitle === 'undefined') {
                 this.testReporter.information(scenario.featureTitle + ' has an ignored scenario, or a scenario missing a title.');
                 scenarioComplete();
@@ -71,10 +69,10 @@ export class FeatureRunner {
     }
 
     private runScenario(scenario: Scenario, scenarioComplete: Function) {
-        var tableRowCount = (scenario.tableRows.length > 0) ? scenario.tableRows.length : 1;
+        const tableRowCount = (scenario.tableRows.length > 0) ? scenario.tableRows.length : 1;
 
-        var completedExamples = 0;
-        var examplesComplete = () => {
+        let completedExamples = 0;
+        const examplesComplete = () => {
             completedExamples++;
             if (completedExamples === tableRowCount) {
                 scenarioComplete();
@@ -82,23 +80,19 @@ export class FeatureRunner {
         };
 
         // Each Example Row
-        for (var exampleIndex = 0; exampleIndex < tableRowCount; exampleIndex++) {
+        for (let exampleIndex = 0; exampleIndex < tableRowCount; exampleIndex++) {
             try {
-                var passed = true;
-
-                var i: number;
-                var context: any = {};
+                const context: any = {};
 
                 this.testReporter.information('--------------------------------------');
                 this.testReporter.information(scenario.featureTitle);
                 this.testReporter.information('\t' + scenario.featureDescription.join('\r\n\t') + '\r\n\r\n');
 
                 // Process the scenario steps
-                var conditions = scenario.getAllConditions();
+                const conditions = scenario.getAllConditions();
                 this.runNextCondition(conditions, 0, context, scenario, exampleIndex, true, examplesComplete);
 
             } catch (ex) {
-                passed = false;
                 this.testReporter.error(scenario.featureTitle, this.currentCondition, ex);
             }
         }
@@ -106,9 +100,9 @@ export class FeatureRunner {
 
     private runNextCondition(conditions: { condition: string; type: StepType; }[], conditionIndex: number, context: any, scenario: Scenario, exampleIndex: number, passing: boolean, examplesComplete: Function) {
         try {
-            var next = conditions[conditionIndex];
-            var nextConditionIndex = conditionIndex + 1;
-            var timer: any = null;
+            const next = conditions[conditionIndex];
+            const nextConditionIndex = conditionIndex + 1;
+            let timer: any = null;
 
             this.currentCondition = next.condition;
 
@@ -116,6 +110,7 @@ export class FeatureRunner {
                 if (timer) {
                     clearTimeout(timer);
                 }
+
                 if (nextConditionIndex < conditions.length) {
                     this.runNextCondition(conditions, nextConditionIndex, context, scenario, exampleIndex, passing, examplesComplete);
                 } else {
@@ -124,16 +119,16 @@ export class FeatureRunner {
                 }
             }
 
-            var condition = scenario.prepareCondition(next.condition, exampleIndex);
+            const condition = scenario.prepareCondition(next.condition, exampleIndex);
             this.testReporter.information('\t' + condition);
-            var stepExecution = this.steps.find(condition, next.type);
+            const stepExecution = this.steps.find(condition, next.type);
 
             if (stepExecution === null) {
-                var stepMethodBuilder = new StepMethodBuilder(condition);
+                const stepMethodBuilder = new StepMethodBuilder(condition);
                 throw new Error('No step definition defined.\n\n' + stepMethodBuilder.getSuggestedStepMethod());
             }
 
-            var isAsync = stepExecution.isAsync;
+            const isAsync = stepExecution.isAsync;
 
             if (stepExecution.parameters) {
                 // Add the context container as the first argument
@@ -168,12 +163,12 @@ class StepMethodBuilder {
     constructor(private originalCondition: string) { }
 
     getSuggestedStepMethod() {
-        var argumentParser = new ArgumentParser(this.originalCondition);
+        const argumentParser = new ArgumentParser(this.originalCondition);
 
         /* Template for step method */
-        var params = argumentParser.getParameters();
-        var comma = (params.length > 0) ? ', ' : '';
-        var suggestion = '    runner.addStep(/^' + argumentParser.getCondition() + '$/i,\n' +
+        const params = argumentParser.getParameters();
+        const comma = (params.length > 0) ? ', ' : '';
+        const suggestion = '    runner.addStep(/^' + argumentParser.getCondition() + '$/i,\n' +
             '        (context: any' + comma + params + ') => {\n' +
             '            throw new Error(\'Not implemented.\');\n' +
             '        });';
@@ -200,21 +195,21 @@ class ArgumentParser {
     }
 
     private parseArguments() {
-        var foundArguments = this.originalCondition.match(ExpressionLibrary.quotedArgumentsRegExp);
+        const foundArguments = this.originalCondition.match(ExpressionLibrary.quotedArgumentsRegExp);
 
         if (!foundArguments || foundArguments.length === 0) {
             return;
         }
 
-        for (var i = 0; i < foundArguments.length; i++) {
+        for (let i = 0; i < foundArguments.length; i++) {
             var foundArgument = foundArguments[i];
             this.replaceArgumentWithExpression(foundArgument, i);
         }
     }
 
     private replaceArgumentWithExpression(quotedArgument: string, position: number) {
-        var trimmedArgument = quotedArgument.replace(/"/g, '');
-        var argumentExpression: string = null;
+        const trimmedArgument = quotedArgument.replace(/"/g, '');
+        let argumentExpression: string = null;
 
         if (this.isBooleanArgument(trimmedArgument)) {
             this.arguments.push('p' + position + ': boolean');

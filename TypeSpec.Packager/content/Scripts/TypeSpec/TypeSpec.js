@@ -1,19 +1,26 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 (function (factory) {
-    if (typeof module === 'object' && typeof module.exports === 'object') {
-        var v = factory(require, exports); if (v !== undefined) module.exports = v;
+    if (typeof module === "object" && typeof module.exports === "object") {
+        var v = factory(require, exports);
+        if (v !== undefined) module.exports = v;
     }
-    else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", './Parser', './Steps'], factory);
+    else if (typeof define === "function" && define.amd) {
+        define(["require", "exports", "./Parser", "./Steps"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var Parser_1 = require('./Parser');
-    var Steps_1 = require('./Steps');
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var Parser_1 = require("./Parser");
+    var Steps_1 = require("./Steps");
     var SpecRunner = (function () {
         function SpecRunner(testReporter) {
             if (testReporter === void 0) { testReporter = new TestReporter(); }
@@ -51,7 +58,7 @@ var __extends = (this && this.__extends) || function (d, b) {
         SpecRunner.prototype.run = function () {
             var url = [];
             for (var _i = 0; _i < arguments.length; _i++) {
-                url[_i - 0] = arguments[_i];
+                url[_i] = arguments[_i];
             }
             this.expectedFiles = url.length;
             this.readFile(0, url);
@@ -59,7 +66,7 @@ var __extends = (this && this.__extends) || function (d, b) {
         SpecRunner.prototype.runInRandomOrder = function () {
             var url = [];
             for (var _i = 0; _i < arguments.length; _i++) {
-                url[_i - 0] = arguments[_i];
+                url[_i] = arguments[_i];
             }
             this.expectedFiles = url.length;
             var specList = new SpecificationList(url);
@@ -68,7 +75,7 @@ var __extends = (this && this.__extends) || function (d, b) {
         SpecRunner.prototype.excludeTags = function () {
             var tags = [];
             for (var _i = 0; _i < arguments.length; _i++) {
-                tags[_i - 0] = arguments[_i];
+                tags[_i] = arguments[_i];
             }
             for (var i = 0; i < tags.length; i++) {
                 this.excludedTags.push(tags[i].replace(/@/g, ''));
@@ -130,8 +137,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     var BrowserFileReader = (function (_super) {
         __extends(BrowserFileReader, _super);
         function BrowserFileReader(testReporter) {
-            _super.call(this);
-            this.testReporter = testReporter;
+            var _this = _super.call(this) || this;
+            _this.testReporter = testReporter;
+            return _this;
         }
         BrowserFileReader.prototype.getFile = function (url, successCallback) {
             var _this = this;
@@ -155,8 +163,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     var NodeFileReader = (function (_super) {
         __extends(NodeFileReader, _super);
         function NodeFileReader(testReporter) {
-            _super.call(this);
-            this.testReporter = testReporter;
+            var _this = _super.call(this) || this;
+            _this.testReporter = testReporter;
+            return _this;
         }
         NodeFileReader.prototype.getFile = function (url, successCallback) {
             var _this = this;

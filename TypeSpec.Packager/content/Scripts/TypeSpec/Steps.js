@@ -1,13 +1,15 @@
 (function (factory) {
-    if (typeof module === 'object' && typeof module.exports === 'object') {
-        var v = factory(require, exports); if (v !== undefined) module.exports = v;
+    if (typeof module === "object" && typeof module.exports === "object") {
+        var v = factory(require, exports);
+        if (v !== undefined) module.exports = v;
     }
-    else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", './RegEx'], factory);
+    else if (typeof define === "function" && define.amd) {
+        define(["require", "exports", "./RegEx"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var RegEx_1 = require('./RegEx');
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RegEx_1 = require("./RegEx");
     var StepDefinition = (function () {
         function StepDefinition(expression, step, isAsync, type) {
             this.expression = expression;
@@ -27,12 +29,12 @@
         return StepExecution;
     }());
     exports.StepExecution = StepExecution;
+    var StepType;
     (function (StepType) {
         StepType[StepType["Given"] = 1] = "Given";
         StepType[StepType["When"] = 2] = "When";
         StepType[StepType["Then"] = 4] = "Then";
-    })(exports.StepType || (exports.StepType = {}));
-    var StepType = exports.StepType;
+    })(StepType = exports.StepType || (exports.StepType = {}));
     var StepCollection = (function () {
         function StepCollection(testReporter) {
             this.testReporter = testReporter;
@@ -45,23 +47,23 @@
             this.steps.push(new StepDefinition(expression, step, isAsync, type));
         };
         StepCollection.prototype.find = function (text, type) {
-            var i;
-            var foundStepOfType = [];
-            for (i = 0; i < this.steps.length; i++) {
-                var step = this.steps[i];
+            var foundStepTypes = [];
+            for (var _i = 0, _a = this.steps; _i < _a.length; _i++) {
+                var step = _a[_i];
                 if (text.match(step.expression)) {
                     if (!((type & step.type) === type)) {
-                        foundStepOfType.push(step.type);
+                        foundStepTypes.push(step.type);
                         continue;
                     }
                     var params = this.getParams(text, RegEx_1.ExpressionLibrary.defaultStepRegExp, step.expression);
                     return new StepExecution(step.step, step.isAsync, params);
                 }
             }
-            if (foundStepOfType.length > 0) {
+            if (foundStepTypes.length > 0) {
                 var error = 'Found matching steps, but of type(s): ';
-                for (i = 0; i < foundStepOfType.length; i++) {
-                    error += StepType[foundStepOfType[i]] + ', ';
+                for (var _b = 0, foundStepTypes_1 = foundStepTypes; _b < foundStepTypes_1.length; _b++) {
+                    var foundStepType = foundStepTypes_1[_b];
+                    error += StepType[foundStepType] + ', ';
                 }
                 error += ' but not ' + StepType[type];
                 throw new Error(error);
@@ -72,34 +74,30 @@
             if (parameterExpression) {
                 var typeIndicators = findExpression.source.toString().match(RegEx_1.ExpressionLibrary.regexFinderRegExp);
                 var params = text.match(parameterExpression);
-                if (!params) {
+                var expressionMatches = text.match(findExpression);
+                if (!expressionMatches) {
                     return [];
                 }
-                for (var i = 0; i < params.length; i++) {
-                    // Remove leading and trailing quotes
-                    var val = params[i];
-                    if (val.substr(0, 1) === '"') {
-                        val = val.substr(1);
+                var result = [];
+                for (var i = 1; i < expressionMatches.length; i++) {
+                    var m = expressionMatches[i];
+                    m = m.replace(/^"(.+(?="$))"$/, '$1');
+                    m = m.replace(/^'(.+(?='$))'$/, '$1');
+                    var paramIndex = i - 1;
+                    if (!isNaN(parseFloat(m)) && isFinite(parseFloat(m))) {
+                        result[paramIndex] = parseFloat(m);
                     }
-                    if (val.substr(-1) === '"') {
-                        val = val.substr(0, val.length - 1);
+                    else if (m.toLowerCase() == 'true') {
+                        result[paramIndex] = true;
                     }
-                    // Replace escaped quotes
-                    val = val.replace(/\\\"/g, '"');
-                    if (typeIndicators !== null && typeIndicators[i]) {
-                        var indicator = typeIndicators[i];
-                        switch (indicator) {
-                            case "\\d+":
-                                val = parseFloat(val);
-                                break;
-                            case "(\\\"true\\\"|\\\"false\\\")", "(\\\"true\\\"|\\\"false\\\")":
-                                val = (val.toLowerCase() === 'true');
-                                break;
-                        }
+                    else if (m.toLowerCase() == 'false') {
+                        result[paramIndex] = false;
                     }
-                    params[i] = val;
+                    else {
+                        result[paramIndex] = m;
+                    }
                 }
-                return params;
+                return result;
             }
             return [];
         };

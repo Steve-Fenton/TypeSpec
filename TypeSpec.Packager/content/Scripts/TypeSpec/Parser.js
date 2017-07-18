@@ -1,14 +1,16 @@
 (function (factory) {
-    if (typeof module === 'object' && typeof module.exports === 'object') {
-        var v = factory(require, exports); if (v !== undefined) module.exports = v;
+    if (typeof module === "object" && typeof module.exports === "object") {
+        var v = factory(require, exports);
+        if (v !== undefined) module.exports = v;
     }
-    else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", './RegEx', './State'], factory);
+    else if (typeof define === "function" && define.amd) {
+        define(["require", "exports", "./RegEx", "./State"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var RegEx_1 = require('./RegEx');
-    var State_1 = require('./State');
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RegEx_1 = require("./RegEx");
+    var State_1 = require("./State");
     var FeatureParser = (function () {
         function FeatureParser(steps, testReporter, tagsToExclude) {
             this.steps = steps;
@@ -58,8 +60,8 @@
                 }
             };
             // Each Scenario
-            for (var scenarioIndex = 0; scenarioIndex < this.scenarios.length; scenarioIndex++) {
-                var scenario = this.scenarios[scenarioIndex];
+            for (var _i = 0, _a = this.scenarios; _i < _a.length; _i++) {
+                var scenario = _a[_i];
                 if (typeof scenario.scenarioTitle === 'undefined') {
                     this.testReporter.information(scenario.featureTitle + ' has an ignored scenario, or a scenario missing a title.');
                     scenarioComplete();
@@ -80,8 +82,6 @@
             // Each Example Row
             for (var exampleIndex = 0; exampleIndex < tableRowCount; exampleIndex++) {
                 try {
-                    var passed = true;
-                    var i;
                     var context = {};
                     this.testReporter.information('--------------------------------------');
                     this.testReporter.information(scenario.featureTitle);
@@ -91,7 +91,6 @@
                     this.runNextCondition(conditions, 0, context, scenario, exampleIndex, true, examplesComplete);
                 }
                 catch (ex) {
-                    passed = false;
                     this.testReporter.error(scenario.featureTitle, this.currentCondition, ex);
                 }
             }
@@ -100,26 +99,26 @@
             var _this = this;
             try {
                 var next = conditions[conditionIndex];
-                var nextConditionIndex = conditionIndex + 1;
-                var timer = null;
+                var nextConditionIndex_1 = conditionIndex + 1;
+                var timer_1 = null;
                 this.currentCondition = next.condition;
                 context.done = function () {
-                    if (timer) {
-                        clearTimeout(timer);
+                    if (timer_1) {
+                        clearTimeout(timer_1);
                     }
-                    if (nextConditionIndex < conditions.length) {
-                        _this.runNextCondition(conditions, nextConditionIndex, context, scenario, exampleIndex, passing, examplesComplete);
+                    if (nextConditionIndex_1 < conditions.length) {
+                        _this.runNextCondition(conditions, nextConditionIndex_1, context, scenario, exampleIndex, passing, examplesComplete);
                     }
                     else {
                         _this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passing);
                         examplesComplete();
                     }
                 };
-                var condition = scenario.prepareCondition(next.condition, exampleIndex);
-                this.testReporter.information('\t' + condition);
-                var stepExecution = this.steps.find(condition, next.type);
+                var condition_1 = scenario.prepareCondition(next.condition, exampleIndex);
+                this.testReporter.information('\t' + condition_1);
+                var stepExecution = this.steps.find(condition_1, next.type);
                 if (stepExecution === null) {
-                    var stepMethodBuilder = new StepMethodBuilder(condition);
+                    var stepMethodBuilder = new StepMethodBuilder(condition_1);
                     throw new Error('No step definition defined.\n\n' + stepMethodBuilder.getSuggestedStepMethod());
                 }
                 var isAsync = stepExecution.isAsync;
@@ -134,12 +133,11 @@
                     stepExecution.method.call(null, context);
                 }
                 if (isAsync) {
-                    timer = setTimeout(function () {
+                    timer_1 = setTimeout(function () {
                         console.log('Timer Expired');
-                        _this.testReporter.error('Async Exception', condition, new Error('Async step timed out'));
-                        if (nextConditionIndex < conditions.length) {
-                            _this.runNextCondition(conditions, nextConditionIndex, context, scenario, exampleIndex, false, examplesComplete);
-                        }
+                        _this.testReporter.error('Async Exception', condition_1, new Error('Async step timed out'));
+                        _this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, false);
+                        examplesComplete();
                     }, this.asyncTimeout);
                 }
                 else {

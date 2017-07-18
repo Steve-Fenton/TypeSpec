@@ -26,27 +26,24 @@ export class StepCollection {
     }
 
     find(text: string, type: StepType) {
-        var i: number;
-        var foundStepOfType: StepType[] = [];
+        let foundStepTypes: StepType[] = [];
 
-        for (i = 0; i < this.steps.length; i++) {
-            var step = this.steps[i];
+        for (const step of this.steps) {
             if (text.match(step.expression)) {
-
                 if (!((type & step.type) === type)) {
-                    foundStepOfType.push(step.type);
+                    foundStepTypes.push(step.type);
                     continue;
                 }
 
-                var params = this.getParams(text, ExpressionLibrary.defaultStepRegExp, step.expression);
+                let params = this.getParams(text, ExpressionLibrary.defaultStepRegExp, step.expression);
                 return new StepExecution(step.step, step.isAsync, params);
             }
         }
 
-        if (foundStepOfType.length > 0) {
-            var error = 'Found matching steps, but of type(s): ';
-            for (i = 0; i < foundStepOfType.length; i++) {
-                error += StepType[foundStepOfType[i]] + ', ';
+        if (foundStepTypes.length > 0) {
+            let error = 'Found matching steps, but of type(s): ';
+            for (const foundStepType of foundStepTypes) {
+                error += StepType[foundStepType] + ', ';
             }
             error += ' but not ' + StepType[type];
 
@@ -59,30 +56,31 @@ export class StepCollection {
     getParams(text: string, parameterExpression: RegExp, findExpression: RegExp): any[] {
         if (parameterExpression) {
 
-            var typeIndicators = findExpression.source.toString().match(ExpressionLibrary.regexFinderRegExp);
-            var params = text.match(parameterExpression);
+            const typeIndicators = findExpression.source.toString().match(ExpressionLibrary.regexFinderRegExp);
+            const matches = text.match(findExpression);
 
-            var expressionMatches = text.match(findExpression);
-
-            if (!expressionMatches) {
+            if (!matches) {
                 return [];
             }
 
-            var result: any[] = [];
-            for (var i = 1; i < expressionMatches.length; i++) {
-                var m = expressionMatches[i];
-                m = m.replace(/^"(.+(?="$))"$/, '$1');
-                m = m.replace(/^'(.+(?='$))'$/, '$1');
-                var paramIndex = i - 1;
+            let result: any[] = [];
+            for (let i = 1; i < matches.length; i++) {
+                let match = matches[i];
+                match = match.replace(/^"(.+(?="$))"$/, '$1');
+                match = match.replace(/^'(.+(?='$))'$/, '$1');
 
-                if (!isNaN(parseFloat(m)) && isFinite(parseFloat(m))) {
-                    result[paramIndex] = parseFloat(m);
-                } else if (m.toLowerCase() == 'true') {
-                    result[paramIndex] = true;
-                } else if (m.toLowerCase() == 'false') {
-                    result[paramIndex] = false;
-                } else {
-                    result[paramIndex] = m;
+                const paramIndex = i - 1;
+                const indicator = typeIndicators[i - 1] || '';
+
+                switch (indicator) {
+                    case "\\d+":
+                        result[paramIndex] = parseFloat(match);
+                        break;
+                    case "(\\\"true\\\"|\\\"false\\\")":
+                        result[paramIndex] = ((<string>match).toLowerCase() === 'true');
+                        break;
+                    default:
+                        result[paramIndex] = match;
                 }
             }
 

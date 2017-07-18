@@ -1,19 +1,26 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 (function (factory) {
-    if (typeof module === 'object' && typeof module.exports === 'object') {
-        var v = factory(require, exports); if (v !== undefined) module.exports = v;
+    if (typeof module === "object" && typeof module.exports === "object") {
+        var v = factory(require, exports);
+        if (v !== undefined) module.exports = v;
     }
-    else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", './Keyword', './Steps'], factory);
+    else if (typeof define === "function" && define.amd) {
+        define(["require", "exports", "./Keyword", "./Steps"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var Keyword_1 = require('./Keyword');
-    var Steps_1 = require('./Steps');
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var Keyword_1 = require("./Keyword");
+    var Steps_1 = require("./Steps");
     var Scenario = (function () {
         function Scenario(priorState) {
             this.givens = [];
@@ -39,21 +46,24 @@ var __extends = (this && this.__extends) || function (d, b) {
         }
         Scenario.prototype.getAllConditions = function () {
             var conditions = [];
-            for (var i = 0; i < this.givens.length; i++) {
+            for (var _i = 0, _a = this.givens; _i < _a.length; _i++) {
+                var given = _a[_i];
                 conditions.push({
-                    condition: this.givens[i],
+                    condition: given,
                     type: Steps_1.StepType.Given
                 });
             }
-            for (var i = 0; i < this.whens.length; i++) {
+            for (var _b = 0, _c = this.whens; _b < _c.length; _b++) {
+                var when = _c[_b];
                 conditions.push({
-                    condition: this.whens[i],
+                    condition: when,
                     type: Steps_1.StepType.When
                 });
             }
-            for (var i = 0; i < this.thens.length; i++) {
+            for (var _d = 0, _e = this.thens; _d < _e.length; _d++) {
+                var then = _e[_d];
                 conditions.push({
-                    condition: this.thens[i],
+                    condition: then,
                     type: Steps_1.StepType.Then
                 });
             }
@@ -108,8 +118,9 @@ var __extends = (this && this.__extends) || function (d, b) {
             return this.unknown(line);
         };
         Scenario.prototype.isTagExcluded = function (tag) {
-            for (var i = 0; i < this.tagsToExclude.length; i++) {
-                if (this.tagsToExclude[i] === tag) {
+            for (var _i = 0, _a = this.tagsToExclude; _i < _a.length; _i++) {
+                var excludedTag = _a[_i];
+                if (tag === excludedTag) {
                     return true;
                 }
             }
@@ -163,8 +174,9 @@ var __extends = (this && this.__extends) || function (d, b) {
         __extends(InitializedState, _super);
         function InitializedState(tagsToExclude) {
             if (tagsToExclude === void 0) { tagsToExclude = []; }
-            _super.call(this, null);
-            this.tagsToExclude = tagsToExclude;
+            var _this = _super.call(this, null) || this;
+            _this.tagsToExclude = tagsToExclude;
+            return _this;
         }
         InitializedState.prototype.feature = function (line) {
             this.featureTitle = Keyword_1.Keyword.trimKeyword(line, Keyword_1.KeywordType.Feature);
@@ -176,7 +188,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     var FeatureState = (function (_super) {
         __extends(FeatureState, _super);
         function FeatureState(priorState) {
-            _super.call(this, priorState);
+            return _super.call(this, priorState) || this;
         }
         FeatureState.prototype.unknown = function (line) {
             this.featureDescription.push(line);
@@ -212,8 +224,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     var ExcludedScenarioState = (function (_super) {
         __extends(ExcludedScenarioState, _super);
         function ExcludedScenarioState(priorState) {
-            _super.call(this, priorState);
-            this.hasScenario = false;
+            var _this = _super.call(this, priorState) || this;
+            _this.hasScenario = false;
+            return _this;
         }
         ExcludedScenarioState.prototype.isNewScenario = function (line) {
             return this.hasScenario && (Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Scenario) || Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Outline) || Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Tag));
@@ -261,7 +274,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     var ScenarioState = (function (_super) {
         __extends(ScenarioState, _super);
         function ScenarioState(priorState) {
-            _super.call(this, priorState);
+            return _super.call(this, priorState) || this;
         }
         ScenarioState.prototype.given = function (line) {
             this.givens.push(Keyword_1.Keyword.trimKeyword(line, Keyword_1.KeywordType.Given));
@@ -272,7 +285,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     var GivenState = (function (_super) {
         __extends(GivenState, _super);
         function GivenState(priorState) {
-            _super.call(this, priorState);
+            return _super.call(this, priorState) || this;
         }
         GivenState.prototype.when = function (line) {
             this.whens.push(Keyword_1.Keyword.trimKeyword(line, Keyword_1.KeywordType.When));
@@ -291,7 +304,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     var WhenState = (function (_super) {
         __extends(WhenState, _super);
         function WhenState(priorState) {
-            _super.call(this, priorState);
+            return _super.call(this, priorState) || this;
         }
         WhenState.prototype.then = function (line) {
             this.thens.push(Keyword_1.Keyword.trimKeyword(line, Keyword_1.KeywordType.Then));
@@ -306,7 +319,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     var ThenState = (function (_super) {
         __extends(ThenState, _super);
         function ThenState(priorState) {
-            _super.call(this, priorState);
+            return _super.call(this, priorState) || this;
         }
         ThenState.prototype.isNewScenario = function (line) {
             return (Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Scenario) || Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Outline) || Keyword_1.Keyword.is(line, Keyword_1.KeywordType.Tag));
@@ -323,12 +336,13 @@ var __extends = (this && this.__extends) || function (d, b) {
     var ExampleState = (function (_super) {
         __extends(ExampleState, _super);
         function ExampleState(priorState) {
-            _super.call(this, priorState);
+            return _super.call(this, priorState) || this;
         }
         ExampleState.prototype.table = function (line) {
             var headings = Keyword_1.Keyword.getTableRow(line);
-            for (var i = 0; i < headings.length; i++) {
-                var trimmedHeading = headings[i].trim();
+            for (var _i = 0, headings_1 = headings; _i < headings_1.length; _i++) {
+                var heading = headings_1[_i];
+                var trimmedHeading = heading.trim();
                 this.tableHeaders.push(trimmedHeading);
             }
             return new TableState(this);
@@ -338,7 +352,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     var TableState = (function (_super) {
         __extends(TableState, _super);
         function TableState(priorState) {
-            _super.call(this, priorState);
+            return _super.call(this, priorState) || this;
         }
         TableState.prototype.table = function (line) {
             var data = Keyword_1.Keyword.getTableRow(line);

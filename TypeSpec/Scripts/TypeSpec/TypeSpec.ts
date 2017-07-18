@@ -57,13 +57,13 @@ export class SpecRunner {
 
     runInRandomOrder(...url: string[]) {
         this.expectedFiles = url.length;
-        var specList = new SpecificationList(url);
+        const specList = new SpecificationList(url);
         this.readFile(0, specList.randomise());
     }
 
     excludeTags(...tags: string[]) {
-        for (var i = 0; i < tags.length; i++) {
-            this.excludedTags.push(tags[i].replace(/@/g, ''));
+        for(const tag of tags) {
+            this.excludedTags.push(tag.replace(/@/g, ''));
         }
     }
 
@@ -76,7 +76,7 @@ export class SpecRunner {
 
     private readFile(index: number, urls: string[]) {
         if (index < urls.length) {
-            var nextIndex = index + 1;
+            const nextIndex = index + 1;
 
             this.fileReader.getFile(urls[index], (responseText: string) => {
                 this.processSpecification(responseText, () => this.fileCompleted());
@@ -86,20 +86,18 @@ export class SpecRunner {
     }
 
     private processSpecification(spec: string, fileComplete: Function) {
-        var hasParsed = true;
-        var composer = new FeatureParser(this.steps, this.testReporter, this.excludedTags);
+        let hasParsed = true;
+        const composer = new FeatureParser(this.steps, this.testReporter, this.excludedTags);
 
         /* Normalise line endings before splitting */
-        var lines = spec.replace('\r\n', '\n').split('\n');
+        const lines = spec.replace('\r\n', '\n').split('\n');
 
-        for (var i = 0; i < lines.length; i++) {
-            var line = lines[i];
-
+        for (const line of lines) {
             try {
                 composer.process(line);
             } catch (ex) {
                 hasParsed = false;
-                var state = composer.scenarios[0] || { featureTitle: 'Unknown' };
+                const state = composer.scenarios[0] || { featureTitle: 'Unknown' };
                 this.testReporter.error(state.featureTitle, line, ex);
             }
         }
@@ -134,8 +132,8 @@ class BrowserFileReader extends FileReader {
     }
 
     getFile(url: string, successCallback: FileReaderCallback) {
-        var cacheBust = '?cb=' + new Date().getTime();
-        var client = new XMLHttpRequest();
+        const cacheBust = '?cb=' + new Date().getTime();
+        const client = new XMLHttpRequest();
         client.open('GET', url + cacheBust);
         client.onreadystatechange = () => {
             if (client.readyState === 4) {
@@ -156,11 +154,11 @@ class NodeFileReader extends FileReader {
     }
 
     getFile(url: string, successCallback: FileReaderCallback) {
-        var fs: any = require('fs');
-        var path: any = require('path');
+        let fs: any = require('fs');
+        let path: any = require('path');
 
         // Make the path relative in Node's terms and resolve it
-        var resolvedUrl = path.resolve('.' + url);
+        const resolvedUrl = path.resolve('.' + url);
 
         fs.readFile(resolvedUrl, 'utf8', (err: any, data: string) => {
             if (err) {
@@ -176,10 +174,10 @@ export class SpecificationList {
     }
 
     randomise() {
-        var orderedSpecs: string[] = [];
+        let orderedSpecs: string[] = [];
 
         while (this.specifications.length > 0) {
-            var index = this.getRandomInt(0, this.specifications.length);
+            const index = this.getRandomInt(0, this.specifications.length);
             orderedSpecs.push(this.specifications[index]);
             this.specifications.splice(index, 1);
         }
@@ -239,8 +237,9 @@ export class TapReporter implements ITestReporter {
 
     complete() {
         console.log('1..' + this.results.length);
-        for (var i = 0; i < this.results.length; i++) {
-            console.log(this.results[i].output());
+
+        for (const result of this.results) {
+            console.log(result.output());
         }
     }
 }
@@ -272,7 +271,7 @@ export class Assert {
 
     public static areCollectionsIdentical(expected: any[], actual: any[], message = ''): void {
         function resultToString(result: number[]): string {
-            var msg = '';
+            let msg = '';
 
             while (result.length > 0) {
                 msg = '[' + result.pop() + ']' + msg;
@@ -282,7 +281,7 @@ export class Assert {
         }
 
         var compareArray = (expected: any[], actual: any[], result: number[]): void => {
-            var indexString = '';
+            let indexString = '';
 
             if (expected === null) {
                 if (actual !== null) {
@@ -386,7 +385,7 @@ export class Assert {
     public static throws(params: IThrowsParameters): void;
     public static throws(actual: () => void, message?: string): void;
     public static throws(a: any, message = '', errorString = '') {
-        var actual: () => void;
+        let actual: () => void;
 
         if (typeof a === 'function') {
             actual = a;
@@ -396,7 +395,8 @@ export class Assert {
             errorString = a.exceptionString;
         }
 
-        var isThrown = false;
+        let isThrown = false;
+
         try {
             actual();
         } catch (ex) {
@@ -407,8 +407,8 @@ export class Assert {
             if (errorString && ex.message !== errorString) {
                 throw this.getError('different error string than supplied');
             }
-
         }
+
         if (!isThrown) {
             throw this.getError('did not throw an error', message || '');
         }
@@ -431,7 +431,7 @@ export class Assert {
             return Math.round(value * 100) / 100;
         }
 
-        var startOfExecution = getTime();
+        const startOfExecution = getTime();
 
         try {
             actual();
@@ -439,7 +439,8 @@ export class Assert {
             throw this.getError('isExecuteTimeLessThanLimit fails when given code throws an exception: "' + ex + '"', message);
         }
 
-        var executingTime = getTime() - startOfExecution;
+        const executingTime = getTime() - startOfExecution;
+
         if (executingTime > timeLimit) {
             throw this.getError('isExecuteTimeLessThanLimit fails when execution time of given code (' + timeToString(executingTime) + ' ms) ' +
                 'exceed the given limit(' + timeToString(timeLimit) + ' ms)',
@@ -461,8 +462,8 @@ export class Assert {
 
     private static getNameOfClass(inputClass: {}) {
         // see: https://www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
-        var funcNameRegex = /function (.{1,})\(/;
-        var results = (funcNameRegex).exec((<any>inputClass).constructor.toString());
+        const funcNameRegex = /function (.{1,})\(/;
+        const results = (funcNameRegex).exec((<any>inputClass).constructor.toString());
         return (results && results.length > 1) ? results[1] : '';
     }
 
