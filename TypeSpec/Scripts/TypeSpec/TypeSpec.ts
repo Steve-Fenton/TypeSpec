@@ -1,19 +1,19 @@
-﻿import {FeatureParser} from './Parser';
-import {StepCollection, StepType} from './Steps';
-import {ITestReporter} from './Keyword';
-
-declare var require: any;
+﻿import { FeatureParser } from './Parser';
+import { FileReaderCallback, FileReader, BrowserFileReader, NodeFileReader } from './FileSystem';
+import { StepCollection, StepType } from './Steps';
+import { ITestReporter, ITestHooks } from './Keyword';
 
 export class SpecRunner {
     private steps: StepCollection;
     private excludedTags: string[] = [];
+    private urls: string[] = [];
 
     private fileReader: FileReader;
 
     private expectedFiles = 0;
     private completedFiles = 0;
 
-    constructor(private testReporter: ITestReporter = new TestReporter()) {
+    constructor(private testReporter: ITestReporter = new TestReporter(), private testHooks: ITestHooks = new TestHooks()) {
         this.steps = new StepCollection(testReporter);
         this.fileReader = FileReader.getInstance(this.testReporter);
     }
@@ -52,13 +52,15 @@ export class SpecRunner {
 
     run(...url: string[]) {
         this.expectedFiles = url.length;
-        this.readFile(0, url);
+        this.urls = url;
+        this.readFile(0);
     }
 
     runInRandomOrder(...url: string[]) {
-        this.expectedFiles = url.length;
         const specList = new SpecificationList(url);
-        this.readFile(0, specList.randomise());
+        this.expectedFiles = url.length;
+        this.urls = specList.randomise();
+        this.readFile(0);
     }
 
     excludeTags(...tags: string[]) {
@@ -67,105 +69,34 @@ export class SpecRunner {
         }
     }
 
-    private fileCompleted() {
+    private fileCompleted(index: number) {
         this.completedFiles++;
         if (this.completedFiles === this.expectedFiles) {
             this.testReporter.complete();
+        } else {
+            this.readFile(index);
         }
     }
 
-    private readFile(index: number, urls: string[]) {
-        if (index < urls.length) {
+    private readFile(index: number) {
+        // TODO: Probably need a timeout per file as if the test ran "forever" the overall test would never pass or fail
+        if (index < this.urls.length) {
             const nextIndex = index + 1;
 
-            this.fileReader.getFile(urls[index], (responseText: string) => {
-                this.processSpecification(responseText, () => this.fileCompleted());
-                this.readFile(nextIndex, urls);
+            const afterFeatureHandler = () => {
+                this.testHooks.afterFeature();
+                this.fileCompleted(nextIndex);
+            };
+
+            this.fileReader.getFile(this.urls[index], (responseText: string) => {
+                this.processSpecification(responseText, afterFeatureHandler);
             });
         }
     }
 
-    private processSpecification(spec: string, fileComplete: Function) {
-        let hasParsed = true;
-        const composer = new FeatureParser(this.steps, this.testReporter, this.excludedTags);
-
-        /* Normalise line endings before splitting */
-        const lines = spec.replace('\r\n', '\n').split('\n');
-
-        for (const line of lines) {
-            try {
-                composer.process(line);
-            } catch (ex) {
-                hasParsed = false;
-                const state = composer.scenarios[0] || { featureTitle: 'Unknown' };
-                this.testReporter.error(state.featureTitle, line, ex);
-            }
-        }
-
-        if (hasParsed) {
-            composer.runFeature(fileComplete);
-        } else {
-            fileComplete();
-        }
-    }
-}
-
-interface FileReaderCallback {
-    (responseText: string): void;
-}
-
-abstract class FileReader {
-    static getInstance(testReporter: ITestReporter) : FileReader {
-        if (typeof window !== 'undefined') {
-            return new BrowserFileReader(testReporter);
-        }
-
-        return new NodeFileReader(testReporter);
-    }
-
-    abstract getFile(url: string, successCallback: FileReaderCallback) : void;
-}
-
-class BrowserFileReader extends FileReader {
-    constructor(private testReporter: ITestReporter) {
-        super();
-    }
-
-    getFile(url: string, successCallback: FileReaderCallback) {
-        const cacheBust = '?cb=' + new Date().getTime();
-        const client = new XMLHttpRequest();
-        client.open('GET', url + cacheBust);
-        client.onreadystatechange = () => {
-            if (client.readyState === 4) {
-                if (client.status === 200) {
-                    successCallback(client.responseText);
-                } else {
-                    this.testReporter.error('getFile', url, new Error('Error loading specification: ' + client.statusText + ' (' + client.status + ').'));
-                }
-            }
-        }
-        client.send();
-    }
-}
-
-class NodeFileReader extends FileReader {
-    constructor(private testReporter: ITestReporter) {
-        super();
-    }
-
-    getFile(url: string, successCallback: FileReaderCallback) {
-        let fs: any = require('fs');
-        let path: any = require('path');
-
-        // Make the path relative in Node's terms and resolve it
-        const resolvedUrl = path.resolve('.' + url);
-
-        fs.readFile(resolvedUrl, 'utf8', (err: any, data: string) => {
-            if (err) {
-                this.testReporter.error('getNodeFile', url, new Error('Error loading specification: ' + err + ').'));
-            }
-            successCallback(data);
-        });
+    private processSpecification(spec: string, afterFeatureHandler: Function) {
+        const featureParser = new FeatureParser(this.testReporter, this.testHooks, this.steps, this.excludedTags);
+        featureParser.run(spec, afterFeatureHandler);
     }
 }
 
@@ -187,6 +118,40 @@ export class SpecificationList {
 
     private getRandomInt(min: number, max: number) {
         return Math.floor(Math.random() * (max - min)) + min;
+    }
+}
+
+export class TestHooks implements ITestHooks {
+    beforeTestRun(): void {
+        console.info('Run Started');
+    }
+
+    beforeFeature(): void {
+        console.info('|--Feature Started');
+    }
+
+    beforeScenario(): void {
+        console.info('|--|--Scenario Started');
+    }
+
+    beforeCondition(): void {
+        console.info('|--|--|--Condition Started');
+    }
+
+    afterCondition(): void {
+        console.info('|--|--|--Condition Ended');
+    }
+
+    afterScenario(): void {
+        console.info('|--|--Scenario Ended');
+    }
+
+    afterFeature(): void {
+        console.info('|--Feature Ended');
+    }
+
+    afterTestRun(): void {
+        console.info('Run Ended');
     }
 }
 

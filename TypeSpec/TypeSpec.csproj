@@ -49,6 +49,7 @@
     <TypeScriptCompile Include="Scripts\TypeSpec\State.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\Keyword.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\Steps.ts" />
+    <TypeScriptCompile Include="Scripts\TypeSpec\FileSystem.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\TypeSpec.ts" />
   </ItemGroup>
   <ItemGroup>

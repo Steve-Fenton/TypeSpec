@@ -18,9 +18,31 @@
             this.tagsToExclude = tagsToExclude;
             this.scenarios = [];
             this.scenarioIndex = 0;
+            this.hasParsed = false;
             this.scenarios[this.scenarioIndex] = new State_1.InitializedState(this.tagsToExclude);
             this.featureRunner = new FeatureRunner(steps, testReporter);
         }
+        FeatureParser.prototype.run = function (spec, featureCompleteHandler) {
+            this.parseSpecification(spec);
+            this.runFeature(featureCompleteHandler);
+        };
+        FeatureParser.prototype.parseSpecification = function (spec) {
+            this.hasParsed = true;
+            /* Normalise line endings before splitting */
+            var lines = spec.replace('\r\n', '\n').split('\n');
+            /* Parse the steps */
+            for (var _i = 0, lines_1 = lines; _i < lines_1.length; _i++) {
+                var line = lines_1[_i];
+                try {
+                    this.process(line);
+                }
+                catch (ex) {
+                    this.hasParsed = false;
+                    var state = this.scenarios[0] || { featureTitle: 'Unknown' };
+                    this.testReporter.error(state.featureTitle, line, ex);
+                }
+            }
+        };
         FeatureParser.prototype.process = function (line) {
             if (this.scenarios[this.scenarioIndex].isNewScenario(line)) {
                 // This is an additional scenario within the same feature file.
@@ -36,7 +58,12 @@
             this.scenarios[this.scenarioIndex] = this.scenarios[this.scenarioIndex].process(line);
         };
         FeatureParser.prototype.runFeature = function (featureComplete) {
-            this.featureRunner.run(this.scenarios, featureComplete);
+            if (this.hasParsed) {
+                this.featureRunner.run(this.scenarios, featureComplete);
+            }
+            else {
+                featureComplete();
+            }
         };
         return FeatureParser;
     }());
@@ -49,8 +76,10 @@
             this.currentCondition = '';
             this.asyncTimeout = 1000; // TODO: Make user configurable
         }
+        // HOOK BEFORE / AFTER FEATURE
         FeatureRunner.prototype.run = function (scenarios, featureComplete) {
             var _this = this;
+            console.log('BEFORE FEATURE ' + scenarios[0].featureTitle);
             this.scenarios = scenarios;
             var completedScenarios = 0;
             var scenarioComplete = function () {
@@ -62,20 +91,24 @@
             // Each Scenario
             for (var _i = 0, _a = this.scenarios; _i < _a.length; _i++) {
                 var scenario = _a[_i];
-                if (typeof scenario.scenarioTitle === 'undefined') {
+                if (!scenario.scenarioTitle) {
                     this.testReporter.information(scenario.featureTitle + ' has an ignored scenario, or a scenario missing a title.');
                     scenarioComplete();
                     continue;
                 }
                 this.runScenario(scenario, scenarioComplete);
             }
+            console.log('AFTER FEATURE ' + scenarios[0].featureTitle);
         };
+        // HOOK BEFORE / AFTER SCENARIO
         FeatureRunner.prototype.runScenario = function (scenario, scenarioComplete) {
+            console.log('BEFORE SCENARIO ' + scenario.featureTitle);
             var tableRowCount = (scenario.tableRows.length > 0) ? scenario.tableRows.length : 1;
             var completedExamples = 0;
-            var examplesComplete = function () {
+            var examplesComplete = function (fail) {
+                if (fail === void 0) { fail = false; }
                 completedExamples++;
-                if (completedExamples === tableRowCount) {
+                if (completedExamples === tableRowCount || fail) {
                     scenarioComplete();
                 }
             };
@@ -94,18 +127,22 @@
                     this.testReporter.error(scenario.featureTitle, this.currentCondition, ex);
                 }
             }
+            console.log('AFTER SCENARIO ' + scenario.featureTitle);
         };
+        // HOOK BEFORE / AFTER CONDITION
         FeatureRunner.prototype.runNextCondition = function (conditions, conditionIndex, context, scenario, exampleIndex, passing, examplesComplete) {
             var _this = this;
             try {
-                var next = conditions[conditionIndex];
+                var next_1 = conditions[conditionIndex];
                 var nextConditionIndex_1 = conditionIndex + 1;
                 var timer_1 = null;
-                this.currentCondition = next.condition;
+                console.log('BEFORE CONDITION ' + next_1.condition);
+                this.currentCondition = next_1.condition;
                 context.done = function () {
                     if (timer_1) {
                         clearTimeout(timer_1);
                     }
+                    console.log('AFTER CONDITION ' + next_1.condition);
                     if (nextConditionIndex_1 < conditions.length) {
                         _this.runNextCondition(conditions, nextConditionIndex_1, context, scenario, exampleIndex, passing, examplesComplete);
                     }
@@ -114,9 +151,9 @@
                         examplesComplete();
                     }
                 };
-                var condition_1 = scenario.prepareCondition(next.condition, exampleIndex);
+                var condition_1 = scenario.prepareCondition(next_1.condition, exampleIndex);
                 this.testReporter.information('\t' + condition_1);
-                var stepExecution = this.steps.find(condition_1, next.type);
+                var stepExecution = this.steps.find(condition_1, next_1.type);
                 if (stepExecution === null) {
                     var stepMethodBuilder = new StepMethodBuilder(condition_1);
                     throw new Error('No step definition defined.\n\n' + stepMethodBuilder.getSuggestedStepMethod());
@@ -134,10 +171,9 @@
                 }
                 if (isAsync) {
                     timer_1 = setTimeout(function () {
-                        console.log('Timer Expired');
+                        passing = false;
                         _this.testReporter.error('Async Exception', condition_1, new Error('Async step timed out'));
-                        _this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, false);
-                        examplesComplete();
+                        examplesComplete(true);
                     }, this.asyncTimeout);
                 }
                 else {
@@ -153,7 +189,6 @@
         };
         return FeatureRunner;
     }());
-    exports.FeatureRunner = FeatureRunner;
     var StepMethodBuilder = (function () {
         function StepMethodBuilder(originalCondition) {
             this.originalCondition = originalCondition;

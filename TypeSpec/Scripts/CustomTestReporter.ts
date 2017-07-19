@@ -1,4 +1,4 @@
-﻿import {TestReporter} from './TypeSpec/TypeSpec';
+﻿import {TestReporter, TestHooks} from './TypeSpec/TypeSpec';
 
 export class CustomTestReporter extends TestReporter {
     private testCount = 0;
@@ -31,4 +31,8 @@ export class CustomTestReporter extends TestReporter {
         let title = (this.passedCount === this.testCount) ? 'Passed' : 'Failed';
         document.title = title + ' (' + this.passedCount + '/' + this.testCount + ' Passed)';
     }
+}
+
+export class CustomTestHooks extends TestHooks {
+
 }

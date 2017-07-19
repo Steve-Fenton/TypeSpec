@@ -3,15 +3,15 @@ import {SpecRunner, SpecificationList, TapReporter} from './Scripts/TypeSpec/Typ
 
 /* (Optional) Your Dependencies */
 import {Calculator} from './Scripts/Calculator';
-import {CustomTestReporter} from './Scripts/CustomTestReporter';
+import {CustomTestReporter, CustomTestHooks} from './Scripts/CustomTestReporter';
 
 /* Your Test Code */
 import {CalculatorSteps} from './Scripts/CalculatorSteps';
 import {ArgumentSteps} from './Scripts/ArgumentSteps';
 
-var runner = new SpecRunner(new CustomTestReporter());
+var runner = new SpecRunner(new CustomTestReporter(), new CustomTestHooks());
+//var runner = new SpecRunner(); // Default
 //var runner = new SpecRunner(new TapReporter()); // TAP Output (https://testanything.org/)
-
 
 /* (Optional) You can exclude tags (the @ prefix is optional) */
 runner.excludeTags('@exclude');

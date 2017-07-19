@@ -1,12 +1,12 @@
-﻿import {FeatureParser} from './Parser';
-import {StepCollection, StepType} from './Steps';
-import {ITestReporter} from './Keyword';
-
-declare var require: any;
+﻿import { FeatureParser } from './Parser';
+import { FileReaderCallback, FileReader, BrowserFileReader, NodeFileReader } from './FileSystem';
+import { StepCollection, StepType } from './Steps';
+import { ITestReporter } from './Keyword';
 
 export class SpecRunner {
     private steps: StepCollection;
     private excludedTags: string[] = [];
+    private urls: string[] = [];
 
     private fileReader: FileReader;
 
@@ -52,13 +52,15 @@ export class SpecRunner {
 
     run(...url: string[]) {
         this.expectedFiles = url.length;
-        this.readFile(0, url);
+        this.urls = url;
+        this.readFile(0);
     }
 
     runInRandomOrder(...url: string[]) {
-        this.expectedFiles = url.length;
         const specList = new SpecificationList(url);
-        this.readFile(0, specList.randomise());
+        this.expectedFiles = url.length;
+        this.urls = specList.randomise();
+        this.readFile(0);
     }
 
     excludeTags(...tags: string[]) {
@@ -67,107 +69,29 @@ export class SpecRunner {
         }
     }
 
-    private fileCompleted() {
+    private fileCompleted(index: number) {
         this.completedFiles++;
         if (this.completedFiles === this.expectedFiles) {
             this.testReporter.complete();
+        } else {
+            this.readFile(index);
         }
     }
 
-    private readFile(index: number, urls: string[]) {
-        if (index < urls.length) {
+    private readFile(index: number) {
+        // TODO: Probably need a timeout per file as if the test ran "forever" the test would never pass or fail
+        if (index < this.urls.length) {
             const nextIndex = index + 1;
 
-            this.fileReader.getFile(urls[index], (responseText: string) => {
-                this.processSpecification(responseText, () => this.fileCompleted());
-                this.readFile(nextIndex, urls);
+            this.fileReader.getFile(this.urls[index], (responseText: string) => {
+                this.processSpecification(responseText, () => this.fileCompleted(nextIndex));
             });
         }
     }
 
-    private processSpecification(spec: string, fileComplete: Function) {
-        let hasParsed = true;
-        const composer = new FeatureParser(this.steps, this.testReporter, this.excludedTags);
-
-        /* Normalise line endings before splitting */
-        const lines = spec.replace('\r\n', '\n').split('\n');
-
-        for (const line of lines) {
-            try {
-                composer.process(line);
-            } catch (ex) {
-                hasParsed = false;
-                const state = composer.scenarios[0] || { featureTitle: 'Unknown' };
-                this.testReporter.error(state.featureTitle, line, ex);
-            }
-        }
-
-        if (hasParsed) {
-            console.log('RUNNING FEATURE');
-            composer.runFeature(fileComplete);
-            console.log('FEATURE DONE');
-        } else {
-            fileComplete();
-        }
-    }
-}
-
-interface FileReaderCallback {
-    (responseText: string): void;
-}
-
-abstract class FileReader {
-    static getInstance(testReporter: ITestReporter) : FileReader {
-        if (typeof window !== 'undefined') {
-            return new BrowserFileReader(testReporter);
-        }
-
-        return new NodeFileReader(testReporter);
-    }
-
-    abstract getFile(url: string, successCallback: FileReaderCallback) : void;
-}
-
-class BrowserFileReader extends FileReader {
-    constructor(private testReporter: ITestReporter) {
-        super();
-    }
-
-    getFile(url: string, successCallback: FileReaderCallback) {
-        const cacheBust = '?cb=' + new Date().getTime();
-        const client = new XMLHttpRequest();
-        client.open('GET', url + cacheBust);
-        client.onreadystatechange = () => {
-            if (client.readyState === 4) {
-                if (client.status === 200) {
-                    successCallback(client.responseText);
-                } else {
-                    this.testReporter.error('getFile', url, new Error('Error loading specification: ' + client.statusText + ' (' + client.status + ').'));
-                }
-            }
-        }
-        client.send();
-    }
-}
-
-class NodeFileReader extends FileReader {
-    constructor(private testReporter: ITestReporter) {
-        super();
-    }
-
-    getFile(url: string, successCallback: FileReaderCallback) {
-        let fs: any = require('fs');
-        let path: any = require('path');
-
-        // Make the path relative in Node's terms and resolve it
-        const resolvedUrl = path.resolve('.' + url);
-
-        fs.readFile(resolvedUrl, 'utf8', (err: any, data: string) => {
-            if (err) {
-                this.testReporter.error('getNodeFile', url, new Error('Error loading specification: ' + err + ').'));
-            }
-            successCallback(data);
-        });
+    private processSpecification(spec: string, featureCompleteHandler: Function) {
+        const featureParser = new FeatureParser(this.steps, this.testReporter, this.excludedTags);
+        featureParser.run(spec, featureCompleteHandler);
     }
 }
 

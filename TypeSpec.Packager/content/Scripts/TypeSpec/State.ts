@@ -1,5 +1,5 @@
-﻿import {Keyword, KeywordType} from './Keyword';
-import {StepType} from './Steps';
+﻿import { Keyword, KeywordType } from './Keyword';
+import { StepType } from './Steps';
 
 export class Scenario {
     public givens: string[] = [];

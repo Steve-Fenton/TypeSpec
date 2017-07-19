@@ -1,19 +1,43 @@
-﻿import {ITestReporter} from './Keyword';
-import {ExpressionLibrary} from './RegEx';
-import {StepCollection, StepType} from './Steps';
-import {Scenario, InitializedState, FeatureState} from './State';
+﻿import { ITestReporter } from './Keyword';
+import { ExpressionLibrary } from './RegEx';
+import { StepCollection, StepType } from './Steps';
+import { Scenario, InitializedState, FeatureState } from './State';
 
 export class FeatureParser {
     public scenarios: Scenario[] = [];
     private scenarioIndex = 0;
     private featureRunner: FeatureRunner;
+    private hasParsed = false;
 
     constructor(private steps: StepCollection, private testReporter: ITestReporter, private tagsToExclude: string[]) {
         this.scenarios[this.scenarioIndex] = new InitializedState(this.tagsToExclude);
         this.featureRunner = new FeatureRunner(steps, testReporter);
     }
 
-    process(line: string) {
+    run(spec: string, featureCompleteHandler: Function) {
+        this.parseSpecification(spec);
+        this.runFeature(featureCompleteHandler);
+    }
+
+    private parseSpecification(spec: string): void {
+        this.hasParsed = true;
+
+        /* Normalise line endings before splitting */
+        const lines = spec.replace('\r\n', '\n').split('\n');
+
+        /* Parse the steps */
+        for (const line of lines) {
+            try {
+                this.process(line);
+            } catch (ex) {
+                this.hasParsed = false;
+                const state = this.scenarios[0] || { featureTitle: 'Unknown' };
+                this.testReporter.error(state.featureTitle, line, ex);
+            }
+        }
+    }
+
+    private process(line: string) {
         if (this.scenarios[this.scenarioIndex].isNewScenario(line)) {
             // This is an additional scenario within the same feature file.
             const existingFeatureTitle = this.scenarios[this.scenarioIndex].featureTitle;
@@ -31,12 +55,16 @@ export class FeatureParser {
         this.scenarios[this.scenarioIndex] = this.scenarios[this.scenarioIndex].process(line);
     }
 
-    runFeature(featureComplete: Function) {
-        this.featureRunner.run(this.scenarios, featureComplete);
+    private runFeature(featureComplete: Function) {
+        if (this.hasParsed) {
+            this.featureRunner.run(this.scenarios, featureComplete);
+        } else {
+            featureComplete();
+        }
     }
 }
 
-export class FeatureRunner {
+class FeatureRunner {
     private scenarios: Scenario[] = [];
     private currentCondition = '';
     private asyncTimeout = 1000; // TODO: Make user configurable
@@ -45,7 +73,10 @@ export class FeatureRunner {
 
     }
 
+    // HOOK BEFORE / AFTER FEATURE
     run(scenarios: Scenario[], featureComplete: Function) {
+        console.log('BEFORE FEATURE ' + scenarios[0].featureTitle);
+
         this.scenarios = scenarios;
 
         let completedScenarios = 0;
@@ -58,7 +89,7 @@ export class FeatureRunner {
 
         // Each Scenario
         for (const scenario of this.scenarios) {
-            if (typeof scenario.scenarioTitle === 'undefined') {
+            if (!scenario.scenarioTitle) {
                 this.testReporter.information(scenario.featureTitle + ' has an ignored scenario, or a scenario missing a title.');
                 scenarioComplete();
                 continue;
@@ -66,15 +97,21 @@ export class FeatureRunner {
 
             this.runScenario(scenario, scenarioComplete);
         }
+
+        console.log('AFTER FEATURE ' + scenarios[0].featureTitle);
     }
 
+    // HOOK BEFORE / AFTER SCENARIO
     private runScenario(scenario: Scenario, scenarioComplete: Function) {
+        console.log('BEFORE SCENARIO ' + scenario.featureTitle);
+
         const tableRowCount = (scenario.tableRows.length > 0) ? scenario.tableRows.length : 1;
 
         let completedExamples = 0;
-        const examplesComplete = () => {
+
+        const examplesComplete = (fail: boolean = false) => {
             completedExamples++;
-            if (completedExamples === tableRowCount) {
+            if (completedExamples === tableRowCount || fail) {
                 scenarioComplete();
             }
         };
@@ -96,13 +133,18 @@ export class FeatureRunner {
                 this.testReporter.error(scenario.featureTitle, this.currentCondition, ex);
             }
         }
+
+        console.log('AFTER SCENARIO ' + scenario.featureTitle);
     }
 
+    // HOOK BEFORE / AFTER CONDITION
     private runNextCondition(conditions: { condition: string; type: StepType; }[], conditionIndex: number, context: any, scenario: Scenario, exampleIndex: number, passing: boolean, examplesComplete: Function) {
         try {
             const next = conditions[conditionIndex];
             const nextConditionIndex = conditionIndex + 1;
             let timer: any = null;
+
+            console.log('BEFORE CONDITION ' + next.condition);
 
             this.currentCondition = next.condition;
 
@@ -110,6 +152,8 @@ export class FeatureRunner {
                 if (timer) {
                     clearTimeout(timer);
                 }
+
+                console.log('AFTER CONDITION ' + next.condition);
 
                 if (nextConditionIndex < conditions.length) {
                     this.runNextCondition(conditions, nextConditionIndex, context, scenario, exampleIndex, passing, examplesComplete);
@@ -130,6 +174,7 @@ export class FeatureRunner {
 
             const isAsync = stepExecution.isAsync;
 
+
             if (stepExecution.parameters) {
                 // Add the context container as the first argument
                 stepExecution.parameters.unshift(context);
@@ -142,10 +187,9 @@ export class FeatureRunner {
 
             if (isAsync) {
                 timer = setTimeout(() => {
-                    console.log('Timer Expired');
+                    passing = false;
                     this.testReporter.error('Async Exception', condition, new Error('Async step timed out'));
-                    this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, false);
-                    examplesComplete();
+                    examplesComplete(true);
                 }, this.asyncTimeout);
             } else {
                 context.done();

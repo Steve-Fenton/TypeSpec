@@ -100,3 +100,13 @@ export interface ITestReporter {
     information(message: string): void;
     complete(): void;
 }
+
+export interface ITestHooks {
+    beforeTestRun(): void;
+    beforeFeature(): void;
+    beforeScenario: void;
+
+    afterScenario: void;
+    afterFeature(): void;
+    afterTestRun(): void;
+}

@@ -1,19 +1,43 @@
-﻿import {ITestReporter} from './Keyword';
-import {ExpressionLibrary} from './RegEx';
-import {StepCollection, StepType} from './Steps';
-import {Scenario, InitializedState, FeatureState} from './State';
+﻿import { ITestReporter, ITestHooks } from './Keyword';
+import { ExpressionLibrary } from './RegEx';
+import { StepCollection, StepType } from './Steps';
+import { Scenario, InitializedState, FeatureState } from './State';
 
 export class FeatureParser {
     public scenarios: Scenario[] = [];
     private scenarioIndex = 0;
     private featureRunner: FeatureRunner;
+    private hasParsed = false;
 
-    constructor(private steps: StepCollection, private testReporter: ITestReporter, private tagsToExclude: string[]) {
+    constructor(private testReporter: ITestReporter, testHooks: ITestHooks, private steps: StepCollection, private tagsToExclude: string[]) {
         this.scenarios[this.scenarioIndex] = new InitializedState(this.tagsToExclude);
-        this.featureRunner = new FeatureRunner(steps, testReporter);
+        this.featureRunner = new FeatureRunner(steps, testReporter, testHooks);
     }
 
-    process(line: string) {
+    run(spec: string, afterFeatureHandler: Function) {
+        this.parseSpecification(spec);
+        this.runFeature(afterFeatureHandler);
+    }
+
+    private parseSpecification(spec: string): void {
+        this.hasParsed = true;
+
+        /* Normalise line endings before splitting */
+        const lines = spec.replace('\r\n', '\n').split('\n');
+
+        /* Parse the steps */
+        for (const line of lines) {
+            try {
+                this.process(line);
+            } catch (ex) {
+                this.hasParsed = false;
+                const state = this.scenarios[0] || { featureTitle: 'Unknown' };
+                this.testReporter.error(state.featureTitle, line, ex);
+            }
+        }
+    }
+
+    private process(line: string) {
         if (this.scenarios[this.scenarioIndex].isNewScenario(line)) {
             // This is an additional scenario within the same feature file.
             const existingFeatureTitle = this.scenarios[this.scenarioIndex].featureTitle;
@@ -31,54 +55,64 @@ export class FeatureParser {
         this.scenarios[this.scenarioIndex] = this.scenarios[this.scenarioIndex].process(line);
     }
 
-    runFeature(featureComplete: Function) {
-        this.featureRunner.run(this.scenarios, featureComplete);
+    private runFeature(afterFeatureHandler: Function) {
+        if (this.hasParsed) {
+            this.featureRunner.run(this.scenarios, afterFeatureHandler);
+        } else {
+            afterFeatureHandler();
+        }
     }
 }
 
-export class FeatureRunner {
+class FeatureRunner {
     private scenarios: Scenario[] = [];
     private currentCondition = '';
     private asyncTimeout = 1000; // TODO: Make user configurable
 
-    constructor(private steps: StepCollection, private testReporter: ITestReporter) {
+    constructor(private steps: StepCollection, private testReporter: ITestReporter, private testHooks: ITestHooks) {
 
     }
 
     // HOOK BEFORE / AFTER FEATURE
-    run(scenarios: Scenario[], featureComplete: Function) {
+    run(scenarios: Scenario[], afterFeatureHandler: Function) {
+        this.testHooks.beforeFeature();
+
         this.scenarios = scenarios;
 
         let completedScenarios = 0;
-        const scenarioComplete = () => {
+        const afterScenarioHandler = () => {
+            this.testHooks.afterScenario();
             completedScenarios++;
             if (completedScenarios === this.scenarios.length) {
-                featureComplete();
+                afterFeatureHandler();
             }
         };
 
         // Each Scenario
         for (const scenario of this.scenarios) {
+
+            this.testHooks.beforeScenario();
+
             if (!scenario.scenarioTitle) {
-                this.testReporter.information(scenario.featureTitle + ' has an ignored scenario, or a scenario missing a title.');
-                scenarioComplete();
+                this.testReporter.summary(scenario.featureTitle, 'Ignored', true);
+                afterScenarioHandler();
                 continue;
             }
 
-            this.runScenario(scenario, scenarioComplete);
+            this.runScenario(scenario, afterScenarioHandler);
         }
     }
 
     // HOOK BEFORE / AFTER SCENARIO
-    private runScenario(scenario: Scenario, scenarioComplete: Function) {
+    private runScenario(scenario: Scenario, scenarioCompleteHandler: Function) {
         const tableRowCount = (scenario.tableRows.length > 0) ? scenario.tableRows.length : 1;
 
         let completedExamples = 0;
 
-        const examplesComplete = (fail: boolean = false) => {
+        const examplesCompleteHandler = () => {
             completedExamples++;
-            if (completedExamples === tableRowCount || fail) {
-                scenarioComplete();
+            if (completedExamples === tableRowCount) {
+                scenarioCompleteHandler();
             }
         };
 
@@ -93,7 +127,7 @@ export class FeatureRunner {
 
                 // Process the scenario steps
                 const conditions = scenario.getAllConditions();
-                this.runNextCondition(conditions, 0, context, scenario, exampleIndex, true, examplesComplete);
+                this.runNextCondition(conditions, 0, context, scenario, exampleIndex, true, examplesCompleteHandler);
 
             } catch (ex) {
                 this.testReporter.error(scenario.featureTitle, this.currentCondition, ex);
@@ -102,24 +136,36 @@ export class FeatureRunner {
     }
 
     // HOOK BEFORE / AFTER CONDITION
-    private runNextCondition(conditions: { condition: string; type: StepType; }[], conditionIndex: number, context: any, scenario: Scenario, exampleIndex: number, passing: boolean, examplesComplete: Function) {
+    private runNextCondition(conditions: { condition: string; type: StepType; }[], conditionIndex: number, context: any, scenario: Scenario, exampleIndex: number, passing: boolean, examplesCompleteHandler: Function) {
         try {
             const next = conditions[conditionIndex];
             const nextConditionIndex = conditionIndex + 1;
+            let completionHandled = false;
             let timer: any = null;
+
+            this.testHooks.beforeCondition();
 
             this.currentCondition = next.condition;
 
+            /* Handler to run after the condition completes... */
             context.done = () => {
+                if (completionHandled) {
+                    return;
+                }
+
+                completionHandled = true;
+
                 if (timer) {
                     clearTimeout(timer);
                 }
 
+                this.testHooks.afterCondition();
+
                 if (nextConditionIndex < conditions.length) {
-                    this.runNextCondition(conditions, nextConditionIndex, context, scenario, exampleIndex, passing, examplesComplete);
+                    this.runNextCondition(conditions, nextConditionIndex, context, scenario, exampleIndex, passing, examplesCompleteHandler);
                 } else {
                     this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passing);
-                    examplesComplete();
+                    examplesCompleteHandler();
                 }
             }
 
@@ -134,6 +180,7 @@ export class FeatureRunner {
 
             const isAsync = stepExecution.isAsync;
 
+
             if (stepExecution.parameters) {
                 // Add the context container as the first argument
                 stepExecution.parameters.unshift(context);
@@ -146,9 +193,16 @@ export class FeatureRunner {
 
             if (isAsync) {
                 timer = setTimeout(() => {
+                    if (completionHandled) {
+                        return;
+                    }
+
+                    completionHandled = true;
+
                     passing = false;
                     this.testReporter.error('Async Exception', condition, new Error('Async step timed out'));
-                    examplesComplete(true);
+                    this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passing);
+                    examplesCompleteHandler();
                 }, this.asyncTimeout);
             } else {
                 context.done();
@@ -157,7 +211,7 @@ export class FeatureRunner {
             passing = false;
             this.testReporter.error(scenario.featureTitle, this.currentCondition, ex);
             this.testReporter.summary(scenario.featureTitle, scenario.scenarioTitle, passing);
-            examplesComplete();
+            examplesCompleteHandler();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿Feature: Basic Working Example
+﻿Feature: Excluded by Tag
     In order to avoid silly mistakes
     As a math idiot
     I want to be told the sum of two numbers

@@ -1,5 +1,5 @@
-﻿import {ExpressionLibrary} from './RegEx';
-import {ITestReporter} from './Keyword';
+﻿import { ExpressionLibrary } from './RegEx';
+import { ITestReporter } from './Keyword';
 
 export class StepDefinition {
     constructor(public expression: RegExp, public step: Function, public isAsync: boolean, public type: StepType) { }

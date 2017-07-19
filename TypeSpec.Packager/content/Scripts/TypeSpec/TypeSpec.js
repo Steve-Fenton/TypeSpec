@@ -1,35 +1,27 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 (function (factory) {
     if (typeof module === "object" && typeof module.exports === "object") {
         var v = factory(require, exports);
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "./Parser", "./Steps"], factory);
+        define(["require", "exports", "./Parser", "./FileSystem", "./Steps"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Parser_1 = require("./Parser");
+    var FileSystem_1 = require("./FileSystem");
     var Steps_1 = require("./Steps");
     var SpecRunner = (function () {
         function SpecRunner(testReporter) {
             if (testReporter === void 0) { testReporter = new TestReporter(); }
             this.testReporter = testReporter;
             this.excludedTags = [];
+            this.urls = [];
             this.expectedFiles = 0;
             this.completedFiles = 0;
             this.steps = new Steps_1.StepCollection(testReporter);
-            this.fileReader = FileReader.getInstance(this.testReporter);
+            this.fileReader = FileSystem_1.FileReader.getInstance(this.testReporter);
         }
         SpecRunner.prototype.addStep = function (expression, step) {
             this.steps.add(expression, step, false);
@@ -61,16 +53,18 @@ var __extends = (this && this.__extends) || (function () {
                 url[_i] = arguments[_i];
             }
             this.expectedFiles = url.length;
-            this.readFile(0, url);
+            this.urls = url;
+            this.readFile(0);
         };
         SpecRunner.prototype.runInRandomOrder = function () {
             var url = [];
             for (var _i = 0; _i < arguments.length; _i++) {
                 url[_i] = arguments[_i];
             }
-            this.expectedFiles = url.length;
             var specList = new SpecificationList(url);
-            this.readFile(0, specList.randomise());
+            this.expectedFiles = url.length;
+            this.urls = specList.randomise();
+            this.readFile(0);
         };
         SpecRunner.prototype.excludeTags = function () {
             var tags = [];
@@ -82,109 +76,32 @@ var __extends = (this && this.__extends) || (function () {
                 this.excludedTags.push(tag.replace(/@/g, ''));
             }
         };
-        SpecRunner.prototype.fileCompleted = function () {
+        SpecRunner.prototype.fileCompleted = function (index) {
             this.completedFiles++;
             if (this.completedFiles === this.expectedFiles) {
                 this.testReporter.complete();
             }
+            else {
+                this.readFile(index);
+            }
         };
-        SpecRunner.prototype.readFile = function (index, urls) {
+        SpecRunner.prototype.readFile = function (index) {
             var _this = this;
-            if (index < urls.length) {
+            // TODO: Probably need a timeout per file as if the test ran "forever" the test would never pass or fail
+            if (index < this.urls.length) {
                 var nextIndex_1 = index + 1;
-                this.fileReader.getFile(urls[index], function (responseText) {
-                    _this.processSpecification(responseText, function () { return _this.fileCompleted(); });
-                    _this.readFile(nextIndex_1, urls);
+                this.fileReader.getFile(this.urls[index], function (responseText) {
+                    _this.processSpecification(responseText, function () { return _this.fileCompleted(nextIndex_1); });
                 });
             }
         };
-        SpecRunner.prototype.processSpecification = function (spec, fileComplete) {
-            var hasParsed = true;
-            var composer = new Parser_1.FeatureParser(this.steps, this.testReporter, this.excludedTags);
-            /* Normalise line endings before splitting */
-            var lines = spec.replace('\r\n', '\n').split('\n');
-            for (var _i = 0, lines_1 = lines; _i < lines_1.length; _i++) {
-                var line = lines_1[_i];
-                try {
-                    composer.process(line);
-                }
-                catch (ex) {
-                    hasParsed = false;
-                    var state = composer.scenarios[0] || { featureTitle: 'Unknown' };
-                    this.testReporter.error(state.featureTitle, line, ex);
-                }
-            }
-            if (hasParsed) {
-                console.log('RUNNING FEATURE');
-                composer.runFeature(fileComplete);
-                console.log('FEATURE DONE');
-            }
-            else {
-                fileComplete();
-            }
+        SpecRunner.prototype.processSpecification = function (spec, featureCompleteHandler) {
+            var featureParser = new Parser_1.FeatureParser(this.steps, this.testReporter, this.excludedTags);
+            featureParser.run(spec, featureCompleteHandler);
         };
         return SpecRunner;
     }());
     exports.SpecRunner = SpecRunner;
-    var FileReader = (function () {
-        function FileReader() {
-        }
-        FileReader.getInstance = function (testReporter) {
-            if (typeof window !== 'undefined') {
-                return new BrowserFileReader(testReporter);
-            }
-            return new NodeFileReader(testReporter);
-        };
-        return FileReader;
-    }());
-    var BrowserFileReader = (function (_super) {
-        __extends(BrowserFileReader, _super);
-        function BrowserFileReader(testReporter) {
-            var _this = _super.call(this) || this;
-            _this.testReporter = testReporter;
-            return _this;
-        }
-        BrowserFileReader.prototype.getFile = function (url, successCallback) {
-            var _this = this;
-            var cacheBust = '?cb=' + new Date().getTime();
-            var client = new XMLHttpRequest();
-            client.open('GET', url + cacheBust);
-            client.onreadystatechange = function () {
-                if (client.readyState === 4) {
-                    if (client.status === 200) {
-                        successCallback(client.responseText);
-                    }
-                    else {
-                        _this.testReporter.error('getFile', url, new Error('Error loading specification: ' + client.statusText + ' (' + client.status + ').'));
-                    }
-                }
-            };
-            client.send();
-        };
-        return BrowserFileReader;
-    }(FileReader));
-    var NodeFileReader = (function (_super) {
-        __extends(NodeFileReader, _super);
-        function NodeFileReader(testReporter) {
-            var _this = _super.call(this) || this;
-            _this.testReporter = testReporter;
-            return _this;
-        }
-        NodeFileReader.prototype.getFile = function (url, successCallback) {
-            var _this = this;
-            var fs = require('fs');
-            var path = require('path');
-            // Make the path relative in Node's terms and resolve it
-            var resolvedUrl = path.resolve('.' + url);
-            fs.readFile(resolvedUrl, 'utf8', function (err, data) {
-                if (err) {
-                    _this.testReporter.error('getNodeFile', url, new Error('Error loading specification: ' + err + ').'));
-                }
-                successCallback(data);
-            });
-        };
-        return NodeFileReader;
-    }(FileReader));
     var SpecificationList = (function () {
         function SpecificationList(specifications) {
             this.specifications = specifications;
