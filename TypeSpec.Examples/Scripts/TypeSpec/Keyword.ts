@@ -14,11 +14,11 @@
     And
 }
 
-class KeywordMap {
+interface KeywordMap {
     [key: string]: KeywordType;
 }
 
-class KeywordTypeMap {
+interface KeywordTypeMap {
     [key: number]: string;
 }
 
@@ -57,12 +57,12 @@ export class Keywords {
     }
 
     public is(text: string, keywordType: KeywordType) {
-        var keyword = this.KeywordTypeMap[keywordType];
+        const keyword = this.KeywordTypeMap[keywordType];
         return (text.length >= keyword.length && text.substring(0, keyword.length) === keyword);
     }
 
     public trimKeyword(text: string, keywordType: KeywordType) {
-        var keyword = this.KeywordTypeMap[keywordType];
+        const keyword = this.KeywordTypeMap[keywordType];
         return text.substring(keyword.length).trim();
     }
 
@@ -92,11 +92,23 @@ export class Keywords {
     }
 }
 
-export var Keyword = new Keywords();
+export const Keyword = new Keywords();
 
 export interface ITestReporter {
     summary(featureTitle: string, scenarioTitle: string, isSuccess: boolean): void;
     error(featureTitle: string, condition: string, error: Error): void;
     information(message: string): void;
     complete(): void;
+}
+
+export interface ITestHooks {
+    beforeTestRun(): void;
+    beforeFeature(): void;
+    beforeScenario(): void;
+    beforeCondition(): void;
+
+    afterCondition(): void;
+    afterScenario(): void;
+    afterFeature(): void;
+    afterTestRun(): void;
 }

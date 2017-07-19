@@ -8,6 +8,6 @@
     "email": ""
   },
   "dependencies": {
-    "typespec-bdd": "^0.6.3"
+    "typespec-bdd": "^0.6.8"
   }
 }

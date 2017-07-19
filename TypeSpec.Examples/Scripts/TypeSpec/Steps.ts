@@ -1,5 +1,5 @@
-﻿import {ExpressionLibrary} from './RegEx';
-import {ITestReporter} from './Keyword';
+﻿import { ExpressionLibrary } from './RegEx';
+import { ITestReporter } from './Keyword';
 
 export class StepDefinition {
     constructor(public expression: RegExp, public step: Function, public isAsync: boolean, public type: StepType) { }
@@ -26,27 +26,24 @@ export class StepCollection {
     }
 
     find(text: string, type: StepType) {
-        var i: number;
-        var foundStepOfType: StepType[] = [];
+        let foundStepTypes: StepType[] = [];
 
-        for (i = 0; i < this.steps.length; i++) {
-            var step = this.steps[i];
+        for (const step of this.steps) {
             if (text.match(step.expression)) {
-
                 if (!((type & step.type) === type)) {
-                    foundStepOfType.push(step.type);
+                    foundStepTypes.push(step.type);
                     continue;
                 }
 
-                var params = this.getParams(text, ExpressionLibrary.defaultStepRegExp, step.expression);
+                let params = this.getParams(text, ExpressionLibrary.defaultStepRegExp, step.expression);
                 return new StepExecution(step.step, step.isAsync, params);
             }
         }
 
-        if (foundStepOfType.length > 0) {
-            var error = 'Found matching steps, but of type(s): ';
-            for (i = 0; i < foundStepOfType.length; i++) {
-                error += StepType[foundStepOfType[i]] + ', ';
+        if (foundStepTypes.length > 0) {
+            let error = 'Found matching steps, but of type(s): ';
+            for (const foundStepType of foundStepTypes) {
+                error += StepType[foundStepType] + ', ';
             }
             error += ' but not ' + StepType[type];
 
@@ -59,45 +56,35 @@ export class StepCollection {
     getParams(text: string, parameterExpression: RegExp, findExpression: RegExp): any[] {
         if (parameterExpression) {
 
-            var typeIndicators = findExpression.source.toString().match(ExpressionLibrary.regexFinderRegExp);
-            var params = text.match(parameterExpression);
+            const typeIndicators = findExpression.source.toString().match(ExpressionLibrary.regexFinderRegExp);
+            const matches = text.match(findExpression);
 
-            if (!params) {
+            if (!matches) {
                 return [];
             }
 
-            for (var i = 0; i < params.length; i++) {
-                // Remove leading and trailing quotes
-                var val: any = params[i];
+            let result: any[] = [];
+            for (let i = 1; i < matches.length; i++) {
+                let match = matches[i];
+                match = match.replace(/^"(.+(?="$))"$/, '$1');
+                match = match.replace(/^'(.+(?='$))'$/, '$1');
 
-                if (val.substr(0, 1) === '"') {
-                    val = val.substr(1);
+                const paramIndex = i - 1;
+                const indicator = typeIndicators[i - 1] || '';
+
+                switch (indicator) {
+                    case "\\d+":
+                        result[paramIndex] = parseFloat(match);
+                        break;
+                    case "(\\\"true\\\"|\\\"false\\\")":
+                        result[paramIndex] = ((<string>match).toLowerCase() === 'true');
+                        break;
+                    default:
+                        result[paramIndex] = match;
                 }
-
-                if (val.substr(-1) === '"') {
-                    val = val.substr(0, val.length - 1);
-                }
-
-                // Replace escaped quotes
-                val = val.replace(/\\\"/g, '"');
-
-                if (typeIndicators !== null && typeIndicators[i]) {
-                    var indicator = typeIndicators[i];
-
-                    switch (indicator) {
-                        case "\\d+":
-                            val = parseFloat(val);
-                            break;
-                        case "(\\\"true\\\"|\\\"false\\\")", "(\\\"true\\\"|\\\"false\\\")":
-                            val = ((<string>val).toLowerCase() === 'true');
-                            break;
-                    }
-                }
-
-                params[i] = val;
             }
 
-            return params;
+            return result;
         }
 
         return [];

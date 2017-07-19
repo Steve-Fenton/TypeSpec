@@ -1,7 +1,7 @@
 ﻿import { FeatureParser } from './Parser';
 import { FileReaderCallback, FileReader, BrowserFileReader, NodeFileReader } from './FileSystem';
 import { StepCollection, StepType } from './Steps';
-import { ITestReporter } from './Keyword';
+import { ITestReporter, ITestHooks } from './Keyword';
 
 export class SpecRunner {
     private steps: StepCollection;
@@ -13,7 +13,7 @@ export class SpecRunner {
     private expectedFiles = 0;
     private completedFiles = 0;
 
-    constructor(private testReporter: ITestReporter = new TestReporter()) {
+    constructor(private testReporter: ITestReporter = new TestReporter(), private testHooks: ITestHooks = new TestHooks()) {
         this.steps = new StepCollection(testReporter);
         this.fileReader = FileReader.getInstance(this.testReporter);
     }
@@ -79,19 +79,24 @@ export class SpecRunner {
     }
 
     private readFile(index: number) {
-        // TODO: Probably need a timeout per file as if the test ran "forever" the test would never pass or fail
+        // TODO: Probably need a timeout per file as if the test ran "forever" the overall test would never pass or fail
         if (index < this.urls.length) {
             const nextIndex = index + 1;
 
+            const afterFeatureHandler = () => {
+                this.testHooks.afterFeature();
+                this.fileCompleted(nextIndex);
+            };
+
             this.fileReader.getFile(this.urls[index], (responseText: string) => {
-                this.processSpecification(responseText, () => this.fileCompleted(nextIndex));
+                this.processSpecification(responseText, afterFeatureHandler);
             });
         }
     }
 
-    private processSpecification(spec: string, featureCompleteHandler: Function) {
-        const featureParser = new FeatureParser(this.steps, this.testReporter, this.excludedTags);
-        featureParser.run(spec, featureCompleteHandler);
+    private processSpecification(spec: string, afterFeatureHandler: Function) {
+        const featureParser = new FeatureParser(this.testReporter, this.testHooks, this.steps, this.excludedTags);
+        featureParser.run(spec, afterFeatureHandler);
     }
 }
 
@@ -113,6 +118,32 @@ export class SpecificationList {
 
     private getRandomInt(min: number, max: number) {
         return Math.floor(Math.random() * (max - min)) + min;
+    }
+}
+
+export class TestHooks implements ITestHooks {
+    beforeTestRun(): void {
+    }
+
+    beforeFeature(): void {
+    }
+
+    beforeScenario(): void {
+    }
+
+    beforeCondition(): void {
+    }
+
+    afterCondition(): void {
+    }
+
+    afterScenario(): void {
+    }
+
+    afterFeature(): void {
+    }
+
+    afterTestRun(): void {
     }
 }
 

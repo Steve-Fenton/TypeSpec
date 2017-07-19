@@ -123,35 +123,27 @@ export class SpecificationList {
 
 export class TestHooks implements ITestHooks {
     beforeTestRun(): void {
-        console.info('Run Started');
     }
 
     beforeFeature(): void {
-        console.info('|--Feature Started');
     }
 
     beforeScenario(): void {
-        console.info('|--|--Scenario Started');
     }
 
     beforeCondition(): void {
-        console.info('|--|--|--Condition Started');
     }
 
     afterCondition(): void {
-        console.info('|--|--|--Condition Ended');
     }
 
     afterScenario(): void {
-        console.info('|--|--Scenario Ended');
     }
 
     afterFeature(): void {
-        console.info('|--Feature Ended');
     }
 
     afterTestRun(): void {
-        console.info('Run Ended');
     }
 }
 

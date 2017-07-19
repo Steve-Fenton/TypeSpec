@@ -1,5 +1,5 @@
-﻿import {Keyword, KeywordType} from './Keyword';
-import {StepType} from './Steps';
+﻿import { Keyword, KeywordType } from './Keyword';
+import { StepType } from './Steps';
 
 export class Scenario {
     public givens: string[] = [];
@@ -37,23 +37,23 @@ export class Scenario {
     getAllConditions() {
         var conditions: { condition: string; type: StepType; }[] = [];
 
-        for (var i = 0; i < this.givens.length; i++) {
+        for (const given of this.givens) {
             conditions.push({
-                condition: this.givens[i],
+                condition: given,
                 type: StepType.Given
             });
         }
 
-        for (var i = 0; i < this.whens.length; i++) {
+        for (const when of this.whens) {
             conditions.push({
-                condition: this.whens[i],
+                condition: when,
                 type: StepType.When
             });
         }
 
-        for (var i = 0; i < this.thens.length; i++) {
+        for (const then of this.thens) {
             conditions.push({
-                condition: this.thens[i],
+                condition: then,
                 type: StepType.Then
             });
         }
@@ -63,9 +63,9 @@ export class Scenario {
 
     prepareCondition(condition: string, index: number) {
         if (this.tableRows.length > index) {
-            var data: any = this.tableRows[index];
-            for (var prop in data) {
-                var token = Keyword.getToken(prop);
+            const data: any = this.tableRows[index];
+            for (const prop in data) {
+                const token = Keyword.getToken(prop);
                 condition = condition.replace(token, data[prop]);
             }
         }
@@ -124,8 +124,8 @@ export class Scenario {
     }
 
     isTagExcluded(tag: string) {
-        for (var i = 0; i < this.tagsToExclude.length; i++) {
-            if (this.tagsToExclude[i] === tag) {
+        for (const excludedTag of this.tagsToExclude) {
+            if (tag === excludedTag) {
                 return true;
             }
         }
@@ -180,10 +180,6 @@ export class Scenario {
     table(line: string): Scenario {
         throw new Error('Did not expect line: ' + line);
     }
-
-    //protected trimLine(text: string, keyword: string) {
-    //    return text.substring(keyword.length).trim()
-    //}
 }
 
 /*
@@ -217,10 +213,11 @@ export class FeatureState extends Scenario {
     }
 
     tag(line: string): Scenario {
-        var tags = Keyword.getTags(line);
-        var trimmedTags: string[] = [];
-        for (var i = 0; i < tags.length; i++) {
-            var trimmedTag = tags[i].trim().toLowerCase();
+        const tags = Keyword.getTags(line);
+        let trimmedTags: string[] = [];
+
+        for (let i = 0; i < tags.length; i++) {
+            const trimmedTag = tags[i].trim().toLowerCase();
             if (trimmedTag) {
                 if (this.isTagExcluded(trimmedTag)) {
                     // Exclude this scenario...
@@ -382,9 +379,10 @@ class ExampleState extends Scenario {
     }
 
     table(line: string): Scenario {
-        var headings = Keyword.getTableRow(line);
-        for (var i = 0; i < headings.length; i++) {
-            var trimmedHeading = headings[i].trim();
+        const headings = Keyword.getTableRow(line);
+
+        for (const heading of headings) {
+            const trimmedHeading = heading.trim();
             this.tableHeaders.push(trimmedHeading);
         }
         return new TableState(this);
@@ -397,15 +395,18 @@ class TableState extends Scenario {
     }
 
     table(line: string): Scenario {
-        var data = Keyword.getTableRow(line);
-        var row: any = {};
-        for (var i = 0; i < data.length; i++) {
-            var trimmedData = data[i].trim();
+        const data = Keyword.getTableRow(line);
+        let row: any = {};
+
+        for (let i = 0; i < data.length; i++) {
+            const trimmedData = data[i].trim();
             if (this.tableHeaders[i]) {
                 row[this.tableHeaders[i]] = trimmedData;
             }
         }
+
         this.tableRows.push(row);
+
         return this;
     }
 }

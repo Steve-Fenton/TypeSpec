@@ -31,6 +31,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
     <TypeScriptCompile Include="Scripts\Calculator.ts" />
+    <TypeScriptCompile Include="Scripts\TypeSpec\FileSystem.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\Keyword.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\Parser.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\RegEx.ts" />
@@ -42,9 +43,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
-    <Content Include="Scripts\TypeSpec\README.md" />
-    <Content Include="Scripts\TypeSpec\package.json" />
-    <Content Include="Scripts\TypeSpec\npm-publish.bat" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -52,6 +50,7 @@
       <DependentUpon>web.config</DependentUpon>
     </None>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
   </PropertyGroup>

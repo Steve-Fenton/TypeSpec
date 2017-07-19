@@ -1,19 +1,19 @@
-﻿import {FeatureParser} from './Parser';
-import {StepCollection, StepType} from './Steps';
-import {ITestReporter} from './Keyword';
-
-declare var require: any;
+﻿import { FeatureParser } from './Parser';
+import { FileReaderCallback, FileReader, BrowserFileReader, NodeFileReader } from './FileSystem';
+import { StepCollection, StepType } from './Steps';
+import { ITestReporter, ITestHooks } from './Keyword';
 
 export class SpecRunner {
     private steps: StepCollection;
     private excludedTags: string[] = [];
+    private urls: string[] = [];
 
     private fileReader: FileReader;
 
     private expectedFiles = 0;
     private completedFiles = 0;
 
-    constructor(private testReporter: ITestReporter = new TestReporter()) {
+    constructor(private testReporter: ITestReporter = new TestReporter(), private testHooks: ITestHooks = new TestHooks()) {
         this.steps = new StepCollection(testReporter);
         this.fileReader = FileReader.getInstance(this.testReporter);
     }
@@ -52,122 +52,51 @@ export class SpecRunner {
 
     run(...url: string[]) {
         this.expectedFiles = url.length;
-        this.readFile(0, url);
+        this.urls = url;
+        this.readFile(0);
     }
 
     runInRandomOrder(...url: string[]) {
+        const specList = new SpecificationList(url);
         this.expectedFiles = url.length;
-        var specList = new SpecificationList(url);
-        this.readFile(0, specList.randomise());
+        this.urls = specList.randomise();
+        this.readFile(0);
     }
 
     excludeTags(...tags: string[]) {
-        for (var i = 0; i < tags.length; i++) {
-            this.excludedTags.push(tags[i].replace(/@/g, ''));
+        for(const tag of tags) {
+            this.excludedTags.push(tag.replace(/@/g, ''));
         }
     }
 
-    private fileCompleted() {
+    private fileCompleted(index: number) {
         this.completedFiles++;
         if (this.completedFiles === this.expectedFiles) {
             this.testReporter.complete();
+        } else {
+            this.readFile(index);
         }
     }
 
-    private readFile(index: number, urls: string[]) {
-        if (index < urls.length) {
-            var nextIndex = index + 1;
+    private readFile(index: number) {
+        // TODO: Probably need a timeout per file as if the test ran "forever" the overall test would never pass or fail
+        if (index < this.urls.length) {
+            const nextIndex = index + 1;
 
-            this.fileReader.getFile(urls[index], (responseText: string) => {
-                this.processSpecification(responseText, () => this.fileCompleted());
-                this.readFile(nextIndex, urls);
+            const afterFeatureHandler = () => {
+                this.testHooks.afterFeature();
+                this.fileCompleted(nextIndex);
+            };
+
+            this.fileReader.getFile(this.urls[index], (responseText: string) => {
+                this.processSpecification(responseText, afterFeatureHandler);
             });
         }
     }
 
-    private processSpecification(spec: string, fileComplete: Function) {
-        var hasParsed = true;
-        var composer = new FeatureParser(this.steps, this.testReporter, this.excludedTags);
-
-        /* Normalise line endings before splitting */
-        var lines = spec.replace('\r\n', '\n').split('\n');
-
-        for (var i = 0; i < lines.length; i++) {
-            var line = lines[i];
-
-            try {
-                composer.process(line);
-            } catch (ex) {
-                hasParsed = false;
-                var state = composer.scenarios[0] || { featureTitle: 'Unknown' };
-                this.testReporter.error(state.featureTitle, line, ex);
-            }
-        }
-
-        if (hasParsed) {
-            composer.runFeature(fileComplete);
-        } else {
-            fileComplete();
-        }
-    }
-}
-
-interface FileReaderCallback {
-    (responseText: string): void;
-}
-
-abstract class FileReader {
-    static getInstance(testReporter: ITestReporter) : FileReader {
-        if (typeof window !== 'undefined') {
-            return new BrowserFileReader(testReporter);
-        }
-
-        return new NodeFileReader(testReporter);
-    }
-
-    abstract getFile(url: string, successCallback: FileReaderCallback) : void;
-}
-
-class BrowserFileReader extends FileReader {
-    constructor(private testReporter: ITestReporter) {
-        super();
-    }
-
-    getFile(url: string, successCallback: FileReaderCallback) {
-        var cacheBust = '?cb=' + new Date().getTime();
-        var client = new XMLHttpRequest();
-        client.open('GET', url + cacheBust);
-        client.onreadystatechange = () => {
-            if (client.readyState === 4) {
-                if (client.status === 200) {
-                    successCallback(client.responseText);
-                } else {
-                    this.testReporter.error('getFile', url, new Error('Error loading specification: ' + client.statusText + ' (' + client.status + ').'));
-                }
-            }
-        }
-        client.send();
-    }
-}
-
-class NodeFileReader extends FileReader {
-    constructor(private testReporter: ITestReporter) {
-        super();
-    }
-
-    getFile(url: string, successCallback: FileReaderCallback) {
-        var fs: any = require('fs');
-        var path: any = require('path');
-
-        // Make the path relative in Node's terms and resolve it
-        var resolvedUrl = path.resolve('.' + url);
-
-        fs.readFile(resolvedUrl, 'utf8', (err: any, data: string) => {
-            if (err) {
-                this.testReporter.error('getNodeFile', url, new Error('Error loading specification: ' + err + ').'));
-            }
-            successCallback(data);
-        });
+    private processSpecification(spec: string, afterFeatureHandler: Function) {
+        const featureParser = new FeatureParser(this.testReporter, this.testHooks, this.steps, this.excludedTags);
+        featureParser.run(spec, afterFeatureHandler);
     }
 }
 
@@ -176,10 +105,10 @@ export class SpecificationList {
     }
 
     randomise() {
-        var orderedSpecs: string[] = [];
+        let orderedSpecs: string[] = [];
 
         while (this.specifications.length > 0) {
-            var index = this.getRandomInt(0, this.specifications.length);
+            const index = this.getRandomInt(0, this.specifications.length);
             orderedSpecs.push(this.specifications[index]);
             this.specifications.splice(index, 1);
         }
@@ -189,6 +118,32 @@ export class SpecificationList {
 
     private getRandomInt(min: number, max: number) {
         return Math.floor(Math.random() * (max - min)) + min;
+    }
+}
+
+export class TestHooks implements ITestHooks {
+    beforeTestRun(): void {
+    }
+
+    beforeFeature(): void {
+    }
+
+    beforeScenario(): void {
+    }
+
+    beforeCondition(): void {
+    }
+
+    afterCondition(): void {
+    }
+
+    afterScenario(): void {
+    }
+
+    afterFeature(): void {
+    }
+
+    afterTestRun(): void {
     }
 }
 
@@ -239,8 +194,9 @@ export class TapReporter implements ITestReporter {
 
     complete() {
         console.log('1..' + this.results.length);
-        for (var i = 0; i < this.results.length; i++) {
-            console.log(this.results[i].output());
+
+        for (const result of this.results) {
+            console.log(result.output());
         }
     }
 }
@@ -272,7 +228,7 @@ export class Assert {
 
     public static areCollectionsIdentical(expected: any[], actual: any[], message = ''): void {
         function resultToString(result: number[]): string {
-            var msg = '';
+            let msg = '';
 
             while (result.length > 0) {
                 msg = '[' + result.pop() + ']' + msg;
@@ -282,7 +238,7 @@ export class Assert {
         }
 
         var compareArray = (expected: any[], actual: any[], result: number[]): void => {
-            var indexString = '';
+            let indexString = '';
 
             if (expected === null) {
                 if (actual !== null) {
@@ -386,7 +342,7 @@ export class Assert {
     public static throws(params: IThrowsParameters): void;
     public static throws(actual: () => void, message?: string): void;
     public static throws(a: any, message = '', errorString = '') {
-        var actual: () => void;
+        let actual: () => void;
 
         if (typeof a === 'function') {
             actual = a;
@@ -396,7 +352,8 @@ export class Assert {
             errorString = a.exceptionString;
         }
 
-        var isThrown = false;
+        let isThrown = false;
+
         try {
             actual();
         } catch (ex) {
@@ -407,8 +364,8 @@ export class Assert {
             if (errorString && ex.message !== errorString) {
                 throw this.getError('different error string than supplied');
             }
-
         }
+
         if (!isThrown) {
             throw this.getError('did not throw an error', message || '');
         }
@@ -431,7 +388,7 @@ export class Assert {
             return Math.round(value * 100) / 100;
         }
 
-        var startOfExecution = getTime();
+        const startOfExecution = getTime();
 
         try {
             actual();
@@ -439,7 +396,8 @@ export class Assert {
             throw this.getError('isExecuteTimeLessThanLimit fails when given code throws an exception: "' + ex + '"', message);
         }
 
-        var executingTime = getTime() - startOfExecution;
+        const executingTime = getTime() - startOfExecution;
+
         if (executingTime > timeLimit) {
             throw this.getError('isExecuteTimeLessThanLimit fails when execution time of given code (' + timeToString(executingTime) + ' ms) ' +
                 'exceed the given limit(' + timeToString(timeLimit) + ' ms)',
@@ -461,8 +419,8 @@ export class Assert {
 
     private static getNameOfClass(inputClass: {}) {
         // see: https://www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
-        var funcNameRegex = /function (.{1,})\(/;
-        var results = (funcNameRegex).exec((<any>inputClass).constructor.toString());
+        const funcNameRegex = /function (.{1,})\(/;
+        const results = (funcNameRegex).exec((<any>inputClass).constructor.toString());
         return (results && results.length > 1) ? results[1] : '';
     }
 

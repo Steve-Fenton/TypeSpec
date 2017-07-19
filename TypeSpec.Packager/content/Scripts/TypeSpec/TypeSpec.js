@@ -13,9 +13,11 @@
     var FileSystem_1 = require("./FileSystem");
     var Steps_1 = require("./Steps");
     var SpecRunner = (function () {
-        function SpecRunner(testReporter) {
+        function SpecRunner(testReporter, testHooks) {
             if (testReporter === void 0) { testReporter = new TestReporter(); }
+            if (testHooks === void 0) { testHooks = new TestHooks(); }
             this.testReporter = testReporter;
+            this.testHooks = testHooks;
             this.excludedTags = [];
             this.urls = [];
             this.expectedFiles = 0;
@@ -87,17 +89,21 @@
         };
         SpecRunner.prototype.readFile = function (index) {
             var _this = this;
-            // TODO: Probably need a timeout per file as if the test ran "forever" the test would never pass or fail
+            // TODO: Probably need a timeout per file as if the test ran "forever" the overall test would never pass or fail
             if (index < this.urls.length) {
                 var nextIndex_1 = index + 1;
+                var afterFeatureHandler_1 = function () {
+                    _this.testHooks.afterFeature();
+                    _this.fileCompleted(nextIndex_1);
+                };
                 this.fileReader.getFile(this.urls[index], function (responseText) {
-                    _this.processSpecification(responseText, function () { return _this.fileCompleted(nextIndex_1); });
+                    _this.processSpecification(responseText, afterFeatureHandler_1);
                 });
             }
         };
-        SpecRunner.prototype.processSpecification = function (spec, featureCompleteHandler) {
-            var featureParser = new Parser_1.FeatureParser(this.steps, this.testReporter, this.excludedTags);
-            featureParser.run(spec, featureCompleteHandler);
+        SpecRunner.prototype.processSpecification = function (spec, afterFeatureHandler) {
+            var featureParser = new Parser_1.FeatureParser(this.testReporter, this.testHooks, this.steps, this.excludedTags);
+            featureParser.run(spec, afterFeatureHandler);
         };
         return SpecRunner;
     }());
@@ -121,6 +127,28 @@
         return SpecificationList;
     }());
     exports.SpecificationList = SpecificationList;
+    var TestHooks = (function () {
+        function TestHooks() {
+        }
+        TestHooks.prototype.beforeTestRun = function () {
+        };
+        TestHooks.prototype.beforeFeature = function () {
+        };
+        TestHooks.prototype.beforeScenario = function () {
+        };
+        TestHooks.prototype.beforeCondition = function () {
+        };
+        TestHooks.prototype.afterCondition = function () {
+        };
+        TestHooks.prototype.afterScenario = function () {
+        };
+        TestHooks.prototype.afterFeature = function () {
+        };
+        TestHooks.prototype.afterTestRun = function () {
+        };
+        return TestHooks;
+    }());
+    exports.TestHooks = TestHooks;
     var TestReporter = (function () {
         function TestReporter() {
         }

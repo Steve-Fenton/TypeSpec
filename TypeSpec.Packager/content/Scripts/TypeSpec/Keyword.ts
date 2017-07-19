@@ -104,9 +104,11 @@ export interface ITestReporter {
 export interface ITestHooks {
     beforeTestRun(): void;
     beforeFeature(): void;
-    beforeScenario: void;
+    beforeScenario(): void;
+    beforeCondition(): void;
 
-    afterScenario: void;
+    afterCondition(): void;
+    afterScenario(): void;
     afterFeature(): void;
     afterTestRun(): void;
 }

@@ -1,5 +1,6 @@
 .vs/config/applicationhost.config
 *.suo
+*.out
 TypeSpec/app.js
 *.map
 TypeSpec/bin/TypeSpec.dll
@@ -30,3 +31,5 @@ TypeSpec/web.Release.config
 *.dat
 *.log
 *.nupkg
+/TypeSpec.NodeExamples/obj/Debug/Tsc.out
+/TypeSpec.NodeExamples/obj/Release/Tsc.out
