@@ -3,6 +3,8 @@ A TypeScript BDD framework.
 
     PM> Install-Package TypeSpec 
 
+    npm install typespec-bdd
+
 The aim is to properly separate the business specifications from the code, 
 but rather than code-generate (like Java or C# BDD tools), the tests will be 
 loaded and executed on the fly without converting the text into an 
