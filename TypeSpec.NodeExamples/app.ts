@@ -1,4 +1,4 @@
-﻿import {SpecRunner, TapReporter} from './node_modules/typespec-bdd/TypeSpec';
+﻿import {SpecRunner, TapReporter} from './node_modules/typespec-bdd/src/TypeSpec';
 import {Calculator} from './Scripts/Calculator';
 import {CalculatorSteps} from './Steps/CalculatorSteps';
 import readline = require('readline');

@@ -1,4 +1,4 @@
-﻿import {SpecRunner, Assert} from '../node_modules/typespec-bdd/TypeSpec';
+﻿import {SpecRunner, Assert} from '../node_modules/typespec-bdd/src/TypeSpec';
 import {Calculator} from '../Scripts/Calculator';
 
 interface CalculatorTestContext {

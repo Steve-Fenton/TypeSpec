@@ -1,0 +1,30 @@
+{
+  "author": "Steve Fenton",
+  "name": "typespec-bdd",
+  "description": "BDD framework for TypeScript.",
+  "keywords": [
+    "typespec",
+    "typescript",
+    "bdd",
+    "behaviour",
+    "driven"
+  ],
+  "version": "0.6.9",
+  "homepage": "https://github.com/Steve-Fenton/TypeSpec",
+  "bugs": "https://github.com/Steve-Fenton/TypeSpec/issues",
+  "license": "(Apache-2.0)",
+  "files": [
+    "src/"
+  ],
+  "repository": {
+    "url": "https://github.com/Steve-Fenton/TypeSpec"
+  },
+  "main": "src/TypeSpec.js",
+  "types":  "src/TypeSpec.d.ts",
+  "dependencies": { },
+  "devDependencies": { },
+  "optionalDependencies": { },
+  "engines": {
+    "node": "*"
+  }
+}

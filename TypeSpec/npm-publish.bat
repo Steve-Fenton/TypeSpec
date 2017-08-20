@@ -1,3 +1,3 @@
-cd ./TypeSpec/
+cd ./dist/
 npm publish
 pause

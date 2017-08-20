@@ -1,12 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TypeSpec", "TypeSpec\TypeSpec.csproj", "{C77505C3-90E6-4A14-BBAF-4AD0239ADBC0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{74ECAB52-F67A-4B24-8075-E52200CA194C}"
 	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		.npmignore = .npmignore
 		LICENSE = LICENSE
 		README.md = README.md
 	EndProjectSection
@@ -42,5 +44,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E8011675-D857-4DD3-95D6-D6079D1A2628}
 	EndGlobalSection
 EndGlobal
