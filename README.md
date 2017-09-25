@@ -36,13 +36,47 @@ better than this - but it shows how the parts fit together.
 
     import {SpecRunner} as TypeSpec from './Scripts/TypeSpec/TypeSpec';
 
-    var runner = new SpecRunner();
+    const runner = new SpecRunner();
 
     runner.addStep(/^I have entered (\"\d+\") into the calculator$/i, (context: any, num: number) => {
         calculator.add(num);
     });
 
     runner.run(
+        '/Specifications/Basic.txt'
+    );
+
+## Experimental Decorators
+
+Initial support for experimental decorators has been added in TypeSpec v0.7.0
+
+Test step definitions can be defined like this:
+
+    import { Assert, given, when, then } from './TypeSpec/TypeSpec';
+
+	export class CalculatorSteps {
+		@given(/^I have entered (\"\d+\") into the calculator$/i)
+		passingArguments(context: any, num: number) {
+			calculator.add(num);
+		}
+	}
+
+The available decorators are:
+
+ - given
+ - when
+ - then
+ - step (where you don't care about the exact verb)
+
+The decorator takes a regular expression, and an optional kind (so you can mark a step as async).
+
+The updated quick start for experimental decorators is below.
+
+    import { AutoRunner } from './Scripts/TypeSpec/TypeSpec';
+
+	import './CalculatorSteps';
+
+    AutoRunner.run(
         '/Specifications/Basic.txt'
     );
 

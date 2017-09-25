@@ -16,7 +16,7 @@ export class Scenario {
     public tableHeaders: string[] = [];
     public tableRows: {}[] = [];
 
-    constructor(priorState: Scenario) {
+    constructor(priorState: Scenario | null) {
         if (priorState !== null) {
             this.featureTitle = priorState.featureTitle;
             this.featureDescription = priorState.featureDescription;
@@ -203,7 +203,7 @@ export class InitializedState extends Scenario {
 
 export class FeatureState extends Scenario {
 
-    constructor(priorState: Scenario) {
+    constructor(priorState: Scenario | null) {
         super(priorState);
     }
 

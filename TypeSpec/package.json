@@ -9,7 +9,7 @@
     "behaviour",
     "driven"
   ],
-  "version": "0.6.9",
+  "version": "0.7.1",
   "homepage": "https://github.com/Steve-Fenton/TypeSpec",
   "bugs": "https://github.com/Steve-Fenton/TypeSpec/issues",
   "license": "(Apache-2.0)",
@@ -19,10 +19,12 @@
   "repository": {
     "url": "https://github.com/Steve-Fenton/TypeSpec"
   },
-  "main": "src/TypeSpec.js",
-  "types":  "src/TypeSpec.d.ts",
+  "main": "./src/TypeSpec.js",
+  "types":  "./src/TypeSpec.d.ts",
   "dependencies": { },
-  "devDependencies": { },
+  "devDependencies": {
+    "requirejs": "^2.3.5"
+  },
   "optionalDependencies": { },
   "engines": {
     "node": "*"

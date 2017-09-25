@@ -1,4 +1,4 @@
-﻿import {SpecRunner, TapReporter} from './Scripts/TypeSpec/TypeSpec';
+﻿import { SpecRunner, TapReporter } from './node_modules/typespec-bdd/src/TypeSpec';
 import {Calculator} from './Scripts/Calculator';
 import {CustomTestReporter} from './Steps/CustomTestReporter';
 import {CalculatorSteps} from './Steps/CalculatorSteps';

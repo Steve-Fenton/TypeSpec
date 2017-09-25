@@ -9,7 +9,7 @@ export class FeatureParser {
     private featureRunner: FeatureRunner;
     private hasParsed = false;
 
-    constructor(private testReporter: ITestReporter, testHooks: ITestHooks, private steps: StepCollection, private tagsToExclude: string[]) {
+    constructor(private testReporter: ITestReporter, testHooks: ITestHooks, steps: StepCollection, private tagsToExclude: string[]) {
         this.scenarios[this.scenarioIndex] = new InitializedState(this.tagsToExclude);
         this.featureRunner = new FeatureRunner(steps, testReporter, testHooks);
     }
@@ -266,7 +266,7 @@ class ArgumentParser {
 
     private replaceArgumentWithExpression(quotedArgument: string, position: number) {
         const trimmedArgument = quotedArgument.replace(/"/g, '');
-        let argumentExpression: string = null;
+        let argumentExpression: string = '';
 
         if (this.isBooleanArgument(trimmedArgument)) {
             this.arguments.push('p' + position + ': boolean');

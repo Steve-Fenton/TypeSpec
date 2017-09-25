@@ -82,14 +82,6 @@ export class Keywords {
         this.KeywordMap[keyword] = keywordType;
         this.KeywordTypeMap[keywordType] = keyword;
     }
-
-    private getKeywordType(text: string) {
-        if (this.KeywordMap[text]) {
-            return this.KeywordMap[text];
-        }
-
-        return KeywordType.Unknown;
-    }
 }
 
 export const Keyword = new Keywords();

@@ -1,5 +1,5 @@
 ﻿import { FeatureParser } from './Parser';
-import { FileReaderCallback, FileReader, BrowserFileReader, NodeFileReader } from './FileSystem';
+import { FileReader } from './FileSystem';
 import { StepCollection, StepType } from './Steps';
 import { ITestReporter, ITestHooks } from './Keyword';
 
@@ -13,37 +13,37 @@ export class SpecRunner {
     private expectedFiles = 0;
     private completedFiles = 0;
 
-    constructor(private testReporter: ITestReporter = new TestReporter(), private testHooks: ITestHooks = new TestHooks()) {
-        this.steps = new StepCollection(testReporter);
+    constructor(public testReporter: ITestReporter = new TestReporter(), public testHooks: ITestHooks = new TestHooks()) {
+        this.steps = new StepCollection();
         this.fileReader = FileReader.getInstance(this.testReporter);
     }
 
-    addStep(expression: RegExp, step: Function) {
-        this.steps.add(expression, step, false);
+    addStep(expression: RegExp, step: Function, kind: Kind = Kind.Sync) {
+        this.steps.add(expression, step, (kind == Kind.Async));
     }
 
     addStepAsync(expression: RegExp, step: Function) {
         this.steps.add(expression, step, true);
     }
 
-    given(expression: RegExp, step: Function) {
-        this.steps.add(expression, step, false, StepType.Given);
+    given(expression: RegExp, step: Function, kind: Kind = Kind.Sync) {
+        this.steps.add(expression, step, (kind == Kind.Async), StepType.Given);
     }
 
     givenAsync(expression: RegExp, step: Function) {
         this.steps.add(expression, step, true, StepType.Given);
     }
 
-    when(expression: RegExp, step: Function) {
-        this.steps.add(expression, step, false, StepType.When);
+    when(expression: RegExp, step: Function, kind: Kind = Kind.Sync) {
+        this.steps.add(expression, step, (kind == Kind.Async), StepType.When);
     }
 
     whenAsync(expression: RegExp, step: Function) {
         this.steps.add(expression, step, true, StepType.When);
     }
 
-    then(expression: RegExp, step: Function) {
-        this.steps.add(expression, step, false, StepType.Then);
+    then(expression: RegExp, step: Function, kind: Kind = Kind.Sync) {
+        this.steps.add(expression, step, (kind == Kind.Async), StepType.Then);
     }
 
     thenAsync(expression: RegExp, step: Function) {
@@ -64,7 +64,7 @@ export class SpecRunner {
     }
 
     excludeTags(...tags: string[]) {
-        for(const tag of tags) {
+        for (const tag of tags) {
             this.excludedTags.push(tag.replace(/@/g, ''));
         }
     }
@@ -342,7 +342,7 @@ export class Assert {
     public static throws(params: IThrowsParameters): void;
     public static throws(actual: () => void, message?: string): void;
     public static throws(a: any, message = '', errorString = '') {
-        let actual: () => void;
+        let actual: () => void = () => { return; };
 
         if (typeof a === 'function') {
             actual = a;
@@ -379,7 +379,7 @@ export class Assert {
         }
     }
 
-    public static executesWithin(actual: () => void, timeLimit: number, message: string = null): void {
+    public static executesWithin(actual: () => void, timeLimit: number, message: string = ''): void {
         function getTime() {
             return window.performance.now();
         }
@@ -436,3 +436,35 @@ export class Assert {
         return '{' + (typeof variable) + '} "' + variable + '"';
     }
 }
+
+// DECORATOR EXPERIMENT
+export enum Kind {
+    Sync,
+    Async
+}
+export const AutoRunner = new SpecRunner();
+
+export function step(regex: RegExp, kind: Kind = Kind.Sync) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        AutoRunner.addStep(regex, descriptor.value, kind);
+    }
+}
+
+export function given(regex: RegExp, kind: Kind = Kind.Sync) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        AutoRunner.given(regex, descriptor.value, kind);
+    }
+}
+
+export function when(regex: RegExp, kind: Kind = Kind.Sync) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        AutoRunner.when(regex, descriptor.value, kind);
+    }
+}
+
+export function then(regex: RegExp, kind: Kind = Kind.Sync) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        AutoRunner.then(regex, descriptor.value, kind);
+    }
+}
+

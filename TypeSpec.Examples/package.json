@@ -1,0 +1,8 @@
+{
+  "name": "typespec-examples",
+  "private": true,
+  "dependencies": {
+    "typespec-bdd": "^0.7.1",
+    "requirejs": "^2.3.5"
+  }
+}

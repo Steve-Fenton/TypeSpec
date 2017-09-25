@@ -1,5 +1,4 @@
 ﻿import { ExpressionLibrary } from './RegEx';
-import { ITestReporter } from './Keyword';
 
 export class StepDefinition {
     constructor(public expression: RegExp, public step: Function, public isAsync: boolean, public type: StepType) { }
@@ -18,8 +17,6 @@ export enum StepType {
 export class StepCollection {
     private steps: StepDefinition[] = [];
     private anyStepType = StepType.Given | StepType.When | StepType.Then;
-
-    constructor(private testReporter: ITestReporter) { }
 
     add(expression: RegExp, step: Function, isAsync = false, type: StepType = this.anyStepType) {
         this.steps.push(new StepDefinition(expression, step, isAsync, type));
@@ -56,7 +53,7 @@ export class StepCollection {
     getParams(text: string, parameterExpression: RegExp, findExpression: RegExp): any[] {
         if (parameterExpression) {
 
-            const typeIndicators = findExpression.source.toString().match(ExpressionLibrary.regexFinderRegExp);
+            const typeIndicators = findExpression.source.toString().match(ExpressionLibrary.regexFinderRegExp) || [];
             const matches = text.match(findExpression);
 
             if (!matches) {

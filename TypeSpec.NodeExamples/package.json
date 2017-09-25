@@ -1,13 +1,8 @@
 {
-  "name": "TypeSpec.NodeExamples",
-  "version": "0.0.0",
-  "description": "TypeSpec.NodeExamples",
+  "name": "typespect-node-examples",
+  "private": true,
   "main": "app.js",
-  "author": {
-    "name": "Steve Fenton",
-    "email": ""
-  },
-  "dependencies": {
-    "typespec-bdd": "^0.6.9"
+  "devDependencies": {
+    "typespec-bdd": "^0.7.1"
   }
 }

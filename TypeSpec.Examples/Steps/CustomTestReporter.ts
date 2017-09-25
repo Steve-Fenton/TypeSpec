@@ -1,4 +1,4 @@
-﻿import {TestReporter} from '../Scripts/TypeSpec/TypeSpec';
+﻿import { TestReporter } from '../node_modules/typespec-bdd/src/TypeSpec';
 
 export class CustomTestReporter extends TestReporter {
     summary(featureTitle: string, scenarioTitle: string, isSuccess: boolean) {

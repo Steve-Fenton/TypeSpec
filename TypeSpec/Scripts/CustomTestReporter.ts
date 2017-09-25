@@ -9,17 +9,25 @@ export class CustomTestReporter extends TestReporter {
         if (isSuccess) {
             this.passedCount++;
         }
-
-        let div = document.createElement('li');
+        
+        const div = document.createElement('li');
         div.className = (isSuccess ? 'good' : 'bad');
         div.innerHTML = this.escape((isSuccess ? '✔' : '✘') + ' ' + featureTitle + '. ' + scenarioTitle + '.');
-        document.getElementById('results').appendChild(div);
+
+        const resultsContainer = document.getElementById('results');
+        if (resultsContainer) {
+            resultsContainer.appendChild(div);
+        }
     }
 
     error(featureTitle: string, condition: string, error: Error) {
-        let div = document.createElement('div');
+        const div = document.createElement('div');
         div.innerHTML = '<h2>' + featureTitle + '</h2><blockquote>' + this.escape(condition) + '</blockquote><pre class="bad">' + this.escape(error.message) + '</pre>';
-        document.getElementById('errors').appendChild(div);
+
+        const errorsContainer = document.getElementById('errors');
+        if (errorsContainer) {
+            errorsContainer.appendChild(div);
+        }
     }
 
     information(message: string) {

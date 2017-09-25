@@ -1,5 +1,5 @@
-﻿import {SpecRunner, Assert} from '../Scripts/TypeSpec/TypeSpec';
-import {Calculator} from '../Scripts/Calculator';
+﻿import { SpecRunner, Assert } from '../node_modules/typespec-bdd/src/TypeSpec';
+import { Calculator } from '../Scripts/Calculator';
 
 interface CalculatorTestContext {
     calculator: Calculator;

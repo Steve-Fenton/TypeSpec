@@ -1,40 +1,41 @@
-﻿import {SpecRunner, Assert} from './TypeSpec/TypeSpec';
+﻿import { Assert, given, when, then } from './TypeSpec/TypeSpec';
 
-interface ArgumentTestContext {
-    firstArg: string | number | boolean;
-    secondArg: string | number | boolean;
+export interface ArgumentTestContext {
+    firstArg: string | number | boolean | null;
+    secondArg: string | number | boolean | null;
 }
 
 export class ArgumentSteps {
-    static register(runner: SpecRunner) {
-        runner.given(/^I am passing arguments$/i,
-            (context: ArgumentTestContext) => {
-                context.firstArg = null;
-                context.secondArg = null;
-            });
+    @given(/^I am passing arguments$/i)
+    passingArguments(context: ArgumentTestContext) {
+        context.firstArg = null;
+        context.secondArg = null;
+    }
 
-        runner.when(/^I pass (\"\d+\") and "(.*)" as arguments$/i,
-            (context: ArgumentTestContext, arg1: number, arg2: string) => {
-                context.firstArg = arg1;
-                context.secondArg = arg2;
-            });
+    @when(/^I pass (\"\d+\") and "(.*)" as arguments$/i)
+    passNumberAndStringArgument(context: ArgumentTestContext, arg1: number, arg2: string) {
+        context.firstArg = arg1;
+        context.secondArg = arg2;
+    }
 
-        runner.when(/^I pass (\"true\"|\"false\") and (\"true\"|\"false\") as arguments$/i,
-            (context: ArgumentTestContext, arg1: boolean, arg2: boolean) => {
-                context.firstArg = arg1;
-                context.secondArg = arg2;
-        });
+    @when(/^I pass (\"true\"|\"false\") and (\"true\"|\"false\") as arguments$/i)
+    passBooleanAndBooleanArguments(context: ArgumentTestContext, arg1: boolean, arg2: boolean) {
+        context.firstArg = arg1;
+        context.secondArg = arg2;
+    }
 
-        runner.then(/^the arguments should be number and string type$/i,
-            (context: ArgumentTestContext) => {
-                Assert.isNumber(context.firstArg);
-                Assert.isString(context.secondArg);
-            });
+    @then(/^the arguments should be number and string type$/i)
+    argumentsAreNumberAndString(context: ArgumentTestContext) {
+        Assert.isNumber(context.firstArg);
+        Assert.isString(context.secondArg);
+    }
 
-        runner.then(/^the arguments should be boolean type$/i,
-            (context: ArgumentTestContext) => {
-                Assert.isBoolean(context.firstArg);
-                Assert.isBoolean(context.secondArg);
-        });
+    @then(/^the arguments should be boolean type$/i)
+    argumentsAreBoolean(context: ArgumentTestContext) {
+        Assert.isBoolean(context.firstArg);
+        Assert.isBoolean(context.secondArg);
+    }
+
+    static register() {
     }
 }
