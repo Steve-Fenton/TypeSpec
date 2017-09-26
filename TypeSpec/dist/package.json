@@ -20,12 +20,13 @@
     "url": "https://github.com/Steve-Fenton/TypeSpec"
   },
   "main": "./src/TypeSpec.js",
-  "types":  "./src/TypeSpec.d.ts",
-  "dependencies": { },
+  "types": "./src/TypeSpec.d.ts",
+  "dependencies": {},
   "devDependencies": {
+    "gulp": "^3.9.1",
     "requirejs": "^2.3.5"
   },
-  "optionalDependencies": { },
+  "optionalDependencies": {},
   "engines": {
     "node": "*"
   }

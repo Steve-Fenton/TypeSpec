@@ -1,4 +1,4 @@
-﻿# TypeSpec
+# TypeSpec
 A TypeScript BDD framework.
 
     PM> Install-Package TypeSpec 
