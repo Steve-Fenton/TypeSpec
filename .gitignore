@@ -19,3 +19,4 @@
 **/bin
 **/obj
 **/node_modules
+/TypeSpec/dist
