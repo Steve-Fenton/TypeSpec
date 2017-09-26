@@ -1,4 +1,4 @@
-﻿import {ITestReporter} from './Keyword';
+﻿import { ITestReporter } from './Hooks';
 
 declare var require: any;
 
@@ -7,7 +7,7 @@ export interface FileReaderCallback {
 }
 
 export abstract class FileReader {
-    static getInstance(testReporter: ITestReporter) : FileReader {
+    static getInstance(testReporter: ITestReporter): FileReader {
         if (typeof window !== 'undefined') {
             return new BrowserFileReader(testReporter);
         }
@@ -15,7 +15,7 @@ export abstract class FileReader {
         return new NodeFileReader(testReporter);
     }
 
-    abstract getFile(url: string, successCallback: FileReaderCallback) : void;
+    abstract getFile(url: string, successCallback: FileReaderCallback): void;
 }
 
 export class BrowserFileReader extends FileReader {

@@ -1,4 +1,4 @@
-﻿import {TestReporter, TestHooks} from './TypeSpec/TypeSpec';
+﻿import { TestReporter, TestHooks } from './TypeSpec/TypeSpec';
 
 export class CustomTestReporter extends TestReporter {
     private testCount = 0;
@@ -9,7 +9,7 @@ export class CustomTestReporter extends TestReporter {
         if (isSuccess) {
             this.passedCount++;
         }
-        
+
         const div = document.createElement('li');
         div.className = (isSuccess ? 'good' : 'bad');
         div.innerHTML = this.escape((isSuccess ? '✔' : '✘') + ' ' + featureTitle + '. ' + scenarioTitle + '.');

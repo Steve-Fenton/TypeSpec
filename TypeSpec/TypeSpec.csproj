@@ -45,8 +45,11 @@
     <TypeScriptCompile Include="Scripts\ArgumentSteps.ts" />
     <TypeScriptCompile Include="Scripts\CustomTestReporter.ts" />
     <TypeScriptCompile Include="Scripts\CalculatorSteps.ts" />
+    <TypeScriptCompile Include="Scripts\TypeSpec\Hooks.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\Parser.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\RegEx.ts" />
+    <TypeScriptCompile Include="Scripts\TypeSpec\Assertions.ts" />
+    <TypeScriptCompile Include="Scripts\TypeSpec\Runner.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\State.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\Keyword.ts" />
     <TypeScriptCompile Include="Scripts\TypeSpec\Steps.ts" />

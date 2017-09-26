@@ -1,4 +1,4 @@
-﻿import { ITestReporter, ITestHooks } from './Keyword';
+﻿import { ITestReporter, ITestHooks } from './Hooks';
 import { ExpressionLibrary } from './RegEx';
 import { StepCollection, StepType } from './Steps';
 import { Scenario, InitializedState, FeatureState } from './State';
