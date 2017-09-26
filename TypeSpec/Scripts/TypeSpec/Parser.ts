@@ -225,10 +225,10 @@ class StepMethodBuilder {
         /* Template for step method */
         const params = argumentParser.getParameters();
         const comma = (params.length > 0) ? ', ' : '';
-        const suggestion = '    runner.addStep(/^' + argumentParser.getCondition() + '$/i,\n' +
-            '        (context: any' + comma + params + ') => {\n' +
-            '            throw new Error(\'Not implemented.\');\n' +
-            '        });';
+        const suggestion = '    @step(/^' + argumentParser.getCondition() + '$/i)\n' +
+            '    stepName(context: any' + comma + params + ') {\n' +
+            '        throw new Error(\'Not implemented.\');\n' +
+            '    }';
 
         return suggestion;
     }

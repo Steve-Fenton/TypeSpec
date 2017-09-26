@@ -29,35 +29,40 @@ For example:
            When I press the total button
            Then the result should be "120" on the screen
 
-## Quick Start
+## Step Definitions
 
-The following code shows all the parts needed to run a test. It is best to organise code 
-better than this - but it shows how the parts fit together.
+Step definitions are organised into classes, and the `@given`, `@when`, and `@then` decorators are used 
+to mark the steps. You can also use the `@step` decorator if you want to re-use a step under multiple 
+keywords.
 
-    import {SpecRunner} as TypeSpec from './Scripts/TypeSpec/TypeSpec';
-
-    const runner = new SpecRunner();
-
-    runner.addStep(/^I have entered (\"\d+\") into the calculator$/i, (context: any, num: number) => {
-        calculator.add(num);
-    });
-
-    runner.run(
-        '/Specifications/Basic.txt'
-    );
-
-## Experimental Decorators
-
-Initial support for experimental decorators has been added in TypeSpec v0.7.0
-
-Test step definitions can be defined like this:
+You can use an interface to type your test context.
 
     import { Assert, given, when, then } from './TypeSpec/TypeSpec';
 
+	export interface CalculatorTestContext {
+		done: () => void; // Standard TypeSpec aync done method.
+		calculator: Calculator;
+	}
+
 	export class CalculatorSteps {
+		@given(/^I am using a calculator$/i)
+		usingACalculator(context: CalculatorTestContext) {
+			context.calculator = new Calculator();
+		}
+
 		@given(/^I have entered (\"\d+\") into the calculator$/i)
-		passingArguments(context: any, num: number) {
+		passingArguments(context: CalculatorTestContext, num: number) {
 			calculator.add(num);
+		}
+
+		@when(/^I press the total button$/gi)
+		pressTotal() {
+		}
+
+		@then(/^the result should be (\"\d+\") on the screen$/i)
+		resultShouldBe(context: CalculatorTestContext, expected: number) {
+			var actual = context.calculator.getTotal();
+			Assert.areIdentical(expected, actual);
 		}
 	}
 
@@ -66,11 +71,29 @@ The available decorators are:
  - given
  - when
  - then
- - step (where you don't care about the exact verb)
+ - step
 
 The decorator takes a regular expression, and an optional kind (so you can mark a step as async).
 
-The updated quick start for experimental decorators is below.
+## Async Steps
+
+If the steps need to work with asynchronous code, you can mark them as asyn. When you do this, you'll need to 
+inform the test context when you are done:
+
+		@when(/^I press the total button$/gi, Kind.Async)
+		pressTotal(context: CalculatorTestContext) {
+		    window.setTimeout(() => {
+				context.done();
+			}, 500);
+		}
+
+## Running Specifications
+
+You can run any number of specifications by passing them to `AutoRunner.run`. Each specification will 
+be loaded and parsed, with the appropriate steps being executed if they exist.
+
+Important Note: because the TypeScript compiler will optimise your ECMAScript style import away if you don't use the dependency
+in your file, you should use the import style shown for CalculatorSteps for your step definition files.
 
     import { AutoRunner } from './Scripts/TypeSpec/TypeSpec';
 
@@ -80,39 +103,32 @@ The updated quick start for experimental decorators is below.
         '/Specifications/Basic.txt'
     );
 
-## Random Ordering
-
-If you want to run the specification in a random order (to discourage coupling), you can use a SpecificationList.
-
-    runner.runInRandomOrder(
-        '/Specifications/Basic.txt'
-    );
 
 ## Step Definitions
 
 Steps are defined using a regular expression, and a function to handle the step.
 For example, the step for the condition `Given I am using a calculator` is defined below:
 
-    runner.given(/^I am using a calculator$/i,
-        (context: CalculatorTestContext) => {
+    @given(/^I am using a calculator$/i)
+    myStep(context: CalculatorTestContext) {
         context.calculator = new Calculator();
-    });
+    }
 
 This is a basic example, where the regular expression is just the static text to be matched, along
 with the `i` flag to allow case-insensitive matches.
 
-You can use the methods `given`, `when`, or `then` to add steps, which will limit where they are used, or
-you can use the `addStep` method to define a step that can be used in any case.
+You can use the decorators `given`, `when`, or `then` to add steps, which will limit where they are used, or
+you can use the `step` decorator to define a step that can be used in any case.
 
 If you include variables in your condition, you can use the regular expression to match the 
 step without the specific value. For example, the steps `And I have entered "50" into the calculator`
 and `And I have entered "70" into the calculator` both match the step defined below (but 
 `And I have entered "Bob" into the calculator` will not match, because `Bob` does not match `(\d+)`):
 
-    runner.addStep(/^I have entered (\"\d+\") into the calculator$/i,
-        (context: CalculatorTestContext, num: number) => {
+    @step(/^I have entered (\"\d+\") into the calculator$/i)
+    myStep(context: CalculatorTestContext, num: number) {
         context.calculator.add(num);
-    });
+    }
 
 If you write a statement and no step definition can be found, TypeSpec will suggest a step method for you, 
 including expressions for any arguments it finds. For example:
@@ -121,26 +137,10 @@ including expressions for any arguments it finds. For example:
 
 Will result in the following suggested step definition:
 
-    runner.addStep(/^I have a step with a number (\"\d+\") and a boolean (\"true\"|\"false\") and a string "(.*)"$/i,
-        (context: any, p0: number, p1: boolean, p2: string) => {
-            throw new Error('Not implemented.');
-        });
-
-### Async Steps
-
-Each step method has an async counterpart: `addStepAsync`, `givenAsync`, `whenAsync`, `thenAsync`. 
-If you define a step using one of these methods, you are responsible for calling `context.done();` to
-tell TypeSpec your step is finished.
-
-    runner.addStepAsync(/^I asynchronously enter (\"\d+\") into the calculator$/i,
-        (context: CalculatorTestContext, num: number) => {
-            window.setTimeout(() => {
-                context.calculator.add(num);
-
-                // Tell TypeSpec the async operation is complete.
-                context.done();
-            }, 200);
-        });
+    @step(/^I have a step with a number (\"\d+\") and a boolean (\"true\"|\"false\") and a string "(.*)"$/i)
+    myStep(context: any, p0: number, p1: boolean, p2: string) {
+        throw new Error('Not implemented.');
+    }
 
 ### Regular Expressions
 
@@ -164,7 +164,7 @@ Without these you may match partial conditions, causing accidental matching of s
 
 The long version is available at [MDN Regular Expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions).
 
-#### Common TypeSpect Condition Strings
+#### Common TypeSpec Condition Strings
 
 To find **"1"** here.
 
@@ -180,67 +180,28 @@ To find **"true"** here.
 
 ### Grouping Steps
 
-You can use a class to wrap related step definitions. However, don't fall into the trap of 
-storing state on the class; se the `context` variable that is passed to the step by
+You should use a class to wrap related step definitions. However, don't fall into the trap of 
+storing state on the class; use the `context` variable that is passed to the step by
 TypeSpec - as this will keep state between steps in different classes, and no matter 
-what the current scope of `this` is. Using the `static` keyword on your `register` method
-will keep you honest!
+what the current scope of `this` is.
 
 The `context` variable is completely dynamic, but you can use an interface to give it more
 clarity in your step definitions.
 
-    import {SpecRunner, Assert} from './TypeSpec/TypeSpec';
-    import {Calculator} from './Calculator';
-
-    interface CalculatorTestContext {
-        calculator: Calculator;
-    }
-
-    export class CalculatorSteps {
-        static register(runner: SpecRunner) {
-            runner.given(/^I am using a calculator$/i,
-                (context: CalculatorTestContext) => {
-                context.calculator = new Calculator();
-            });
-
-            runner.addStep(/^I have entered (\"\d+\") into the calculator$/i,
-                (context: CalculatorTestContext, num: number) => {
-                context.calculator.add(num);
-            });
-
-            runner.addStep(/^I press the total button$/gi,
-                (context: CalculatorTestContext) => {
-                // No action needed
-            });
-
-            runner.then(/^the result should be (\"\d+\") on the screen$/i,
-                (context: CalculatorTestContext, num: number) => {
-                var total = context.calculator.getTotal();
-                Assert.areIdentical(num, total);
-            });
-        }
-    }
 
 ## Composition
 
 The composition of the test is shown below.
 
-    import {SpecRunner} from './Scripts/TypeSpec/TypeSpec';
-    import {Calculator} from './Scripts/Calculator';
-    import {CalculatorSteps, MathSteps} from './Scripts/Steps';
+    import { AutoRunner } from './Scripts/TypeSpec/TypeSpec';
 
-    var runner = new SpecRunner();
-    CalculatorSteps.register(runner);
-    MathSteps.register(runner);
+	import './CalculatorSteps';
 
-    runner.run(
+    AutoRunner.run(
         '/Specifications/Basic.txt',
         '/Specifications/MultipleScenarios.txt',
         '/Specifications/ScenarioOutlines.txt'
     );
-
-By creating an instance of the `SpecRunner` class and passing it into each `register` method,
-you create a master collection of steps that are available to all specifications.
 
 You pass the list of specifications into the `run` method. Each specification is loaded, parsed, 
 and executed.
@@ -249,51 +210,53 @@ and executed.
 
 You can exclude specifications by tag, by passing the tags to exclude to the SpecRunner before calling `runner.run(...`:
 
-    runner.excludeTags('@exclude', '@failing');
+    import { AutoRunner } from './Scripts/TypeSpec/TypeSpec';
+
+    AutoRunner.excludeTags('@exclude', '@failing');
 
 The `@` is optional here, you could exclude using `failing` or `@failing` - both will work.
 
 ## Test Reporting
 
 By default, test output is sent to the `console`. You can override this behaviour by supplying 
-a custom test reporter. You can intercept:
+a custom test reporter that extends the `TestReporter` class:
 
- - `summary` - test results
- - `error` - errors and missing steps
- - `information` - verbose information including parsed conditions
- - `complete` - called at the end of the test
+	import { TestReporter } from './TypeSpec/TypeSpec';
+
+	export class CustomTestReporter extends TestReporter {
+		//...
+	}
 
 There are two built-in test reporters available:
 
- - TapReporter - produces TAP compliant output
- - TestReporter - a basic test reporter class, outputs to HTML
+ - `TapReporter` - produces TAP compliant output
+ - `TestReporter` - outputs results to the console
 
-An example custom test reporter is shown below:
+There is also an HTML test reporter in the TypeSpec sample project.
 
-    import {TestReporter} from './TypeSpec/TypeSpec';
+You tell the AutoRunner which reporter to use:
 
-    export class CustomTestReporter extends TestReporter {
-        summary(featureTitle: string, scenarioTitle: string, isSuccess: boolean) {
-            var div = document.createElement('li');
-            div.className = (isSuccess ? 'good' : 'bad');
-            div.innerHTML = this.escape((isSuccess ? '✔' : '✘') + ' ' + featureTitle + '. ' + scenarioTitle + '.');
-            document.getElementById('results').appendChild(div);
-        }
+    AutoRunner.testReporter = new CustomTestReporter();
 
-        error(featureTitle: string, condition: string, error: Error) {
-            var div = document.createElement('div');
-            div.innerHTML = '<h2>' + featureTitle + '</h2><blockquote>' + this.escape(condition) + '</blockquote><pre class="bad">' + this.escape(error.message) + '</pre>';
-            document.getElementById('errors').appendChild(div);
-        }
+## Test Hooks
 
-        information(message: string) {
-            console.log(message);
-        }
-    }
+There are a number of test hooks available that you can use to run code at various points during a test run.
 
-You pass in your custom test reporter when creating the `SpecRunner`:
+	interface ITestHooks {
+		beforeTestRun(): void;
+		beforeFeature(): void;
+		beforeScenario(): void;
+		beforeCondition(): void;
 
-    var runner = new SpecRunner(new CustomTestReporter());
+		afterCondition(): void;
+		afterScenario(): void;
+		afterFeature(): void;
+		afterTestRun(): void;
+	}
+
+You can set your test hooks on the AutoRunner.
+
+    AutoRunner.testHooks = new CustomTestHooks();
 
 ## Scenario Outlines
 
@@ -327,10 +290,10 @@ considering the difference between TypeSpec and tools such as SpecFlow or Cucumb
 
 TypeScript:
 
-    runner.addStep(/^I have entered (\"\d+\") into the calculator$/i,
-    (context: any, num: number) => {
+    @given(/^I have entered (\d+) into the calculator$/i)
+    enterNumber(context: any, num: number) {
         calculator.add(num);
-    });
+    }
 
 C#
 
@@ -342,15 +305,5 @@ C#
 Key differences:
 
  - You *should* always use the `^` start of string expression and the `$` end of string expression in TypeSpec (although you are not forced too)
- - <del>All arguments must be "quoted" (including numebrs), ie. "1", not just 1 OR (\"\d+\"), not just (\d+)</del> you can now choose your style!
  - You can choose whether the step matcher is case sensitive (pass the `i` flag to ignore case)
- - The first argument passed to a step is always the test context
-
-Similarities:
-
- - The first argument to `addStep` is essentially the same as the C# attribute
- - The second argument to `addStep` is essentially the same as the C# method
- - The arguments extracted from the condition in the specification are parsed for you
-
-In place of the C# attribute, we pass the Regular Expression into 
-the `addStep` method. 
+ - The first argument passed to a step is _always_ the test context

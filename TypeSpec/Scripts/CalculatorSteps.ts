@@ -37,12 +37,11 @@ export class CalculatorSteps {
 
     @step(/^I asynchronously enter (\"\d+\") into the calculator$/i, Kind.Async)
     asyncAddNumber(context: CalculatorTestContext, num: number) {
-        let _ctx = context;
         window.setTimeout(() => {
-            _ctx.calculator.add(num);
+            context.calculator.add(num);
 
             // Tell TypeSpec the async operation is complete.
-            _ctx.done();
+            context.done();
         }, 200);
     }
 
