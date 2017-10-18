@@ -2,7 +2,7 @@
   "name": "typespec-examples",
   "private": true,
   "dependencies": {
-    "typespec-bdd": "^0.7.1",
+    "typespec-bdd": "^2.0.0",
     "requirejs": "^2.3.5"
   }
 }

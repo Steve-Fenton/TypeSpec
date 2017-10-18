@@ -1,4 +1,5 @@
 ﻿# TypeSpec
+
 A TypeScript BDD framework.
 
     PM> Install-Package TypeSpec 
@@ -10,6 +11,14 @@ but rather than code-generate (like Java or C# BDD tools), the tests will be
 loaded and executed on the fly without converting the text into an 
 intermediate language or framework. This should allow tests to be written using any 
 unit testing framework - or even without one.
+
+## Version 2.0.0
+
+This version contains some breaking changes, although these are all improvements.
+
+Please see the revised examples below, and in the example projects to see how to write steps using decorators.
+
+Raise an issue or question if you get stuck.
 
 ## Specifications
 
@@ -61,7 +70,7 @@ You can use an interface to type your test context.
 
 		@then(/^the result should be (\"\d+\") on the screen$/i)
 		resultShouldBe(context: CalculatorTestContext, expected: number) {
-			var actual = context.calculator.getTotal();
+			const actual = context.calculator.getTotal();
 			Assert.areIdentical(expected, actual);
 		}
 	}

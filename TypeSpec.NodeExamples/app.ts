@@ -1,12 +1,10 @@
-﻿import {SpecRunner, TapReporter} from './node_modules/typespec-bdd/src/TypeSpec';
-import {Calculator} from './Scripts/Calculator';
-import {CalculatorSteps} from './Steps/CalculatorSteps';
+﻿import {AutoRunner, TapReporter} from './node_modules/typespec-bdd/src/TypeSpec';
+import './Steps/CalculatorSteps';
 import readline = require('readline');
 
-var runner = new SpecRunner(new TapReporter());
-CalculatorSteps.register(runner);
+AutoRunner.testReporter = new TapReporter();
 
-runner.run(
+AutoRunner.run(
     '/Specifications/Basic.txt'
 );
 
@@ -17,7 +15,7 @@ const rl = readline.createInterface({
 
 
 setTimeout(() => {
-    rl.question('Press any key to exit...', (answer) => {
+    rl.question('Press any key to exit...', (answer: any) => {
         rl.close();
     });
 }, 3000);

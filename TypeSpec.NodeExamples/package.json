@@ -3,6 +3,6 @@
   "private": true,
   "main": "app.js",
   "devDependencies": {
-    "typespec-bdd": "^0.7.1"
+    "typespec-bdd": "^2.0.0"
   }
 }

@@ -36,6 +36,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="Specifications\Basic.txt" />
+    <Content Include="tsconfig.json" />
     <TypeScriptCompile Include="app.ts" />
     <Content Include="package.json" />
     <TypeScriptCompile Include="Scripts\Calculator.ts" />

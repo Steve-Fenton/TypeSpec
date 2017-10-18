@@ -30,8 +30,8 @@ export class CalculatorSteps {
 
     @step(/^I speak "(.*)" into the calculator$/i)
     speakNumber(context: CalculatorTestContext, sentence: string) {
-        var matches = sentence.match(/(\+|-)?((\d+(\.\d+)?)|(\.\d+))/) || ['0'];
-        var num = parseFloat(matches[0]);
+        const matches = sentence.match(/(\+|-)?((\d+(\.\d+)?)|(\.\d+))/) || ['0'];
+        const num = parseFloat(matches[0]);
         context.calculator.add(num);
     }
 
@@ -47,7 +47,7 @@ export class CalculatorSteps {
 
     @step(/^the asynchronous request times out when I enter (\"\d+\") into the calculator$/i, Kind.Async)
     requestTimesOut(context: any, num: number) {
-        let _ctx = context;
+        const _ctx = context;
         window.setTimeout(() => {
             _ctx.calculator.add(num);
 
@@ -62,13 +62,13 @@ export class CalculatorSteps {
 
     @step(/^the result should be (\"\d+\") on the screen$/i)
     resultShouldBe(context: CalculatorTestContext, expected: number) {
-        var actual = context.calculator.getTotal();
+        const actual = context.calculator.getTotal();
         Assert.areIdentical(expected, actual);
     }
 
     @step(/^the result should be an unquoted (\d+) on the screen$/i)
     resultShouldBeUnquoted(context: CalculatorTestContext, expected: number) {
-        var actual = context.calculator.getTotal();
+        const actual = context.calculator.getTotal();
         Assert.areIdentical(expected, actual);
     }
 

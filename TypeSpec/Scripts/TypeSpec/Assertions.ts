@@ -34,7 +34,7 @@ export class Assert {
             return msg;
         }
 
-        var compareArray = (expected: any[], actual: any[], result: number[]): void => {
+        let compareArray = (expected: any[], actual: any[], result: number[]): void => {
             let indexString = '';
 
             if (expected === null) {
@@ -63,7 +63,7 @@ export class Assert {
                     message);
             }
 
-            for (var i = 0; i < expected.length; i++) {
+            for (let i = 0; i < expected.length; i++) {
                 if ((expected[i] instanceof Array) && (actual[i] instanceof Array)) {
                     result.push(i);
                     compareArray(expected[i], actual[i], result);

@@ -35,7 +35,7 @@ export class Scenario {
     }
 
     getAllConditions() {
-        var conditions: { condition: string; type: StepType; }[] = [];
+        const conditions: { condition: string; type: StepType; }[] = [];
 
         for (const given of this.givens) {
             conditions.push({
@@ -392,6 +392,10 @@ class ExampleState extends Scenario {
 class TableState extends Scenario {
     constructor(priorState: Scenario) {
         super(priorState);
+    }
+
+    isNewScenario(line: string) {
+        return (Keyword.is(line, KeywordType.Scenario) || Keyword.is(line, KeywordType.Outline) || Keyword.is(line, KeywordType.Tag));
     }
 
     table(line: string): Scenario {

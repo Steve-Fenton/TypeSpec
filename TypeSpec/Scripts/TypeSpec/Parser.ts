@@ -259,7 +259,7 @@ class ArgumentParser {
         }
 
         for (let i = 0; i < foundArguments.length; i++) {
-            var foundArgument = foundArguments[i];
+            const foundArgument = foundArguments[i];
             this.replaceArgumentWithExpression(foundArgument, i);
         }
     }
