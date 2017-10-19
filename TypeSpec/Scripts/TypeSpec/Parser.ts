@@ -175,7 +175,7 @@ class FeatureRunner {
 
             if (stepExecution === null) {
                 const stepMethodBuilder = new StepMethodBuilder(condition);
-                throw new Error('No step definition defined.\n\n' + stepMethodBuilder.getSuggestedStepMethod());
+                throw new Error('No step definition defined.\n\nSee https://github.com/Steve-Fenton/TypeSpec/wiki/Hints#user-content-no-step-definition-defined\n\n' + stepMethodBuilder.getSuggestedStepMethod());
             }
 
             const isAsync = stepExecution.isAsync;
