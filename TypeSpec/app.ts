@@ -34,4 +34,4 @@ AutoRunner.run(
 
     //Excluded by tag
     '/Specifications/ExcludedByTag.txt'
-);
+).then(() => { alert('Done'); }).catch((error) => { alert('Error! ' + error); });

@@ -1,9 +1,9 @@
 ﻿import { Runner, SpecRunner, Kind } from './Runner';
 
-// DECORATOR EXPERIMENT
 const runner = new SpecRunner();
-
 export const AutoRunner: Runner = runner;
+
+// Decorators
 
 export function step(regex: RegExp, kind: Kind = Kind.Sync) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {

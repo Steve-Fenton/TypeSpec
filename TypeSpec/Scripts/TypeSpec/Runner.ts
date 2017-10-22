@@ -4,10 +4,12 @@ import { StepCollection, StepType } from './Steps';
 import { ITestReporter, ITestHooks, TestReporter, TestHooks } from './Hooks';
 
 export interface Runner {
-    run(...url: string[]): void;
+    run(...url: string[]): Promise<{}>;
+    runInRandomOrder(...url: string[]): Promise<{}>;
     excludeTags(...tags: string[]): void;
     testReporter: ITestReporter;
     testHooks: ITestHooks;
+    timeLimitMS: number
 }
 
 export enum Kind {
@@ -16,6 +18,8 @@ export enum Kind {
 }
 
 export class SpecRunner implements Runner {
+    public timeLimitMS = 30000;
+
     private steps: StepCollection;
     private excludedTags: string[] = [];
     private urls: string[] = [];
@@ -24,6 +28,8 @@ export class SpecRunner implements Runner {
 
     private expectedFiles = 0;
     private completedFiles = 0;
+
+    private runCompleted: Function;
 
     constructor(public testReporter: ITestReporter = new TestReporter(), public testHooks: ITestHooks = new TestHooks()) {
         this.steps = new StepCollection();
@@ -66,6 +72,10 @@ export class SpecRunner implements Runner {
         this.expectedFiles = url.length;
         this.urls = url;
         this.readFile(0);
+
+        return new Promise((resolve: () => void, reject: () => void) => {
+            this.runCompleted = resolve;
+        });
     }
 
     runInRandomOrder(...url: string[]) {
@@ -73,6 +83,10 @@ export class SpecRunner implements Runner {
         this.expectedFiles = url.length;
         this.urls = specList.randomise();
         this.readFile(0);
+
+        return new Promise((resolve: () => void, reject: () => void) => {
+            this.runCompleted = resolve;
+        });
     }
 
     excludeTags(...tags: string[]) {
@@ -85,6 +99,7 @@ export class SpecRunner implements Runner {
         this.completedFiles++;
         if (this.completedFiles === this.expectedFiles) {
             this.testReporter.complete();
+            this.runCompleted();
         } else {
             this.readFile(index);
         }

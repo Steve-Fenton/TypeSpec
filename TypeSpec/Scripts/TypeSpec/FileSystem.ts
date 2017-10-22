@@ -32,7 +32,10 @@ export class BrowserFileReader extends FileReader {
                 if (client.status === 200) {
                     successCallback(client.responseText);
                 } else {
-                    this.testReporter.error('getFile', url, new Error('Error loading specification: ' + client.statusText + ' (' + client.status + ').'));
+                    this.testReporter.error(
+                        'getFile',
+                        url,
+                        new Error(`Error loading specification: ${client.statusText} (${client.status}).`));
                 }
             }
         }
@@ -54,7 +57,10 @@ export class NodeFileReader extends FileReader {
 
         fs.readFile(resolvedUrl, 'utf8', (err: any, data: string) => {
             if (err) {
-                this.testReporter.error('getNodeFile', url, new Error('Error loading specification: ' + err + ').'));
+                this.testReporter.error(
+                    'getNodeFile',
+                    url,
+                    new Error(`Error loading specification: ${err}).`));
             }
             successCallback(data);
         });

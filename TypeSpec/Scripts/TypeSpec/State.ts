@@ -138,47 +138,51 @@ export class Scenario {
     }
 
     unknown(line: string): Scenario {
-        throw new Error('Unknown line ' + line);
+        throw new Error(`Unknown line ${line}`);
     }
 
     feature(line: string): Scenario {
-        throw new Error('Did not expect line: ' + line);
+        throw new Error(this.unexpectedLine(line));
     }
 
     tag(line: string): Scenario {
-        throw new Error('Did not expect line: ' + line);
+        throw new Error(this.unexpectedLine(line));
     }
 
     scenario(line: string): Scenario {
-        throw new Error('Did not expect line: ' + line);
+        throw new Error(this.unexpectedLine(line));
     }
 
     outline(line: string): Scenario {
-        throw new Error('Did not expect line: ' + line);
+        throw new Error(this.unexpectedLine(line));
     }
 
     given(line: string): Scenario {
-        throw new Error('Did not expect line: ' + line);
+        throw new Error(this.unexpectedLine(line));
     }
 
     when(line: string): Scenario {
-        throw new Error('Did not expect line: ' + line);
+        throw new Error(this.unexpectedLine(line));
     }
 
     then(line: string): Scenario {
-        throw new Error('Did not expect line: ' + line);
+        throw new Error(this.unexpectedLine(line));
     }
 
     and(line: string): Scenario {
-        throw new Error('Did not expect line: ' + line);
+        throw new Error(this.unexpectedLine(line));
     }
 
     examples(line: string): Scenario {
-        throw new Error('Did not expect line: ' + line);
+        throw new Error(this.unexpectedLine(line));
     }
 
     table(line: string): Scenario {
-        throw new Error('Did not expect line: ' + line);
+        throw new Error(this.unexpectedLine(line));
+    }
+
+    private unexpectedLine(line: string) {
+        return `Did not expect line: ${line}`;
     }
 }
 
