@@ -6,19 +6,35 @@ export interface IThrowsParameters {
     errorString?: string;
 }
 
+function printVariable(variable: any) {
+    if (variable === null) {
+        return '"null"';
+    }
+
+    if (typeof variable === 'object') {
+        return `{object: ${getNameOfClass(variable)}}`;
+    }
+
+    return `{${typeof variable}} "${variable}"`;
+}
+
+function getNameOfClass(inputClass: any) {
+    return inputClass.constructor.name;
+}
+
 export class Assert {
     public static areIdentical(expected: any, actual: any, message = ''): void {
         if (expected !== actual) {
-            throw this.getError('areIdentical failed when given ' +
-                this.printVariable(expected) + ' and ' + this.printVariable(actual),
+            throw this.getError(
+                `areIdentical failed when given ${printVariable(expected)} and ${printVariable(actual)}`,
                 message);
         }
     }
 
     public static areNotIdentical(expected: any, actual: any, message = ''): void {
         if (expected === actual) {
-            throw this.getError('areNotIdentical failed when given ' +
-                this.printVariable(expected) + ' and ' + this.printVariable(actual),
+            throw this.getError(
+                `areNotIdentical failed when given ${printVariable(expected)} and ${printVariable(actual)}`,
                 message);
         }
     }
@@ -40,26 +56,26 @@ export class Assert {
             if (expected === null) {
                 if (actual !== null) {
                     indexString = resultToString(result);
-                    throw this.getError('areCollectionsIdentical failed when array a' +
-                        indexString + ' is null and b' +
-                        indexString + ' is not null',
+                    throw this.getError(
+                        `areCollectionsIdentical failed when array a${indexString} is null and b${indexString} is not null`,
                         message);
                 }
 
                 return; // correct: both are nulls
             } else if (actual === null) {
                 indexString = resultToString(result);
-                throw this.getError('areCollectionsIdentical failed when array a' +
-                    indexString + ' is not null and b' +
-                    indexString + ' is null',
+                throw this.getError(
+                    `areCollectionsIdentical failed when array a${indexString} is not null and b${indexString} is null`,
                     message);
             }
 
             if (expected.length !== actual.length) {
                 indexString = resultToString(result);
-                throw this.getError('areCollectionsIdentical failed when length of array a' +
-                    indexString + ' (length: ' + expected.length + ') is different of length of array b' +
-                    indexString + ' (length: ' + actual.length + ')',
+                throw this.getError(
+                    `areCollectionsIdentical failed when length of ` +
+                    `array a${indexString} (length: ${expected.length})` +
+                    `is different of length of ` +
+                    `array b${indexString} (length: ${actual.length})`,
                     message);
             }
 
@@ -71,9 +87,11 @@ export class Assert {
                 } else if (expected[i] !== actual[i]) {
                     result.push(i);
                     indexString = resultToString(result);
-                    throw this.getError('areCollectionsIdentical failed when element a' +
-                        indexString + ' (' + this.printVariable(expected[i]) + ') is different than element b' +
-                        indexString + ' (' + this.printVariable(actual[i]) + ')',
+                    throw this.getError(
+                        `areCollectionsIdentical failed when ` +
+                        `element a${indexString} (${printVariable(expected[i])})` +
+                        `is different than ` +
+                        `element b${indexString} (${printVariable(actual[i])})`,
                         message);
                 }
             }
@@ -91,48 +109,64 @@ export class Assert {
             return;
         }
 
-        throw this.getError('areCollectionsNotIdentical failed when both collections are identical', message);
+        throw this.getError(
+            'areCollectionsNotIdentical failed when both collections are identical',
+            message);
     }
 
     public static isTrue(actual: boolean, message = '') {
         if (!actual) {
-            throw this.getError('isTrue failed when given ' + this.printVariable(actual), message);
+            throw this.getError(
+                `isTrue failed when given ${printVariable(actual)}`,
+                message);
         }
     }
 
     public static isFalse(actual: boolean, message = '') {
         if (actual) {
-            throw this.getError('isFalse failed when given ' + this.printVariable(actual), message);
+            throw this.getError(
+                `isFalse failed when given ${printVariable(actual)}`,
+                message);
         }
     }
 
     public static isTruthy(actual: any, message = '') {
         if (!actual) {
-            throw this.getError('isTrue failed when given ' + this.printVariable(actual), message);
+            throw this.getError(
+                `isTruthy failed when given ${printVariable(actual)}`,
+                message);
         }
     }
 
     public static isFalsey(actual: any, message = '') {
         if (actual) {
-            throw this.getError('isFalse failed when given ' + this.printVariable(actual), message);
+            throw this.getError(
+                `isFalsey failed when given ${printVariable(actual)}`,
+                message);
         }
     }
 
     public static isString(actual: any, message = '') {
         if (typeof actual !== 'string') {
-            throw this.getError('isString failed when given ' + this.printVariable(actual), message);
+            throw this.getError(
+                `isString failed when given ${printVariable(actual)}`,
+                message);
         }
     }
 
     public static isNumber(actual: any, message = '') {
         if (typeof actual !== 'number') {
-            throw this.getError('isNumber failed when given ' + this.printVariable(actual), message);
+            throw this.getError(
+                `isNumber failed when given ${printVariable(actual)}`,
+                message);
         }
     }
 
     public static isBoolean(actual: any, message = '') {
         if (typeof actual !== 'boolean') {
-            throw this.getError('isBoolean failed when given ' + this.printVariable(actual), message);
+            throw this.getError(
+                `isBoolean failed when given ${printVariable(actual)}`,
+                message);
         }
     }
 
@@ -190,14 +224,17 @@ export class Assert {
         try {
             actual();
         } catch (ex) {
-            throw this.getError('isExecuteTimeLessThanLimit fails when given code throws an exception: "' + ex + '"', message);
+            throw this.getError(
+                `isExecuteTimeLessThanLimit fails when given code throws an exception: "${ex}"`,
+                message);
         }
 
         const executingTime = getTime() - startOfExecution;
 
         if (executingTime > timeLimit) {
-            throw this.getError('isExecuteTimeLessThanLimit fails when execution time of given code (' + timeToString(executingTime) + ' ms) ' +
-                'exceed the given limit(' + timeToString(timeLimit) + ' ms)',
+            throw this.getError(
+                `isExecuteTimeLessThanLimit fails when execution time of given code (${timeToString(executingTime)} ms) ` +
+                `exceed the given limit(${timeToString(timeLimit)} ms)`,
                 message);
         }
     }
@@ -212,24 +249,5 @@ export class Assert {
         }
 
         return new Error(resultMessage);
-    }
-
-    private static getNameOfClass(inputClass: {}) {
-        // see: https://www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
-        const funcNameRegex = /function (.{1,})\(/;
-        const results = (funcNameRegex).exec((<any>inputClass).constructor.toString());
-        return (results && results.length > 1) ? results[1] : '';
-    }
-
-    private static printVariable(variable: any) {
-        if (variable === null) {
-            return '"null"';
-        }
-
-        if (typeof variable === 'object') {
-            return '{object: ' + Assert.getNameOfClass(variable) + '}';
-        }
-
-        return '{' + (typeof variable) + '} "' + variable + '"';
     }
 }
