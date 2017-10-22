@@ -1,7 +1,7 @@
 ﻿{
   "compileOnSave": true,
   "compilerOptions": {
-    "target": "ES5",
+    "target": "ES2015",
     "module": "amd",
     "strict": true,
     "experimentalDecorators": true,
