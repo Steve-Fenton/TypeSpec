@@ -33,5 +33,10 @@ AutoRunner.run(
     '/Specifications/MissingStep.txt',
 
     //Excluded by tag
-    '/Specifications/ExcludedByTag.txt'
-).then(() => { alert('Done'); }).catch((error) => { alert('Error! ' + error); });
+    '/Specifications/ExcludedByTag.txt')
+    .then(() => {
+        alert('Done');
+    })
+    .catch((error) => {
+        alert('Error! ' + error);
+    });

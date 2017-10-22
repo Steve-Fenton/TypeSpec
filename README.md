@@ -110,7 +110,10 @@ in your file, you should use the import style shown for CalculatorSteps for your
 
     AutoRunner.run(
         '/Specifications/Basic.txt'
-    );
+    ).then(() => {
+	    // The promises resolves after all specifications have run
+		// including async steps.
+	});
 
 
 ## Step Definitions
@@ -214,6 +217,9 @@ The composition of the test is shown below.
 
 You pass the list of specifications into the `run` method. Each specification is loaded, parsed, 
 and executed.
+
+The `run` method returns a promise, should you need to execute code after the test. This allows you to run code after 
+all specifications have run, including where there are async steps.
 
 ## Excluding Specifications
 
