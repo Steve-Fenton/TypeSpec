@@ -12,18 +12,16 @@ fs.readdir('./Specifications', function (err, items) {
         specifications.push('/Specifications/' + item);
     }
 
-    AutoRunner.run.apply(AutoRunner, specifications);
+    AutoRunner.run.apply(AutoRunner, specifications)
+        .then(() => {
+            // The rest of the code is just to let you "press any key to exit"
+            const rl = readline.createInterface({
+                input: process.stdin,
+                output: process.stdout
+            });
 
-    // The rest of the code is just 
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
-
-    setTimeout(() => {
-        rl.question('Press any key to exit...', (answer: any) => {
-            rl.close();
+            rl.question('Press any key to exit...', (answer: any) => {
+                rl.close();
+            });
         });
-    }, 3000);
 });
-
