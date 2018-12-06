@@ -29,7 +29,7 @@ export class SpecRunner implements Runner {
     private expectedFiles = 0;
     private completedFiles = 0;
 
-    private runCompleted: Function;
+    private runCompleted: Function = () => {};
 
     constructor(public testReporter: ITestReporter = new TestReporter(), public testHooks: ITestHooks = new TestHooks()) {
         this.steps = new StepCollection();

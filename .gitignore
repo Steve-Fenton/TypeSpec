@@ -20,3 +20,5 @@
 **/obj
 **/node_modules
 /TypeSpec/dist
+/TypeSpec/package-lock.json
+/TypeSpec.Examples/package-lock.json

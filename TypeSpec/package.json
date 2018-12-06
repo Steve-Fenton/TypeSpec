@@ -23,8 +23,8 @@
   "types": "./src/TypeSpec.d.ts",
   "dependencies": {},
   "devDependencies": {
-    "gulp": "^3.9.1",
-    "requirejs": "^2.3.5"
+    "gulp": "^4.0.0",
+    "requirejs": "^2.3.6"
   },
   "optionalDependencies": {},
   "engines": {

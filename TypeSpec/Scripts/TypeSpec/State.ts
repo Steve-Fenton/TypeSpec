@@ -6,9 +6,9 @@ export class Scenario {
     public whens: string[] = [];
     public thens: string[] = [];
 
-    public featureTitle: string;
+    public featureTitle: string = '';
     public featureDescription: string[] = [];
-    public scenarioTitle: string;
+    public scenarioTitle: string = '';
 
     public tags: string[] = [];
     public tagsToExclude: string[] = [];
