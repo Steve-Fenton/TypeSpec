@@ -1,5 +1,11 @@
 ﻿# TypeSpec
 
+**This is an archived project!** You may want to switch to [JestSpec](https://github.com/Steve-Fenton/JestSpec), which brings Gherkin/Cucumber style tests to your preferred test framework.
+
+JestSpec works with Jest as well as other JavaScript testing frameworks. You can use it with TypeScript or JavaScript.
+
+## Install
+
 A TypeScript BDD framework.
 
     PM> Install-Package TypeSpec 
